@@ -1,0 +1,77 @@
+﻿@media (min-width: 1400px) {
+	.form-contractor {
+		width: 50%;
+	}
+}
+
+#tbl thead tr td {
+	font-weight: 500;
+}
+
+.action-icons a:not(:last-child) {
+	padding-right: 12px;
+}
+
+input[type="text"].form-control {
+	/*min-width: 450px;*/
+}
+
+.form-control {
+	padding: 6px !important;
+}
+
+#btn-locations {
+	height: 37px;
+	text-align: left !important;
+	font-size: .9375rem !important;
+	border: 1px solid #d2ddec !important;
+}
+
+.form-select {
+	font-size: .9375rem !important;
+}
+
+.form-control:disabled, .form-control[readonly] {
+	background-color: #f7f7f7;
+	opacity: 1;
+}
+
+#grid, #grid .k-input-inner {
+	font-family: 'Cerebri Sans';
+	font-size: 14px;
+}
+
+	#grid table thead th {
+		color: #95aac9;
+		font-weight: 600;
+	}
+
+		#grid table thead th.text-center .k-link {
+			justify-content: center;
+		}
+
+	#grid .k-grid-norecords-template {
+		border: 0;
+	}
+
+.k-input-outline {
+	border: 1px solid #d2ddec;
+}
+
+	.k-input-outline:focus {
+		background-color: #fff;
+		border-color: #2c7be5;
+		box-shadow: none;
+		color: #12263f;
+		outline: 0;
+	}
+
+.k-treeview-leaf {
+	font-family: 'Cerebri Sans', sans-serif;
+	font-size: 14px;
+}
+
+.k-chip {
+	font-family: 'Cerebri Sans', sans-serif;
+	font-size: 12px;
+}

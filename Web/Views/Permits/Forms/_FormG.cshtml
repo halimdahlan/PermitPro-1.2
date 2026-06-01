@@ -1,0 +1,489 @@
+﻿@using Kendo.Mvc.UI
+
+<div class="modal fade" id="dlgFormG" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="dlgFormGLabel" aria-hidden="true">
+	<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+		<div class="modal-content">
+			<div class="modal-header bg-primary-soft">
+				<div class="modal-title" id="dlgFormGLabel">
+					<div class="d-flex flex-row align-items-center">
+						<!--div-- class="avatar">
+							<span class="avatar-title rounded-circle bg-info" style="font-size: 22.75px !important; font-weight: 700 !important;">G</span>
+						</!--div-->
+						<img title="(G) LIFTING & HOISTING" src="/img/icons/certs/liftinghoisting.png" style="width:40px;height:40px;" />
+						<span class="ms-3 dialog-title">LIFTING &amp; HOISTING</span>
+					</div>
+				</div>
+				<a href="" class="text-dark no-loading" data-bs-dismiss="modal" aria-label="Close"><i class="fa-sharp fa-solid fa-xmark fa-xl"></i></a>
+			</div>
+			<div class="modal-body">
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">GENERAL</h3>
+				</div>
+				<div class="mb-3 d-flex flex-row justify-content-evenly">
+					<div class="me-4 w-100">
+						@(Html.Kendo()
+							.TextBox()
+							.Name("formG-general-1")
+							.Label(x => x.Content("Specify location within terminal"))
+							.Size(ComponentSize.Medium)
+							.Rounded(Rounded.Large)
+							.FillMode(FillMode.Outline))
+					</div>
+					<div class="ms-4 w-100">
+						@(Html.Kendo()
+							.TextBox()
+							.Name("formG-general-2")
+							.Label(x => x.Content("Lifting Plan No."))
+							.Size(ComponentSize.Medium)
+							.Rounded(Rounded.Large)
+							.FillMode(FillMode.Outline))
+						<div class="mt-1">
+							(Lifting Plan to be attached for Level 2 lift)
+						</div>
+					</div>
+				</div>
+				<div class="mb-4">
+					<div class="mb-2">Type of lift (Get advise from HSSE Department)</div>
+					<div class="d-flex flex-row">
+						<div class="me-4">
+							@(Html.Kendo().CheckBox()
+								.Name("formG-general-3")
+								.Label("   Level 1 (Simple Lift")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium))
+						</div>
+						<div class="ms-4">
+							@(Html.Kendo().CheckBox()
+								.Name("formG-general-4")
+								.Label("   Level 2 (Complicated and Complex Lift")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium))
+						</div>
+					</div>
+				</div>
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">SAFE CHECK FOR SAFE LIFTING</h3>
+				</div>
+				<div class="mb-3">
+					<div class="d-flex flex-row">
+						<div class="flex-grow-1">&nbsp;</div>
+						<div class="text-center" style="width:50px;">YES</div>
+						<div class="text-center" style="width:50px;">NO</div>
+						<div class="text-center" style="width:50px;">N/A</div>
+					</div>
+					<div class="d-flex flex-row align-items-center">
+						<div class="flex-grow-1">
+							Trained/qualified person undertaking this work and screened by Terminal Team
+						</div>
+						<div class="text-center" style="width:50px;">
+							@(Html.Kendo().CheckBox()
+								.Name("formG-safeCheck-1a")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium))
+						</div>
+						<div class="text-center" style="width:50px;">
+							@(Html.Kendo().CheckBox()
+								.Name("formG-safeCheck-1b")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium))
+						</div>
+						<div class="text-center" style="width:50px;">
+							@(Html.Kendo().CheckBox()
+								.Name("formG-safeCheck-1c")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium))
+						</div>
+					</div>
+				</div>
+				<div class="mb-3 d-flex flex-row align-items-center">
+					<div class="flex-grow-1">
+						Crane inspected and all related certificate still valid (upload the document)
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-2a")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-2b")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-2c")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+				</div>
+				<div class="mb-3 d-flex flex-row align-items-center">
+					<div class="flex-grow-1">
+						Lifting plan communicated with Terminal team and ground team
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-3a")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-3b")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-3c")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+				</div>
+				<div class="mb-3 d-flex flex-row align-items-center">
+					<div class="flex-grow-1">
+						Pre-job discussion conducted
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-4a")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-4b")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-4c")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+				</div>
+				<div class="mb-3 d-flex flex-row align-items-center">
+					<div class="flex-grow-1">
+						Person in charge and lifting team (signalman, banksman, rigger etc.) identified
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-5a")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-5b")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-5c")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+				</div>
+				<div class="mb-3 d-flex flex-row align-items-center">
+					<div class="flex-grow-1">
+						Lifting plan communicated with Terminal team and ground team
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-6a")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-6b")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-6c")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+				</div>
+				<div class="mb-3 d-flex flex-row align-items-center">
+					<div class="flex-grow-1">
+						JHA and JMS communicated with Terminal team and ground team
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-7a")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-7b")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-7c")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+				</div>
+				<div class="mb-3 d-flex flex-row align-items-center">
+					<div class="flex-grow-1">
+						The working area is defined with barriers/signs
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-8a")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-8b")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-8c")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+				</div>
+				<div class="mb-3 d-flex flex-row align-items-center">
+					<div class="flex-grow-1">
+						The lift area controlled and is everyone clear if the load falls or swings
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-9a")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-9b")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-9c")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+				</div>
+				<div class="mb-3 d-flex flex-row align-items-center">
+					<div class="flex-grow-1">
+						Environmental limits  (e.g. maximum permissible wind speed) for the lift communicated
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-10a")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-10b")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-10c")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+				</div>
+				<div class="mb-3 d-flex flex-row align-items-center">
+					<div class="flex-grow-1">
+						Signalling methods and communication agreed and clear
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-11a")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-11b")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-11c")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+				</div>
+				<div class="mb-3 d-flex flex-row align-items-center">
+					<div class="flex-grow-1">
+						Space constrain addressed and terminal critical equipment identified
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-12a")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-12b")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-12c")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+				</div>
+				<div class="mb-4 d-flex flex-row align-items-center">
+					<div class="flex-grow-1">
+						Terminal critical equipment and property at the load swinging radius safeguarded (removed, hard barricaded etc.)
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-13a")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-13b")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+					<div class="text-center" style="width:50px;">
+						@(Html.Kendo().CheckBox()
+							.Name("formG-safeCheck-13c")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+				</div>
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">VALIDITY OF THE LIFTING AND HOISTING PERMIT</h3>
+				</div>
+				<div class="mb-3">
+					<div class="mb-2 fs-3">
+						Lead Permit Issuer (LPI)
+					</div>
+					<div class="mb-2">
+						Lifting and Hoisting Work as described in the Permit to Work is allowed between
+					</div>
+					<div class="d-flex flex-row align-items-center">
+						<div class="me-3 w-100">
+							@(Html.Kendo()
+								.DateTimePicker()
+								.Name("formG-validity-1")
+								.Label(x => x.Content("From"))
+								.Format("{0:dd/MM/yyyy hh:mm tt}")
+								.Min(DateTime.Today)
+								.Size(ComponentSize.Medium)
+								.Rounded(Rounded.Large)
+								.FillMode(FillMode.Outline)
+								.AdaptiveMode(AdaptiveMode.Auto)
+								.ComponentType("modern")
+								.DateInput())
+						</div>
+						<div class="ms-3 w-100">
+							@(Html.Kendo()
+								.DateTimePicker()
+								.Name("formG-validity-2")
+								.Label(x => x.Content("Until"))
+								.Format("{0:dd/MM/yyyy hh:mm tt}")
+								.Min(DateTime.Today)
+								.Size(ComponentSize.Medium)
+								.Rounded(Rounded.Large)
+								.FillMode(FillMode.Outline)
+								.AdaptiveMode(AdaptiveMode.Auto)
+								.ComponentType("modern")
+								.DateInput())
+						</div>
+					</div>
+				</div>
+				<hr />
+				<div class="mb-4">
+					<div class="mb-2 fs-3">
+						Signed Engineering (if required)
+					</div>
+					<div class="mb-2 d-flex flex-row">
+						<div class="me-4">
+							@(Html.Kendo()
+								.CheckBox()
+								.Name("formG-signed-1")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium))
+						</div>
+						<div>
+							<label for="formG-signed-1">
+								I certify that I have reviewed the proposed work and I am satisfied that it is adequately
+								described on the Permit to Work and that the precautions detailed are adequate and clearly defined.
+							</label>
+						</div>
+					</div>
+				</div>
+				<hr />
+				<div class="mb-4">
+					<div class="mb-2 fs-3">
+						Permit Holder (PH)
+					</div>
+					<div class="mb-2 d-flex flex-row">
+						<div class="me-4">
+							@(Html.Kendo()
+								.CheckBox()
+								.Name("formG-signed-2")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium))
+						</div>
+						<div>
+							<label for="formG-signed-2">
+								I certify that I am aware of the planned Lifting and Hoisting Work and that provided the precautions 
+								detailed on the Permit to Work are established and maintained the work may progress, subjected to the 
+								Permit to Work being validated.
+							</label>
+						</div>
+					</div>
+				</div>
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">LIFTING AND HOISTING CERTIFICATE IS WITHDRAWN</h3>
+				</div>
+				<div class="mb-3 d-flex flex-row align-items-center">
+					<div class="me-5">
+						@(Html.Kendo()
+							.Switch()
+							.Name("formG-withdrawn")
+							.Size(ComponentSize.Small)
+							.Messages(x => x.Checked("YES").Unchecked("NO"))
+							.Events(x => x.Change("onChangeWithdrawnFormG")))
+					</div>
+					<label class="form-label me-3" for="formG-withdrawnReason">Reason</label>
+					<div class="flex-grow-1">
+						@(Html.Kendo()
+							.TextBox()
+							.Name("formG-withdrawnReason")
+							.Enable(false)
+							.Size(ComponentSize.Medium)
+							.Rounded(Rounded.Large)
+							.FillMode(FillMode.Outline))
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-primary" id="btnSaveFormG" data-bs-dismiss="modal">Save changes</button>
+			</div>
+		</div>
+	</div>
+</div>
+

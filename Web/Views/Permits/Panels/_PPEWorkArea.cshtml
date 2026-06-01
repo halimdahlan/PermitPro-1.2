@@ -1,0 +1,227 @@
+﻿@using Kendo.Mvc.UI
+
+@model EditPermitViewModel
+
+<h2 class="accordion-header">
+	<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
+		<h3 class="mb-0">PPE/Work Area</h3>
+	</button>
+</h2>
+<div id="collapse4" class="accordion-collapse collapse" data-bs-parent="#accordionPermit">
+	<div class="accordion-body" style="position: relative;">
+		@if (Model.PermitStatus != PermitPro.Core.Enums.PermitStatusEnum.Draft)
+		{
+			<div class="edit-disable"></div>
+		}
+		<ul class="list-group list-group-flush">
+			<li class="list-group-item d-flex justify-content-between align-items-center">
+				<div class="me-auto">
+					<div><label for="swPpeWorkArea1">Safety Glasses</label></div>
+				</div>
+				<div class="">
+					@(Html.Kendo().Switch()
+							.Name("swPpeWorkArea1")
+							.Size(ComponentSize.Small)
+							.HtmlAttributes(new { data_elem = "safetyGlass" })
+							.Messages(x => x.Checked("YES").Unchecked("NO")))
+				</div>
+			</li>
+			<li class="list-group-item d-flex justify-content-between align-items-center">
+				<div class="me-auto">
+					<div><label for="swPpeWorkArea2">Safety Helmet</label></div>
+				</div>
+				<div class="">
+					@(Html.Kendo().Switch()
+							.Name("swPpeWorkArea2")
+							.Size(ComponentSize.Small)
+							.HtmlAttributes(new { data_elem = "safetyHelmet" })
+							.Messages(x => x.Checked("YES").Unchecked("NO")))
+				</div>
+			</li>
+			<li class="list-group-item d-flex justify-content-between align-items-center">
+				<div class="me-auto">
+					<div><label for="swPpeWorkArea3">Full Face Mask</label></div>
+				</div>
+				<div class="">
+					@(Html.Kendo().Switch()
+							.Name("swPpeWorkArea3")
+							.Size(ComponentSize.Small)
+							.HtmlAttributes(new { data_elem = "fullFaceMask" })
+							.Messages(x => x.Checked("YES").Unchecked("NO")))
+				</div>
+			</li>
+			<li class="list-group-item d-flex justify-content-between align-items-center">
+				<div class="me-auto">
+					<div><label for="swPpeWorkArea4">Leather Gloves</label></div>
+				</div>
+				<div class="">
+					@(Html.Kendo().Switch()
+							.Name("swPpeWorkArea4")
+							.Size(ComponentSize.Small)
+							.HtmlAttributes(new { data_elem = "leatherGloves" })
+							.Messages(x => x.Checked("YES").Unchecked("NO")))
+				</div>
+			</li>
+			<li class="list-group-item d-flex justify-content-between align-items-center">
+				<div class="me-auto">
+					<div><label for="swPpeWorkArea5">Neoprene Gloves</label></div>
+				</div>
+				<div class="">
+					@(Html.Kendo().Switch()
+							.Name("swPpeWorkArea5")
+							.Size(ComponentSize.Small)
+							.HtmlAttributes(new { data_elem = "neopreneGloves" })
+							.Messages(x => x.Checked("YES").Unchecked("NO")))
+				</div>
+			</li>
+			<li class="list-group-item d-flex justify-content-between align-items-center">
+				<div class="me-auto">
+					<div><label for="swPpeWorkArea6">Safety Harness</label></div>
+				</div>
+				<div class="">
+					@(Html.Kendo().Switch()
+							.Name("swPpeWorkArea6")
+							.Size(ComponentSize.Small)
+							.HtmlAttributes(new { data_elem = "safetyHarness" })
+							.Messages(x => x.Checked("YES").Unchecked("NO")))
+				</div>
+			</li>
+			<li class="list-group-item d-flex justify-content-between align-items-center">
+				<div class="me-auto">
+					<div><label for="swPpeWorkArea7">Fall Protection</label></div>
+				</div>
+				<div class="">
+					@(Html.Kendo().Switch()
+							.Name("swPpeWorkArea7")
+							.Size(ComponentSize.Small)
+							.HtmlAttributes(new { data_elem = "fallProtection" })
+							.Messages(x => x.Checked("YES").Unchecked("NO")))
+				</div>
+			</li>
+			<li class="list-group-item d-flex justify-content-between align-items-center">
+				<div class="me-auto">
+					<div><label for="swPpeWorkArea8">Safety Shoes</label></div>
+				</div>
+				<div class="">
+					@(Html.Kendo().Switch()
+							.Name("swPpeWorkArea8")
+							.Size(ComponentSize.Small)
+							.HtmlAttributes(new { data_elem = "safetyShoes" })
+							.Messages(x => x.Checked("YES").Unchecked("NO")))
+				</div>
+			</li>
+			<li class="list-group-item d-flex justify-content-between align-items-center">
+				<div class="me-auto">
+					<div><label for="swPpeWorkArea9">Ear Protection</label></div>
+				</div>
+				<div class="">
+					@(Html.Kendo().Switch()
+							.Name("swPpeWorkArea9")
+							.Size(ComponentSize.Small)
+							.HtmlAttributes(new { data_elem = "earProtection" })
+							.Messages(x => x.Checked("YES").Unchecked("NO")))
+				</div>
+			</li>
+			<li class="list-group-item d-flex justify-content-between align-items-center">
+				<div class="me-auto">
+					<div><label for="swPpeWorkArea10">Breathing Protection</label></div>
+				</div>
+				<div class="">
+					@(Html.Kendo().Switch()
+							.Name("swPpeWorkArea10")
+							.Size(ComponentSize.Small)
+							.HtmlAttributes(new { data_elem = "breathingProtection" })
+							.Messages(x => x.Checked("YES").Unchecked("NO")))
+				</div>
+			</li>
+			<li class="list-group-item d-flex justify-content-between align-items-center">
+				<div class="me-auto">
+					<div class="mb-2"><label for="swPpeWorkArea12">Other (please specify)</label></div>
+					@(Html.Kendo().TextBox()
+							.Size(ComponentSize.Medium)
+							.Rounded(Rounded.Large)
+							.FillMode(FillMode.Outline)
+							.Name("tbPpeWorkArea11"))
+				</div>
+				<div class="">
+					@(Html.Kendo().Switch()
+							.Name("swPpeWorkArea11")
+							.Size(ComponentSize.Small)
+							.HtmlAttributes(new { data_elem = "otherPpe" })
+							.Messages(x => x.Checked("YES").Unchecked("NO")))
+				</div>
+			</li>
+		</ul>
+		<hr />
+		<div class="form-group mb-4">
+			<label class="form-label">Any further PPE required to be included in the JHA</label>
+			@(Html.Kendo().TextBox()
+					.Size(ComponentSize.Medium)
+					.Rounded(Rounded.Large)
+					.FillMode(FillMode.Outline)
+					.Name("otherPpeRequiredInJHA"))
+		</div>
+		<hr />
+		<div>
+			<h4>Working Area</h4>
+			<div>
+				<ul class="list-group list-group-flush">
+					<li class="list-group-item d-flex justify-content-between align-items-center">
+						<div class="me-auto">
+							<div><label for="swPpeWorkArea14">Demarcation</label></div>
+						</div>
+						<div class="">
+							@(Html.Kendo().Switch()
+									.Name("swPpeWorkArea12")
+									.Size(ComponentSize.Small)
+									.HtmlAttributes(new { data_elem = "demarcation" })
+									.Messages(x => x.Checked("YES").Unchecked("NO")))
+						</div>
+					</li>
+					<li class="list-group-item d-flex justify-content-between align-items-center">
+						<div class="me-auto">
+							<div><label for="swPpeWorkArea15">Fire Extinguisher</label></div>
+						</div>
+						<div class="">
+							@(Html.Kendo().Switch()
+									.Name("swPpeWorkArea13")
+									.Size(ComponentSize.Small)
+									.HtmlAttributes(new { data_elem = "fireExtinguisher" })
+									.Messages(x => x.Checked("YES").Unchecked("NO")))
+						</div>
+					</li>
+					<li class="list-group-item d-flex justify-content-between align-items-center">
+						<div class="me-auto">
+							<div><label for="swPpeWorkArea16">Warning Signs</label></div>
+						</div>
+						<div class="">
+							@(Html.Kendo().Switch()
+									.Name("swPpeWorkArea14")
+									.Size(ComponentSize.Small)
+									.HtmlAttributes(new { data_elem = "warningSigns" })
+									.Messages(x => x.Checked("YES").Unchecked("NO")))
+						</div>
+					</li>
+					<li class="list-group-item d-flex justify-content-between align-items-center">
+						<div class="me-auto">
+							<div><label for="swPpeWorkArea18">Others (please specify)</label></div>
+							@(Html.Kendo().TextBox()
+									.Size(ComponentSize.Medium)
+									.Rounded(Rounded.Large)
+									.FillMode(FillMode.Outline)
+									.HtmlAttributes(new { @class = "swPpeWorkArea15" })
+									.Name("tbPpeWorkArea15"))
+						</div>
+						<div class="">
+							@(Html.Kendo().Switch()
+									.Name("swPpeWorkArea15")
+									.Size(ComponentSize.Small)
+									.HtmlAttributes(new { data_elem = "otherPpeWorkArea" })
+									.Messages(x => x.Checked("YES").Unchecked("NO")))
+						</div>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>

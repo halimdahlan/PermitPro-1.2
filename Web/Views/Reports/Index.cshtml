@@ -1,0 +1,314 @@
+﻿@using Kendo.Mvc.UI
+@using PermitPro.App.Models.Reports
+
+@{
+	ViewData["Title"] = "Reports";
+	ViewData["SubTitle"] = "Summary";
+
+	var companyId = ViewContext.RouteData.Values["company"] as string;
+}
+
+@model ReportsViewModel
+
+<div>
+	<div class="d-flex flex-row align-items-center mb-2">
+		<div class="me-3 label-width">
+			@(Html.Kendo().RadioButton()
+						.Name("option1")
+						.Checked(true)
+						.HtmlAttributes(new { @name = "filterOption" })
+						.Label("Month/Year")
+						.Events(events => events.Change("onOptionChange"))
+						)
+		</div>
+		<div>
+			@(Html.Kendo().DropDownList()
+						.Name("ddlMonth")
+						.AutoWidth(true)
+						.Size(ComponentSize.Medium)
+						.Rounded(Rounded.Medium)
+						.FillMode(FillMode.Solid)
+						.DataTextField("text")
+						.DataValueField("value")
+						.DataSource(ds => ds
+						.Read(read => read.Action("GetDropdownMonths", "Reports"))
+						)
+						)
+		</div>
+		<div class="ms-2">
+			@(Html.Kendo().DropDownList()
+						.Name("ddlYear")
+						.AutoWidth(true)
+						.Size(ComponentSize.Medium)
+						.Rounded(Rounded.Medium)
+						.FillMode(FillMode.Solid)
+						.DataTextField("text")
+						.DataValueField("value")
+						.DataSource(ds => ds
+						.Read(read => read.Action("GetDropdownYears", "Reports"))
+						)
+						)
+		</div>
+	</div>
+
+	<div class="d-flex flex-row align-items-center mb-2">
+		<div class="me-3 label-width">
+			@(Html.Kendo().RadioButton()
+						.Name("option2")
+						.HtmlAttributes(new { @name = "filterOption" })
+						.Label("Date range")
+						.Events(events => events.Change("onOptionChange"))
+						)
+		</div>
+		<div>
+			@(Html.Kendo().DateRangePicker()
+						.Name("dateRange")
+						.Labels(false)
+						.Format("{0:dd/MM/yyyy}")
+						.DisableDates(DayOfWeek.Saturday, DayOfWeek.Sunday)
+						)
+		</div>
+		<div class="ms-3">
+			<a href="javascript:;" class="clear-range no-loading">Clear</a>
+		</div>
+	</div>
+
+	<div class="d-flex flex-row align-items-center mb-2">
+		<div class="me-3 label-width">Location</div>
+		<div>
+			@(Html.Kendo().DropDownTree()
+						.Name("ddtLocation")
+						.Filter(FilterType.Contains)
+						.DataValueField("id")
+						.DataTextField("name")
+						.Placeholder("(select)")
+						.FillMode(FillMode.Solid)
+						.Rounded(Rounded.Medium)
+						.CheckAll(false)
+						.AutoClose(true)
+						.DataSource(ds => ds
+						.Read(read => read
+						.Url($"/{companyId}/sites/hierarchical").Type(HttpVerbs.Get)
+						)
+						)
+						.HtmlAttributes(new { @style = "width:380px" })
+						)
+		</div>
+	</div>
+
+	<div class="d-flex flex-row align-items-center mb-2">
+		<div class="me-3 label-width">Certificate type</div>
+		<div>
+			@(Html.Kendo().DropDownList()
+						.Name("ddlCertificate")
+						.Size(ComponentSize.Medium)
+						.Rounded(Rounded.Medium)
+						.FillMode(FillMode.Solid)
+						.DataTextField("text")
+						.DataValueField("value")
+						.DataSource(ds => ds
+						.Read(read => read
+						.Action("GetDropdownCertificates", "Reports")
+						)
+						)
+						.HtmlAttributes(new { @style = "width:380px" })
+						)
+		</div>
+	</div>
+
+	<div class="d-flex flex-row align-items-center mb-4">
+		<div class="me-3 label-width">Permit status</div>
+		<div>
+			@(Html.Kendo().DropDownList()
+						.Name("ddlPermitStatus")
+						.Size(ComponentSize.Medium)
+						.Rounded(Rounded.Medium)
+						.FillMode(FillMode.Solid)
+						.DataTextField("text")
+						.DataValueField("value")
+						.DataSource(ds => ds
+						.Read(read => read
+						.Action("GetDropdownPermitStatus", "Reports").Type(HttpVerbs.Get)
+						)
+						)
+						.HtmlAttributes(new { @style = "width:380px" })
+						)
+		</div>
+	</div>
+</div>
+
+<div class="d-flex flex-row align-items-center">
+	<button class="btn btn-primary view-report" type="button"><span class="mx-3">View report</span></button>
+	<div class="ms-3">
+		<a href="javascript:;" class="clear-filter no-loading">Clear filter</a>
+	</div>
+</div>
+
+<hr />
+
+<div class="grid-result">
+	@(
+		Html.Kendo().Grid<ReportGridModel>()
+		.Name("gridResult")
+		.ToolBar(toolbar =>
+		{
+			toolbar.Excel();
+			toolbar.Search();
+		})
+		.Groupable(g =>
+		{
+			g.Enabled(true);
+			g.ShowFooter(true);
+			g.Messages(msg => msg.Empty("No data"));
+		})
+		.NoRecords(f => f.Template("<div class=\"my-3 text-center w-100 text-danger\">No data available at the moment</div>"))
+		.Pageable()
+		.Sortable()
+		.Excel(e =>
+		{
+			e.AllPages(true);
+			e.Filterable(true);
+		})
+		.Columns(c =>
+		{
+			c.Bound(p => p.PermitHolderName)
+			.HideOnGroup(true)
+			.ClientGroupFooterTemplate("Num. of permits: #=count#")
+			.ClientFooterTemplate("Total permits: #=count#")
+			.Width(150);
+			c.Bound(p => p.Location).Width(150);
+			c.Bound(p => p.PermitNo).ClientTemplate($"<a href=\"/{Model.CompanyId}/permits/edit/#= Id #\" class=\"text-info\">#= PermitNo #</a>").Width(150);
+			c.Bound(p => p.PermitStatus).Width(150);
+			c.Bound(p => p.Certificates).Groupable(false).Width(150);
+			c.Bound(p => p.CreatedWhen)
+			.Hidden(true)
+			.ClientGroupHeaderTemplate("DATE: #=kendo.toString(value, 'dd MMM, yyyy')#")
+			.Format("{0:dd MMM, yyyy}")
+			.Width(130);
+		})
+		.DataSource(ds => ds
+		.Custom()
+		.Group(grp =>
+		{
+			grp.AddDescending(f => f.CreatedWhen);
+																//grp.Add(f => f.Location);
+																//grp.Add(f => f.PermitStatus);
+		})
+		.Aggregates(agg =>
+		{
+			agg.Add(g => g.PermitHolderName).Count();
+																	//agg.Add(g => g.Location).Count();
+																	//agg.Add(g => g.PermitStatus).Count();
+		})
+		.Schema(s => s
+		.Model(m =>
+		{
+			m.Id(i => i.Id);
+		})
+		)
+		.Transport(t =>
+		{
+			t.Read(r => r.Action("GetReportGrid", "Reports", Model.GridParamaters).Type(HttpVerbs.Get));
+		})
+		.PageSize(25)
+		)
+		)
+</div>
+@Html.AntiForgeryToken()
+
+@section CustomCss {
+	<link rel="stylesheet" href="~/css/reports.css" />
+}
+
+@section Scripts {
+	<script>
+		var useDateRange = false;
+		var dateRange;
+		var gridResult;
+
+		$(document).ready(() => {
+
+			//$('.k-button[type="button"]').addClass('btn-primary');
+
+			gridResult = $("#gridResult").data("kendoGrid");
+			dateRange = $('#dateRange').data('kendoDateRangePicker');
+			dateRange.enable(false);
+
+			gridResult.dataSource.transport.options.read.beforeSend = (req) => {
+				req.setRequestHeader('RequestVerificationToken', $('input:hidden[name="__RequestVerificationToken"]').val());
+			};
+
+			$('.view-report').click(() => {
+				var ddtLocation = $('#ddtLocation').data('kendoDropDownTree');
+				var ddlCertificate = $('#ddlCertificate').data('kendoDropDownList');
+				var ddlPermitStatus = $('#ddlPermitStatus').data('kendoDropDownList');
+
+				var gridFilter = { logic: 'and', filters: [], };
+
+				if (useDateRange) {
+					var range = dateRange.range();
+
+					gridFilter.filters.push({ field: 'CreatedWhen', operator: 'gte', value: range.start });
+					gridFilter.filters.push({ field: 'CreatedWhen', operator: 'lte', value: range.end });
+				} else {
+					var ddlMonth = $('#ddlMonth').data('kendoDropDownList');
+					var ddlYear = $('#ddlYear').data('kendoDropDownList');
+
+					if (ddlMonth.value() != '') gridFilter.filters.push({ field: 'CreatedMonth', operator: 'eq', value: ddlMonth.value() });
+					if (ddlYear.value() != '') gridFilter.filters.push({ field: 'CreatedYear', operator: 'eq', value: ddlYear.value() });
+				}
+
+				if (ddtLocation.value() != '') gridFilter.filters.push({ field: 'LocationId', operator: 'eq', value: ddtLocation.value() });
+				if (ddlCertificate.value() != '') gridFilter.filters.push({ field: 'Certificates', operator: 'contains', value: ddlCertificate.value() });
+				if (ddlPermitStatus.value() != '') gridFilter.filters.push({ field: 'PermitStatusEnum', operator: 'eq', value: ddlPermitStatus.value() });
+
+				//console.log(gridFilter);
+
+				$('.grid-result').css('display', 'block');
+
+				gridResult.dataSource.filter(gridFilter);
+				//gridResult.dataSource.read();
+			});
+
+
+			$('.clear-range').click(() => {
+				dateRange.range({});
+			});
+
+
+			$('.clear-filter').click(() => {
+				var ddtLocation = $('#ddtLocation').data('kendoDropDownTree');
+				var ddlCertificate = $('#ddlCertificate').data('kendoDropDownList');
+				var ddlPermitStatus = $('#ddlPermitStatus').data('kendoDropDownList');
+				var ddlMonth = $('#ddlMonth').data('kendoDropDownList');
+				var ddlYear = $('#ddlYear').data('kendoDropDownList');
+
+				dateRange.range({});
+				ddtLocation.value('');
+				ddlCertificate.value('');
+				ddlPermitStatus.value('');
+				ddlMonth.value('');
+				ddlYear.value('');
+
+				gridResult.dataSource.filter({});
+			});
+
+		});
+
+
+		const onOptionChange = (e) => {
+			var dateRange = $('#dateRange').data('kendoDateRangePicker');
+			var ddlMonth = $('#ddlMonth').data('kendoDropDownList');
+			var ddlYear = $('#ddlYear').data('kendoDropDownList');
+
+			var option1 = $('#option1').data('kendoRadioButton');
+			var option2 = $('#option2').data('kendoRadioButton');
+
+			ddlMonth.enable(e.sender.element[0].id == 'option1');
+			ddlYear.enable(e.sender.element[0].id == 'option1');
+			dateRange.enable(e.sender.element[0].id == 'option2');
+
+			useDateRange = e.sender.element[0].id == 'option2';
+		}
+	</script>
+}

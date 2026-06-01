@@ -1,0 +1,12 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+.vs/
+IronPdf/
+IronPdf-2023.6/
+[Oo]bj/
+
+.DS_Store
+
+.vscode/

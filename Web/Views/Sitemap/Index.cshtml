@@ -1,0 +1,317 @@
+﻿@using Kendo.Mvc.UI
+
+@model SitemapViewModel
+
+@{
+	ViewData["Title"] = "Site Map";
+	ViewData["SubTitle"] = "Summary";
+
+   var companyId = ViewContext.RouteData.Values["company"] as string;
+}
+
+<div class="mt-3">
+   <div id="map" class="map"></div>
+</div>
+
+<input type="hidden" id="hidCompanyId" value="@companyId" />
+
+@section CustomCss {
+   <link href="~/css/sitemap.css" rel="stylesheet" />
+   <script async src="https://ga.jspm.io/npm:es-module-shims@1.9.0/dist/es-module-shims.js"></script>   
+   <script type="importmap">
+   {
+      "imports": {
+         "three": "https://cdn.jsdelivr.net/npm/three@@0.163.0/build/three.module.js",
+         "three/addons/": "https://cdn.jsdelivr.net/npm/three@@0.163.0/examples/jsm/",
+         "@@googlemaps/three": "https://unpkg.com/@@googlemaps/three/dist/index.esm.js"
+      }
+   }
+   </script>
+}
+
+@section Scripts {
+   <script>
+      (g => { var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window; b = b[c] || (b[c] = {}); var d = b.maps || (b.maps = {}), r = new Set, e = new URLSearchParams, u = () => h || (h = new Promise(async (f, n) => { await (a = m.createElement("script")); e.set("libraries", [...r] + ""); for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]); e.set("callback", c + ".maps." + q); a.src = `https://maps.${c}apis.com/maps/api/js?` + e; d[q] = f; a.onerror = () => h = n(Error(p + " could not load.")); a.nonce = m.querySelector("script[nonce]")?.nonce || ""; m.head.append(a) })); d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n)) })({
+         key: "AIzaSyAvl1p58jpa2Nu_LVYK3gFdezNna4Puk8A",
+         v: "weekly",
+      });
+
+      const mapStyle = {
+         retro: [
+            { elementType: 'geometry', stylers: [{ color: '#ebe3cd' }] },
+            { elementType: 'labels.text.fill', stylers: [{ color: '#523735' }] },
+            { elementType: 'labels.text.stroke', stylers: [{ color: '#f5f1e6' }] },
+            {
+               featureType: 'administrative',
+               elementType: 'geometry.stroke',
+               stylers: [{ color: '#c9b2a6' }],
+            },
+            {
+               featureType: 'administrative.land_parcel',
+               elementType: 'geometry.stroke',
+               stylers: [{ color: '#dcd2be' }],
+            },
+            {
+               featureType: 'administrative.land_parcel',
+               elementType: 'labels.text.fill',
+               stylers: [{ color: '#ae9e90' }],
+            },
+            {
+               featureType: 'landscape.natural',
+               elementType: 'geometry',
+               stylers: [{ color: '#dfd2ae' }],
+            },
+            {
+               featureType: 'poi',
+               elementType: 'geometry',
+               stylers: [{ color: '#dfd2ae' }],
+            },
+            {
+               featureType: 'poi',
+               elementType: 'labels.text.fill',
+               stylers: [{ color: '#93817c' }],
+            },
+            {
+               featureType: 'poi.park',
+               elementType: 'geometry.fill',
+               stylers: [{ color: '#a5b076' }],
+            },
+            {
+               featureType: 'poi.park',
+               elementType: 'labels.text.fill',
+               stylers: [{ color: '#447530' }],
+            },
+            {
+               featureType: 'road',
+               elementType: 'geometry',
+               stylers: [{ color: '#f5f1e6' }],
+            },
+            {
+               featureType: 'road.arterial',
+               elementType: 'geometry',
+               stylers: [{ color: '#fdfcf8' }],
+            },
+            {
+               featureType: 'road.highway',
+               elementType: 'geometry',
+               stylers: [{ color: '#f8c967' }],
+            },
+            {
+               featureType: 'road.highway',
+               elementType: 'geometry.stroke',
+               stylers: [{ color: '#e9bc62' }],
+            },
+            {
+               featureType: 'road.highway.controlled_access',
+               elementType: 'geometry',
+               stylers: [{ color: '#e98d58' }],
+            },
+            {
+               featureType: 'road.highway.controlled_access',
+               elementType: 'geometry.stroke',
+               stylers: [{ color: '#db8555' }],
+            },
+            {
+               featureType: 'road.local',
+               elementType: 'labels.text.fill',
+               stylers: [{ color: '#806b63' }],
+            },
+            {
+               featureType: 'transit.line',
+               elementType: 'geometry',
+               stylers: [{ color: '#dfd2ae' }],
+            },
+            {
+               featureType: 'transit.line',
+               elementType: 'labels.text.fill',
+               stylers: [{ color: '#8f7d77' }],
+            },
+            {
+               featureType: 'transit.line',
+               elementType: 'labels.text.stroke',
+               stylers: [{ color: '#ebe3cd' }],
+            },
+            {
+               featureType: 'transit.station',
+               elementType: 'geometry',
+               stylers: [{ color: '#dfd2ae' }],
+            },
+            {
+               featureType: 'water',
+               elementType: 'geometry.fill',
+               stylers: [{ color: '#b9d3c2' }],
+            },
+            {
+               featureType: 'water',
+               elementType: 'labels.text.fill',
+               stylers: [{ color: '#92998d' }],
+            },
+         ]
+      };
+
+      const toggleHighlight = (markerView, property, map) => {
+         if (markerView.content.classList.contains('highlight')) {
+            markerView.content.classList.remove('highlight');
+            markerView.zIndex = null;
+         } else {
+            markerView.content.classList.add('highlight');
+            markerView.zIndex = 1;
+         }
+
+         map.panTo({
+            lat: property.position.lat,
+            lng: property.position.lng
+         });
+      };
+
+      const buildContent = (site) => {
+         const content = document.createElement('div');
+
+         content.classList.add('site-pin');
+         content.innerHTML = `
+         <div>
+            <i class="fa-duotone fa-user-helmet-safety fa-xl fa-fade"></i>
+         </div>`;
+
+         return content;
+      };
+
+      
+      const buildPermitContentX = (permitTypes) => {
+         var content = '';
+
+         for (const permitType of permitTypes)
+         {
+            content += `
+               <div class="d-flex flex-row mb-2 align-items-center">
+                  <div class="permit-type">
+                     <div class="circle">${permitType.description}</div>
+                  </div>
+                  <div class="permit-count">${permitType.count}</div>
+               </div>`;
+         }
+
+         return content;
+      };
+
+      
+      const buildPermitContent = (site) => {
+         const content = document.createElement('div');
+         let html = '';
+
+         for (const permitType of site.permitTypes)
+         {
+            html += `
+               <div class="d-flex flex-row mb-2 align-items-center">
+                  <div class="permit-type">
+                     <div class="circle">${permitType.description}</div>
+                  </div>
+                  <div class="permit-count">${permitType.activeCount} (<span class="suspend-count">${permitType.suspendedCount}</span>)</div>
+               </div>`;
+         }
+
+         content.classList.add('site-pin');
+         content.innerHTML = html;
+
+         return content;
+      };
+
+      /**
+      * Function to initialize the map
+      */
+      const initMap = async (sites) => {
+         const { Map, InfoWindow } = await google.maps.importLibrary('maps');
+         const { AdvancedMarkerElement } = await google.maps.importLibrary('marker');
+         const center = {
+            lat: @Model.Latitude,
+            lng: @Model.Longitude,
+         };
+
+         const map = new Map(document.getElementById('map'), {
+            disableDefaultUI: true,
+            zoom: 17,
+            center,
+            mapId: 'dd60996d28e89f78',
+            mapTypeId: google.maps.MapTypeId.SATELLITE,
+            mapTypeControl: false,
+            tilt: 0,
+         });
+
+         for (const site of sites) {
+            if (site.permitTypes.length > 0) {
+               const advancedMarkerElement = new AdvancedMarkerElement({
+                  map,
+                  content: buildPermitContent(site),
+                  position: site.position,
+                  title: site.description,
+               });
+            }
+         }
+      };
+
+
+      var url = '/' + $('#hidCompanyId').val() + '/sites/map/locations';
+
+      var ajaxGet = $.ajax({
+         url: url,
+         type: 'GET',
+         dataType: 'json',
+      });
+
+      ajaxGet.done(function (data) {
+         if (data == null) {
+            return;
+         }
+
+         var sites = [];
+
+         data.forEach((site) => {
+            const certificateTypes = [
+               { name: 'hotwork', description: 'HOT WORK', icon: 'HW', activeCount: 0, suspendedCount: 0, },
+               { name: 'confinedspace', description: 'CONFINED SPACE', icon: 'CS', activeCount: 0, suspendedCount: 0, },
+               { name: 'radiation', description: 'RADIATION', icon: 'RA', activeCount: 0, suspendedCount: 0, },
+               { name: 'excavation', description: 'EXCAVATION', icon: 'EX', activeCount: 0, suspendedCount: 0, },
+               { name: 'isolation', description: 'ISOLATION', icon: 'IS', activeCount: 0, suspendedCount: 0, },
+               { name: 'methodStatement', description: 'METHOD STATEMENT', icon: 'MS', activeCount: 0, suspendedCount: 0, },
+               { name: 'liftingHoisting', description: 'LIFTING & HOISTING', icon: 'LH', activeCount: 0, suspendedCount: 0, },
+               { name: 'override', description: 'OVERRIDE', icon: 'OV', activeCount: 0, suspendedCount: 0, },
+            ];
+
+            site.permits.forEach((permit) => {
+               var permitFormJson = JSON.parse(permit.permitForm);
+
+               if (permitFormJson != null) {
+                  permitFormJson.general.certificates.forEach((cert) => {
+                     certificateTypes.forEach((certType) => {
+                        if (certType.name == cert.name) {
+                           if (permit.permitStatus != 0 && permit.permitStatus != 4 && permit.permitStatus != 5 && permit.permitStatus != 6) {
+                              certType.activeCount++;
+                           }
+
+                           if (permit.permitStatus == 4) {
+                              certType.suspendedCount++;
+                           }
+                        }
+                     });
+                  });
+               }
+            });
+
+            const filteredPermits = certificateTypes.filter((cert) => cert.activeCount > 0);
+            site.permitTypes = filteredPermits;
+
+            sites.push({
+               name: site.name,
+               description: '',
+               position: {
+                  lat: site.latitude,
+                  lng: site.longitude,
+               },
+               permitTypes: site.permitTypes,
+            });
+         });
+
+         initMap(sites);
+      });
+   </script>
+}

@@ -1,0 +1,289 @@
+﻿@using Kendo.Mvc.UI
+@using PermitPro.App.Models.Charts
+
+@{
+	ViewData["Title"] = "Dashboard";
+	ViewData["SubTitle"] = "Summary";
+}
+
+@model DashboardViewModel
+
+<div class="d-flex flex-column flex-md-row align-items-center justify-content-evenly">
+	<div class="w-100 me-0 me-md-3">
+		<div class="card border shadow-sm">
+			<div class="card-body">
+				<div class="d-flex flex-row align-items-start mb-3">
+					<div class="me-3">
+						<i class="fa-sharp fa-solid fa-address-card fa-fw text-primary" style="font-size:3em;"></i>
+					</div>
+					<div class="pt-1 w-100">
+						<h3 class="mb-0 text-primary">Total Active Permits</h3>
+					</div>
+				</div>
+				<div class="summary-info-card-total text-primary text-center fw-bold">@Model.TotalActive</div>
+			</div>
+		</div>
+	</div>
+	<div class="w-100 ms-0 me-0 ms-md-3 me-md-3">
+		<div class="card border shadow-sm">
+			<div class="card-body">
+				<div class="d-flex flex-row align-items-start mb-3">
+					<div class="me-3">
+						<i class="fa-sharp fa-solid fa-address-card fa-fw text-warning" style="font-size:3em;"></i>
+					</div>
+					<div class="pt-1 w-100">
+						<h3 class="mb-0 text-warning">Total Pending Permits</h3>
+					</div>
+				</div>
+				<div class="summary-info-card-total text-warning text-center fw-bold">@Model.TotalPending</div>
+			</div>
+		</div>
+	</div>
+	<div class="w-100 ms-0 me-0 ms-md-3 me-md-3">
+		<div class="card border shadow-sm">
+			<div class="card-body">
+				<div class="d-flex flex-row align-items-start mb-3">
+					<div class="me-3">
+						<i class="fa-sharp fa-solid fa-address-card fa-fw text-success" style="font-size:3em;"></i>
+					</div>
+					<div class="pt-1 w-100">
+						<h3 class="mb-0 text-success">Total Approved Permits</h3>
+					</div>
+				</div>
+				<div class="summary-info-card-total text-success text-center fw-bold">@Model.TotalApproved</div>
+			</div>
+		</div>
+	</div>
+	<div class="w-100 ms-0 me-0 ms-md-3 me-md-3">
+		<div class="card border shadow-sm">
+			<div class="card-body">
+				<div class="d-flex flex-row align-items-start mb-3">
+					<div class="me-3">
+						<i class="fa-sharp fa-solid fa-address-card fa-fw text-info" style="font-size:3em;"></i>
+					</div>
+					<div class="pt-1 w-100">
+						<h3 class="mb-0 text-info">Total Closed Permits</h3>
+					</div>
+				</div>
+				<div class="summary-info-card-total text-info text-center fw-bold">@Model.TotalClosed</div>
+			</div>
+		</div>
+	</div>
+	<div class="w-100 ms-0 ms-md-3">
+		<div class="card border shadow-sm">
+			<div class="card-body">
+				<div class="d-flex flex-row align-items-start mb-3">
+					<div class="me-3">
+						<i class="fa-sharp fa-solid fa-address-card fa-fw text-danger" style="font-size:3em;"></i>
+					</div>
+					<div class="pt-1 w-100">
+						<h3 class="mb-0 text-danger">Total Rejected Permits</h3>
+					</div>
+				</div>
+				<div class="summary-info-card-total text-danger text-center fw-bold">@Model.TotalRejected</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div>
+	<div class="card border shadow-sm">
+		<div class="card-body">
+			<div class="mb-3 d-flex flex-column flex-md-row align-items-center">
+				<div class="me-3">Filter by date range</div>
+				<div class="me-3">
+					@(Html.Kendo().DateRangePicker()
+						.Name("dateRange")
+						.Size(ComponentSize.Small)
+						.Labels(false)
+						.Format("{0:dd/MM/yyyy}")
+					)
+				</div>
+				<div class="d-flex flex-row align-items-center">
+					<button type="button" class="btn btn-primary btn-sm btn-filter"><span class="mx-3">Apply</span></button>
+					<div class="ms-3">
+						<a href="javascript:;" class="lnk-clear no-loading">Clear</a>
+					</div>
+				</div>
+			</div>
+			<div class="d-flex flex-column flex-md-row">
+				<div class="me-0 me-md-3 donut-chart donut-chart-md">
+					<div class="card border shadow-sm mb-0">
+						<div class="card-body">
+							<h3 class="mb-0">Total Permits By Status</h3>
+							<div class="fs-5 mb-4 text-secondary chart-subtitle"></div>
+							@(Html.Kendo().Chart()
+								.Name("donutChart1")
+								.ChartArea(chartArea => chartArea.Background("transparent"))
+								.Legend(legend => legend
+									.Visible(true)
+									.Position(ChartLegendPosition.Bottom)
+								)
+								.SeriesDefaults(series => series.Donut().StartAngle(150))
+								.DataSource(ds => ds.Read(read => read.Url("/" + Model.CompanyId + "/dashboard/charts/donut/permit/status").Type(HttpVerbs.Get)))
+								.Series(series =>
+								{
+									series.Donut("Value", "Category")
+										.ColorField("Color")
+										.Labels(labels => labels
+										.Visible(false)
+										.Position(ChartSeriesLabelsPosition.OutsideEnd)
+										.Template("#= category # (#= dataItem.Count #)\n#= value#%")
+										.Background("transparent")
+									);
+								})
+								.Tooltip(tooltip => tooltip.Visible(true).Template("#= category #: #= value #%"))
+								.Events(ev => ev.SeriesClick("onDonutSeriesClick"))
+							)
+						</div>
+					</div>
+				</div>
+				<div class="w-100 ms-0 ms-md-3">
+					<div class="card border shadow-sm mb-0">
+						<div class="card-body">
+							<h3 class="mb-0">Total Permits By Location</h3>
+							<div class="fs-5 mb-3 text-secondary chart-subtitle"></div>
+							<div class="d-flex flex-column flex-md-row justify-content-evenly">
+								<div class="w-100 me-0 me-md-3 mt-3">
+									@(Html.Kendo().Chart<BarChartModel>()
+										.Name("barChart1")
+										.Legend(legend => legend.Position(ChartLegendPosition.Bottom))
+										.DataSource(ds => ds.Read(read => read.Url("/" + Model.CompanyId + "/dashboard/charts/bar/permit/location").Type(HttpVerbs.Get)))
+										.Series(series =>
+										{
+											series.Column(model => model.TotalActive).Name("Active").CategoryField("Category").Color("#2c7be5");
+											series.Column(model => model.TotalPending).Name("Pending").CategoryField("Category").Color("#f6c343");
+											series.Column(model => model.TotalClosed).Name("Closed").CategoryField("Category").Color("#39afd1");
+										})
+										.CategoryAxis(axis => axis
+											.Labels(labels => labels.Rotation(-90))
+											.MajorGridLines(lines => lines.Visible(false))
+										)
+										.ValueAxis(axis => axis
+											.Numeric()
+											.Labels(labels => labels.Format("{0:N0}"))
+											.Line(line => line.Visible(false))
+											.MajorUnit(2)
+											.MinorUnit(0.5)
+										)
+										.Tooltip(tooltip => tooltip
+											.Visible(true)
+											.Format("{0:N0}")
+										)
+										.Events(ev => ev.SeriesClick("onBarSeriesClick"))
+									)
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section CustomCss {
+	<link rel="stylesheet" href="~/css/dashboard.css" />
+}
+
+@section Scripts {
+	<script>
+		var donutChart, barChart;
+		var dateRange;
+
+		window.onresize = (e) => {
+			donutChart = $('#donutChart1').data('kendoChart');
+			barChart = $('#barChart1').data('kendoChart');
+
+			donutChart.redraw();
+			barChart.redraw();
+		};
+
+		$(document).ready(() => {
+
+			dateRange = $('#dateRange').data('kendoDateRangePicker');
+			donutChart = $('#donutChart1').data('kendoChart');
+			barChart = $('#barChart1').data('kendoChart');
+
+			$('.btn-filter').click(() => {
+				var range = dateRange.range();
+
+				if (range != null) {
+					var startDate = moment(range.start);
+					var endDate = moment(range.end);
+
+					$('.chart-subtitle').html('From ' + startDate.format('Do MMM YYYY') + ' - ' + endDate.format('Do MMM YYYY'));
+
+					var urlDonut = '/@Model.CompanyId/dashboard/charts/donut/permit/status?sort=&group=&filter=&startDate=' + startDate.format('YYYY-MM-DD') + '&endDate=' + endDate.format('YYYY-MM-DD');
+					var urlBar = '/@Model.CompanyId/dashboard/charts/bar/permit/location?sort=&group=&filter=&startDate=' + startDate.format('YYYY-MM-DD') + '&endDate=' + endDate.format('YYYY-MM-DD');
+
+					var dsDonut = new kendo.data.DataSource({
+						transport: {
+							read: {
+								url: urlDonut,
+							}
+						}
+					});
+
+					var dsBar = new kendo.data.DataSource({
+						transport: {
+							read: {
+								url: urlBar,
+							}
+						}
+					});
+
+					donutChart.setDataSource(dsDonut);
+					barChart.setDataSource(dsBar);
+				}
+			});
+
+
+			$('.lnk-clear').click(() => {
+				dateRange.range({});
+
+				$('.chart-subtitle').html('');
+
+				var urlDonut = '/@Model.CompanyId/dashboard/charts/donut/permit/status?sort=&group=&filter=';
+				var urlBar = '/@Model.CompanyId/dashboard/charts/bar/permit/location?sort=&group=&filter=';
+
+				var dsDonut = new kendo.data.DataSource({
+					transport: {
+						read: {
+							url: urlDonut,
+						}
+					}
+				});
+
+				var dsBar = new kendo.data.DataSource({
+					transport: {
+						read: {
+							url: urlBar,
+						}
+					}
+				});
+
+				donutChart.setDataSource(dsDonut);
+				barChart.setDataSource(dsBar);
+			});
+
+		});
+
+
+		const onDonutSeriesClick = (e) => {
+			filterGrid('Status', e.category);
+		};
+
+
+		const onBarSeriesClick = (e) => {
+			filterGrid('Location', e.category);
+		};
+
+
+		const filterGrid = (field, value) => {
+			$('.loading').show();
+			document.location.href = '/@Model.CompanyId/permits?field=' + field + '&filter=' + value;
+		};
+
+	</script>
+}

@@ -1,0 +1,72 @@
+﻿@{
+	Layout = "_LayoutAnon";
+	ViewData["Title"] = "User Login";
+}
+
+@model SignInViewModel
+
+<div class="d-flex flex-row justify-content-center mt-5">
+	<div class="flex-grow-1 pt-5" style="max-width: 400px;">
+		<div class="d-flex flex-column align-items-center">
+			<div style="margin-bottom: 60px;">
+				<div class="app-logo text-center">
+					<img src="~/img/app-logo.jpg" />
+					<!--<i class="fa-duotone fa-user-helmet-safety fa-2xl"></i>-->
+				</div>
+				<div class="app-name mt-3 text-secondary">
+					PermitPRO
+				</div>
+			</div>
+			<h1 class="mb-3">Sign In</h1>
+			<p class="text-secondary">Sign in to access PermitPRO</p>
+		</div>
+		<div class="mt-3">
+			<form method="post" asp-controller="account" asp-action="login">
+				<div class="mb-3">
+					<label asp-for="CompanyId" class="form-label">@Html.DisplayNameFor(f => f.CompanyId)</label>
+					<select class="form-control form-select" required asp-for="CompanyId" asp-items="@(new SelectList(ViewBag.CompanyList, "Id", "Name"))"></select>
+				</div>
+				<div class="mb-3">
+					<label asp-for="Email" class="form-label">@Html.DisplayNameFor(f => f.Email)</label>
+					<input asp-for="Email" class="form-control" required />
+					<span asp-validation-for="Email" class="text-danger"></span>
+				</div>
+				<div class="mb-3">
+					<label asp-for="Password" class="form-label">@Html.DisplayNameFor(f => f.Password)</label>
+					<input asp-for="Password" class="form-control" required />
+					<span asp-validation-for="Password" class="text-danger"></span>
+				</div>
+				<div class="mb-3">
+					<input class="form-check-input" asp-for="RememberMe" />
+					<label class="form-label" asp-for="RememberMe">@Html.DisplayNameFor(m => m.RememberMe)</label>
+				</div>
+				<div class="mb-3">
+					<button id="btnSubmit" type="submit" class="btn btn-primary w-100">Sign in</button>
+				</div>
+				<div class="d-flex flex-row align-items-center justify-content-center">
+					@Html.ValidationSummary(false, "", new { @class = "text-danger" })
+				</div>
+				<input type="hidden" asp-for="Token" />
+				<input type="hidden" asp-for="ReturnUrl" />
+				<input type="hidden" asp-for="Entity" />
+				<input type="hidden" asp-for="EntityId" />
+				<input type="hidden" asp-for="Origin" />
+			</form>
+
+			<div class="text-center">
+				Forgot your password? Click <a href="~/account/forgot">here</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section CustomCss {
+	<link rel="stylesheet" href="~/css/login.css" />
+}
+
+@section Scripts {
+	<script>
+		$(document).ready(() => {
+		});
+	</script>
+}

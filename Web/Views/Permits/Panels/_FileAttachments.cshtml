@@ -1,0 +1,47 @@
+﻿@using Kendo.Mvc.UI
+
+@model EditPermitViewModel
+
+<h2 class="accordion-header">
+	<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse8" aria-expanded="false" aria-controls="collapse8">
+		<h3 class="mb-0">File Attachments</h3>
+	</button>
+</h2>
+<div id="collapse8" class="accordion-collapse collapse" data-bs-parent="#accordionPermit" data-panel-name="fileAttachments">
+	<div class="accordion-body" style="position: relative;">
+		<div>
+			<div>
+				@(Html.Kendo().Upload()
+					.Name("files")
+					.Enable(Model.PermitStatus == PermitPro.Core.Enums.PermitStatusEnum.Draft)
+					.Multiple(true)
+					.Validation(validation => validation
+						.AllowedExtensions(Model.UploadAllowedFileTypes)
+						.MaxFileSize(Model.UploadFileSizeLimit)
+					)
+					.Events(events => events
+						.Remove("onUploadRemove")
+					)
+				)
+			</div>
+			<div>
+				<small>Allowed file types: @(string.Join(", ", Model.UploadAllowedFileTypes).ToUpper())</small>
+			</div>
+		</div>
+		<div class="mt-4" style="position: relative;">
+			<div class="attachment-list-loading">
+				<i class="fa-solid fa-loader fa-spin fa-2xl" style="font-size: 36pt;"></i>
+			</div>
+			<table id="tblFiles" class="table table-striped display" style="width: 100%;">
+				<thead>
+					<tr>
+						<th scope="col" style="width: unset !important;">File Name</th>
+						<th scope="col" style="width: 90px;">Size (kB)</th>
+						<th scope="col" style="width: 120px;">Date Uploaded</th>
+						<th scope="col" style="width: 30px;">&nbsp;</th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+	</div>
+</div>

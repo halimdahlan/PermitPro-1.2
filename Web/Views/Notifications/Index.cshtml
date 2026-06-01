@@ -1,0 +1,214 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+	ViewData["Title"] = "Notifications";
+	ViewData["SubTitle"] = "Summary";
+
+	var companyId = ViewContext.RouteData.Values["company"] as string;
+}
+
+@model IEnumerable<NotificationViewModel>
+
+<div class="notifications-main">
+	<div class="list-group shadown-sm">
+		<div class="list-group-item bg-info d-flex flex-row justify-content-between align-items-center">
+			<h3 class="mb-0 text-white">UNREAD</h3>
+			<div class="align-self-end">
+				<label class="form-label me-2 text-white">Select all</label>
+				@(Html.Kendo().CheckBox()
+								.Name("chkAll")
+								.Size(ComponentSize.Large)
+								.Events(e => e.Change("onCheckAllChange"))
+								.Rounded(BasicRounded.Medium))
+			</div>
+		</div>
+
+		@if (Model.Count() == 0)
+		{
+			<div class="list-group-item text-center">
+				No notification at the moment
+			</div>
+		}
+
+		@foreach (var item in Model)
+		{
+			<div class="list-group-item item-@item.Id">
+				<div class="d-flex w-100 flex-row justify-content-between">
+					<div>
+						@if (item.Url != string.Empty)
+						{
+							if (!item.IsRead)
+							{
+								<a href="@item.Url" onclick="markAsRead('@item.Id')"><strong>@item.Message</strong></a>
+							}
+							else
+							{
+								<a href="@item.Url" onclick="markAsRead('@item.Id')">@item.Message</a>
+							}
+						}
+						else
+						{
+							if (!item.IsRead)
+							{
+								<strong>@item.Message</strong>
+							}
+							else
+							{
+								@item.Message
+							}
+						}
+					</div>
+					<div>
+						@(Html.Kendo().CheckBox()
+												.Name("chk" + item.Id)
+												.Size(ComponentSize.Large)
+												.HtmlAttributes(new { @data_id = item.Id })
+												.Events(e => e.Change("onCheckChange"))
+												.Rounded(BasicRounded.Medium))
+					</div>
+				</div>
+				<div class="fs-4 text-secondary">@item.CreatedWhen</div>
+			</div>
+		}
+
+	</div>
+
+	<div class="mark-as-read mt-4" style="display:none;">
+		<button class="btn btn-primary btn-mark-as-read"><span class="mx-3">Mark selected as read <i class="fa-regular fa-check-to-slot fa-lg ms-3"></i></span></button>
+	</div>
+
+</div>
+
+@section CustomCss {
+	<link rel="stylesheet" href="~/css/notifications.css" />
+}
+
+@section Scripts {
+	<script>
+		var checkBoxIds = '@string.Join(";", Model.Select(e => e.Id).ToList())';
+		var arrayIds = checkBoxIds != '' ? checkBoxIds.split(';') : null;
+		var n = 0;
+		var selectedIds = [];
+
+		$(document).ready(() => {
+
+			$('.btn-mark-as-read').click(() => {
+				if (selectedIds.length > 0) {
+					$('.loading').show();
+
+					const postData = {
+						selected: selectedIds.join(';'),
+					};
+
+					const xhr = $.ajax({
+						url: '/@companyId/notifications/read',
+						method: 'PUT',
+						data: JSON.stringify(postData),
+						contentType: 'application/json; charset=utf-8',
+						dataType: 'json',
+					});
+
+					xhr.done((response, status) => {
+						if (response.data == 'OK') {
+							var tmp = response.markedItems.split(';');
+
+							tmp.forEach((item, index) => {
+								$('.item-' + item).remove();
+							});
+
+							$('.mark-as-read').hide();
+						}
+					});
+
+					xhr.fail((response, status) => {
+					});
+
+					xhr.always(() => {
+						$('.loading').hide();
+					});
+				}
+			});
+
+		});
+
+
+		const onCheckAllChange = (e) => {
+			if (arrayIds != null) {
+				arrayIds.forEach((item, index) => {
+					$('#chk' + item).data('kendoCheckBox').value(e.sender.value());
+				});
+			}
+
+			if (e.sender.value()) {
+				$('.mark-as-read').show();
+			} else {
+				$('.mark-as-read').hide();
+			}
+		};
+
+
+		const onCheckChange = (e) => {
+			var elemId = $(e.sender.element).data('id');
+			var foundIndex = -1;
+
+			selectedIds.forEach((item, index) => {
+				if (item == elemId) foundIndex = index;
+			});
+
+			if (e.sender.value()) {
+				n++;
+
+				if (foundIndex < 0) {
+					selectedIds.push(elemId);
+				}
+			} else {
+				n--;
+
+				if (foundIndex > -1) selectedIds.splice(foundIndex, 1);
+			}
+
+			if (n < 1) {
+				$('.mark-as-read').hide();
+			} else {
+				$('.mark-as-read').show();
+			}
+		};
+
+
+		const markAsRead = (id) => {
+			$('.loading').show();
+
+			const postData = {
+				selected: id,
+			};
+
+			const xhr = $.ajax({
+				url: '/@companyId/notifications/read',
+				method: 'PUT',
+				data: JSON.stringify(postData),
+				contentType: 'application/json; charset=utf-8',
+				dataType: 'json',
+			});
+
+			xhr.done((response, status) => {
+				if (response.data == 'OK') {
+					var tmp = response.markedItems.split(';');
+
+					tmp.forEach((item, index) => {
+						$('.item-' + item).remove();
+					});
+
+					$('.mark-as-read').hide();
+				}
+			});
+
+			xhr.fail((response, status) => {
+			});
+
+			xhr.always(() => {
+				$('.loading').hide();
+			});
+		};
+
+	</script>
+}

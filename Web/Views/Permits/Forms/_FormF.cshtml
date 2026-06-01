@@ -1,0 +1,318 @@
+﻿@using Kendo.Mvc.UI
+
+<div class="modal fade" id="dlgFormF" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="dlgFormFLabel" aria-hidden="true">
+	<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+		<div class="modal-content">
+			<div class="modal-header bg-primary-soft">
+				<div class="modal-title" id="dlgFormFLabel">
+					<div class="d-flex flex-row align-items-center">
+						<!--div-- class="avatar">
+							<span class="avatar-title rounded-circle bg-info" style="font-size: 22.75px !important; font-weight: 700 !important;">F</span>
+						</!--div-->
+						<img title="(F) METHOD STATEMENT" src="/img/icons/certs/methodstatement.png" style="width:40px;height:40px;" />
+						<span class="ms-3 dialog-title">METHOD STATEMENT</span>
+					</div>
+				</div>
+				<a href="" class="text-dark no-loading" data-bs-dismiss="modal" aria-label="Close"><i class="fa-sharp fa-solid fa-xmark fa-xl"></i></a>
+			</div>
+			<div class="modal-body">
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">DESCRIPTION OF WORKS</h3>
+				</div>
+				<div class="mb-3">
+					@(Html.Kendo()
+						.TextArea()
+						.Name("workDescription-1")
+						.Label(x => x.Content("What the work involve?"))
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline)
+						.Rows(2))
+				</div>
+				<div class="mb-3">
+					@(Html.Kendo()
+						.TextArea()
+						.Name("workDescription-2")
+						.Label(x => x.Content("How is it going to be completed? Summarise the operation"))
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline)
+						.Rows(2))
+				</div>
+				<div class="mb-3">
+					@(Html.Kendo()
+						.TextArea()
+						.Name("workDescription-3")
+						.Label(x => x.Content("Where is the work going to be completed? (Summary - more details on 5ection 5)"))
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline)
+						.Rows(2))
+				</div>
+				<div class="mb-3">
+					@(Html.Kendo()
+						.TextArea()
+						.Name("workDescription-4")
+						.Label(x => x.Content("Duration of the work? (Stating any times when access to the Terminal will not be required)"))
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline)
+						.Rows(2))
+				</div>
+				<div class="mb-3">
+					@(Html.Kendo()
+						.TextArea()
+						.Name("workDescription-5")
+						.Label(x => x.Content("lnclude site location drawings if appropriate?"))
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline)
+						.Rows(2))
+				</div>
+				<div class="mb-3">
+					@(Html.Kendo()
+						.TextArea()
+						.Name("workDescription-6")
+						.Label(x => x.Content("Are there any restrictions e.g. overhead power lines?"))
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline)
+						.Rows(2))
+				</div>
+				<div class="mb-3">
+					@(Html.Kendo()
+						.TextArea()
+						.Name("workDescription-7")
+						.Label(x => x.Content("Are local permits required (Local regulations)?"))
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline)
+						.Rows(2))
+				</div>
+				<div class="mb-4">
+					@(Html.Kendo()
+						.TextArea()
+						.Name("workDescription-8")
+						.Label(x => x.Content("Any other details"))
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline)
+						.Rows(2))
+				</div>
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">NAMES OF RESPONSIBLE PERSONS</h3>
+				</div>
+				<div class="mb-3">
+					@(Html.Kendo()
+						.TextBox()
+						.Name("names-1")
+						.Label(x => x.Content("Who is going to be working on the project?"))
+						.Size(ComponentSize.Medium)
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline))
+				</div>
+				<div class="mb-3">
+					@(Html.Kendo()
+						.TextBox()
+						.Name("names-2")
+						.Label(x => x.Content("Who will be in charge?"))
+						.Size(ComponentSize.Medium)
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline))
+				</div>
+				<div class="mb-3">
+					@(Html.Kendo()
+						.TextBox()
+						.Name("names-3")
+						.Label(x => x.Content("Who has specific responsibilities? e.g. Plant, personnel, materials, etc."))
+						.Size(ComponentSize.Medium)
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline))
+				</div>
+				<div class="mb-3">
+					@(Html.Kendo()
+						.TextBox()
+						.Name("names-4")
+						.Label(x => x.Content("Who is to make contact with local authorities?"))
+						.Size(ComponentSize.Medium)
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline))
+				</div>
+				<div class="mb-4">
+					@(Html.Kendo()
+						.TextBox()
+						.Name("names-5")
+						.Label(x => x.Content("Any other details"))
+						.Size(ComponentSize.Medium)
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline))
+				</div>
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">PLANT AND EQUIPMENT</h3>
+				</div>
+				<div class="mb-3">
+					@(Html.Kendo()
+						.TextBox()
+						.Name("plantEquip-1")
+						.Label(x => x.Content("What plant equipment and tools are required to do the job?"))
+						.Size(ComponentSize.Medium)
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline))
+				</div>
+				<div class="mb-3">
+					<div class="mb-2">Who will be in charge?</div>
+					<div class="ms-3 mb-3">
+						@(Html.Kendo()
+							.TextBox()
+							.Name("plantEquip-2")
+							.Label(x => x.Content("Tools (for cold work)"))
+							.Size(ComponentSize.Medium)
+							.Rounded(Rounded.Large)
+							.FillMode(FillMode.Outline))
+					</div>
+					<div class="ms-3 mb-3">
+						@(Html.Kendo()
+							.TextBox()
+							.Name("plantEquip-3")
+							.Label(x => x.Content("Tools (that may generate sparks, ignitions sources, etc.)"))
+							.Size(ComponentSize.Medium)
+							.Rounded(Rounded.Large)
+							.FillMode(FillMode.Outline))
+					</div>
+					<div class="ms-3 mb-3">
+						@(Html.Kendo()
+							.TextBox()
+							.Name("plantEquip-4")
+							.Label(x => x.Content("Cherry pickers"))
+							.Size(ComponentSize.Medium)
+							.Rounded(Rounded.Large)
+							.FillMode(FillMode.Outline))
+					</div>
+					<div class="ms-3 mb-3">
+						@(Html.Kendo()
+							.TextBox()
+							.Name("plantEquip-5")
+							.Label(x => x.Content("Scaffolding"))
+							.Size(ComponentSize.Medium)
+							.Rounded(Rounded.Large)
+							.FillMode(FillMode.Outline))
+					</div>
+					<div class="ms-3 mb-3">
+						@(Html.Kendo()
+							.TextBox()
+							.Name("plantEquip-6")
+							.Label(x => x.Content("Loading of materials"))
+							.Size(ComponentSize.Medium)
+							.Rounded(Rounded.Large)
+							.FillMode(FillMode.Outline))
+					</div>
+					<div class="ms-3 mb-3">
+						@(Html.Kendo()
+							.TextBox()
+							.Name("plantEquip-7")
+							.Label(x => x.Content("Others, please specify"))
+							.Size(ComponentSize.Medium)
+							.Rounded(Rounded.Large)
+							.FillMode(FillMode.Outline))
+					</div>
+				</div>
+				<div class="mb-3">
+					@(Html.Kendo()
+						.TextBox()
+						.Name("plantEquip-8")
+						.Label(x => x.Content("What certificates, if any, are required for plant or equiprnent?"))
+						.Size(ComponentSize.Medium)
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline))
+				</div>
+				<div class="mb-4">
+					@(Html.Kendo()
+						.TextBox()
+						.Name("plantEquip-9")
+						.Label(x => x.Content("What training, if any, is required for operatives?"))
+						.Size(ComponentSize.Medium)
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline))
+				</div>
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">COMMUNICATIONS WITH WORKFORCE</h3>
+				</div>
+				<div class="mb-3">
+					@(Html.Kendo()
+						.TextBox()
+						.Name("comms-1")
+						.Label(x => x.Content("How are the procedures, hazards to be communicates to the workforce?"))
+						.Size(ComponentSize.Medium)
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline))
+				</div>
+				<div class="mb-3">
+					@(Html.Kendo()
+						.TextBox()
+						.Name("comms-2")
+						.Label(x => x.Content("Toolbox talks, safety meetings etc."))
+						.Size(ComponentSize.Medium)
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline))
+				</div>
+				<div class="mb-3">
+					@(Html.Kendo()
+						.TextBox()
+						.Name("comms-3")
+						.Label(x => x.Content("lnclude records of any such meetings and record attendance"))
+						.Size(ComponentSize.Medium)
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline))
+				</div>
+				<div class="mb-4">
+					@(Html.Kendo()
+						.TextBox()
+						.Name("comms-4")
+						.Label(x => x.Content("Others, please specify"))
+						.Size(ComponentSize.Medium)
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline))
+				</div>
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">HOW WILL THE WORK BE COMPLETED (PROCEDURE STEP-BY-STEP)</h3>
+				</div>
+				<div class="mb-3 d-flex flex-row justify-content-evenly">
+					<div class="me-3 w-100">
+						@(Html.Kendo()
+							.DateTimePicker()
+							.Name("workCompleted-1")
+							.Label(x => x.Content("Proposed start date"))
+							.Format("{0:dd/MM/yyyy hh:mm tt}")
+							.Min(DateTime.Today)
+							.Size(ComponentSize.Medium)
+							.Rounded(Rounded.Large)
+							.FillMode(FillMode.Outline)
+							.AdaptiveMode(AdaptiveMode.Auto)
+							.ComponentType("modern")
+							.DateInput())
+					</div>
+					<div class="ms-3 w-100">
+						@(Html.Kendo()
+							.DateTimePicker()
+							.Name("workCompleted-2")
+							.Label(x => x.Content("Finish date"))
+							.Format("{0:dd/MM/yyyy hh:mm tt}")
+							.Min(DateTime.Today)
+							.Size(ComponentSize.Medium)
+							.Rounded(Rounded.Large)
+							.FillMode(FillMode.Outline)
+							.AdaptiveMode(AdaptiveMode.Auto)
+							.ComponentType("modern")
+							.DateInput())
+					</div>
+				</div>
+				<div class="mb-3">
+					@(Html.Kendo()
+						.TextArea()
+						.Name("workCompleted-3")
+						.Label(x => x.Content("Details"))
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline)
+						.Rows(15))
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-primary" id="btnSaveFormF" data-bs-dismiss="modal">Save changes</button>
+			</div>
+		</div>
+	</div>
+</div>
+

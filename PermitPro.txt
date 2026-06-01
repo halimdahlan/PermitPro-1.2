@@ -1,0 +1,17 @@
+Database
+========
+Db name    : ePermit
+Db Username: tv_epermit
+Db Password: 4&S4ur3k6PhobEdE
+
+PermitPro
+=========
+User: halim.dahlan@outlook.com
+Password: refED4ev&sTL
+
+Web Deploy
+Password: Nlgec#0HitudreNE
+
+SendGrid
+admin@permitpro.app
+0icln9pu9r*tr2sP

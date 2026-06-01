@@ -1,0 +1,61 @@
+﻿@{
+	var currentRoute = ViewContext.RouteData.Values["controller"] as string;
+	var action = ViewContext.RouteData.Values["action"] as string;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="description" content="PermitPro" />
+
+	<link rel="apple-touch-icon" sizes="180x180" href="~/img/icons/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="~/img/icons/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="~/img/icons/favicon-16x16.png">
+	<link rel="manifest" href="~/img/icons/site.webmanifest">
+
+	<!-- Favicon -->
+	<link rel="shortcut icon" href="~/img/icons/favicon.ico" type="image/x-icon" />
+
+	<!-- FontAwesome -->
+	<link href="~/lib/fontawesome/css/all.min.css" rel="stylesheet">
+
+	<!-- Theme CSS -->
+	<link rel="stylesheet" href="~/themes/dashkit/css/libs.bundle.css" />
+	<link rel="stylesheet" href="~/themes/dashkit/css/theme.bundle.css" />
+
+	<link rel="stylesheet" href="~/css/site.css" />
+	<link rel="stylesheet" href="~/fonts/roboto.css" />
+
+	<script src="~/lib/jquery/jquery.min.js"></script>
+
+	<!-- Title -->
+	<title>PermitPro / @ViewData["Title"]</title>
+
+	@await RenderSectionAsync("CustomCss", required: false)
+</head>
+<body style="min-height:unset;">
+	<div class="loading">
+		<div class="loading-icon">
+			<div class="fa-3x">
+				<i class="fa-duotone fa-loader fa-spin" style="font-size:3rem !important;"></i>
+			</div>
+		</div>
+	</div>
+	<div class="container" style="">
+		@RenderBody()
+	</div>
+
+	<!-- JAVASCRIPT -->
+	<!-- Vendor JS -->
+	<script src="~/themes/dashkit/js/vendor.bundle.js"></script>
+
+	<!-- Theme JS -->
+	<script src="~/themes/dashkit/js/theme.bundle.js"></script>
+
+	<script src="~/js/loader.js"></script>
+
+	@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

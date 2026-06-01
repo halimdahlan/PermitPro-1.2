@@ -1,0 +1,44 @@
+﻿{
+	"data": [
+		{
+			"id": 1,
+			"siteName": "Goldner and Sons",
+			"siteDesc": "id pretium iaculis",
+			"contactName": "Franklin Janeczek",
+			"contactEmail": "fjaneczek0@fc2.com",
+			"isActive": true
+		},
+		{
+			"id": 2,
+			"siteName": "Dooley-Quigley",
+			"siteDesc": "est et tempus semper est",
+			"contactName": "Geri Scully",
+			"contactEmail": "gscully1@mayoclinic.com",
+			"isActive": true
+		},
+		{
+			"id": 3,
+			"siteName": "Carroll, Smitham and Carroll",
+			"siteDesc": "iaculis justo in",
+			"contactName": "Ivette Capelen",
+			"contactEmail": "icapelen2@exblog.jp",
+			"isActive": true
+		},
+		{
+			"id": 4,
+			"siteName": "Ward, Walsh and Cronin",
+			"siteDesc": "id pretium iaculis diam erat",
+			"contactName": "Thom Laviss",
+			"contactEmail": "tlaviss3@fda.gov",
+			"isActive": false
+		},
+		{
+			"id": 5,
+			"siteName": "Graham Group",
+			"siteDesc": "sapien cursus vestibulum",
+			"contactName": "Price Western",
+			"contactEmail": "pwestern4@comsenz.com",
+			"isActive": false
+		}
+	]
+}

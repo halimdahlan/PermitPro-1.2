@@ -1,0 +1,234 @@
+﻿@using Kendo.Mvc.UI
+
+<!-- Modal: FORM D /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+<div class="modal fade" id="dlgFormD" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="dlgFormDLabel" aria-hidden="true">
+	<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+		<div class="modal-content">
+			<div class="modal-header bg-primary-soft">
+				<div class="modal-title" id="dlgFormDLabel">
+					<div class="d-flex flex-row align-items-center">
+						<!--div-- class="avatar">
+							<span class="avatar-title rounded-circle bg-info" style="font-size: 22.75px !important; font-weight: 700 !important;">D</span>
+						</!--div-->
+						<img title="(D) EXCAVATION" src="/img/icons/certs/excavation.png" style="width:40px;height:40px;" />
+						<span class="ms-3 dialog-title">EXCAVATION</span>
+					</div>
+				</div>
+				<a href="" class="text-dark no-loading" data-bs-dismiss="modal" aria-label="Close"><i class="fa-sharp fa-solid fa-xmark fa-xl"></i></a>
+			</div>
+			<div class="modal-body">
+
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">GENERAL INFORMATION</h3>
+				</div>
+				<div class="px-2 mb-4">
+					<div class="d-flex flex-row align-items-center">
+						<label>Estimated excavation depth</label>
+						<div class="ms-3">
+							@(Html.Kendo().TextBox()
+									.Name("tbxFormD-ExcavationDepth")
+									.Size(ComponentSize.Medium)
+									.Rounded(Rounded.Large)
+									.FillMode(FillMode.Outline))
+						</div>
+					</div>
+				</div>
+
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">Excavation instructions applicable to the Permit Holder who is responsible for assuring compliance</h3>
+				</div>
+				<div class="px-2 mb-4">
+					<ul>
+						<li>
+							When sloping is utilized as a protective measure for excavations up to 6 meters deep, an acceptable
+							sloping is 1.5 horizontal to 1 vertical. Steeper slopes may be allowed where pre defined Country specific
+							tables or charts exist based on soil classification or where recognized soil engineering expertise personnel
+							are involved in defining acceptable steeper slopes.
+						</li>
+						<li>
+							Identify Overhead electrical lines (or other overhead infrastructure) and assure provisions are in place to
+							prevent contact (or encroachment beyond established safe distances when high voltage power lines exist) by equipment.
+						</li>
+						<li>
+							Underground cabling and piping must be clearly marked /identified prior to excavation.
+						</li>
+						<li>
+							Within 0.5 meters (1.6 feet) around piping and cabling, only careful hand probing and digging may be used.
+						</li>
+						<li>
+							Exposed underground piping and cabling to be supported.
+						</li>
+						<li>
+							Soil removed from excavation must be a minimum of 0.75 meters setback from the edge of the excavation.
+						</li>
+						<li>
+							Excavations 6 meters or deeper require the services of a specialized Subject Matter Expert (Engineered credentialed or
+							similarly recognized soils and protective systems expert) on soil stability and controls who is commissioned to develop a safe excavation plan.
+						</li>
+						<li>
+							Contaminated soil requires the use of PPE as well as specific Hazardous waste handling/disposal plans.
+						</li>
+						<li>
+							Utilize confined space entry certificate when work meets the confined space definition.
+						</li>
+						<li>
+							Barriers and signage must be present to prevent unauthorized entry, and warning systems in place for vehicles.
+						</li>
+						<li>
+							A designate authorized person(s) must be identified below for daily inspections (may be Permit Holder).
+						</li>
+					</ul>
+				</div>
+
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">Controls Used</h3>
+				</div>
+				<div class="px-2 mb-4">
+					<div class="d-flex flex-row align-items-center mb-3">
+						<div class="me-3">
+							@(Html.Kendo().CheckBox()
+									.Name("chkFormD-Sloping")
+									.Label("  Sloping")
+									.Size(ComponentSize.Large)
+									.Rounded(BasicRounded.Medium))
+						</div>
+						<div class="ms-3 me-3">
+							@(Html.Kendo().CheckBox()
+									.Name("chkFormD-Shoring")
+									.Label("  Shoring")
+									.Size(ComponentSize.Large)
+									.Rounded(BasicRounded.Medium))
+						</div>
+						<div class="ms-3">
+							@(Html.Kendo().CheckBox()
+									.Name("chkFormD-Shielding")
+									.Label("  Shielding")
+									.Size(ComponentSize.Large)
+									.Rounded(BasicRounded.Medium))
+						</div>
+					</div>
+					<div class="mb-3">
+						<div>
+							Document below additional controls not otherwise included in this PTW to address job specific threats including:
+						</div>
+						<div>
+							<ol>
+								<li>
+									measures to minimize weather impacts on cave-ins
+								</li>
+								<li>
+									provisions for safe access and exit for personnel who enter the excavation
+								</li>
+								<li>
+									additional rescue and emergency response provisions
+								</li>
+								<li>
+									other threats specific to the job
+								</li>
+							</ol>
+						</div>
+					</div>
+					<div class="mb-3">
+						@(Html.Kendo().TextBox()
+								.Name("tbxFormD-ExcavationAuthorizedName")
+								.Label(x => x.Content("Designated authorized person(s) for excavation"))
+								.Size(ComponentSize.Medium)
+								.Rounded(Rounded.Large)
+								.FillMode(FillMode.Outline))
+					</div>
+					<div class="mb-3">
+						@(Html.Kendo().TextArea()
+								.Name("txtFormD-OtherInfo")
+								.Label(x => x.Content("Additional necessary info not otherwise included elsewhere"))
+								.Rounded(Rounded.Large)
+								.FillMode(FillMode.Outline)
+								.Rows(2))
+					</div>
+					<div class="mb-3">
+						@(Html.Kendo().TextArea()
+								.Name("txtFormD-OtherInfoSketch")
+								.Label(x => x.Content("Additional space to communicate via sketch information about hazards/threats and controls"))
+								.Rounded(Rounded.Large)
+								.FillMode(FillMode.Outline)
+								.Rows(8))
+					</div>
+				</div>
+
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">Emergency Contact Info</h3>
+				</div>
+				<div class="px-2 mb-4">
+					<div class="d-flex flex-row align-items-center">
+						<label>Name</label>
+						<div class="ms-3 flex-grow-1">
+							@(Html.Kendo().TextBox()
+									.Name("tbxFormD-EmergencyContactName")
+									.Size(ComponentSize.Medium)
+									.Rounded(Rounded.Large)
+									.FillMode(FillMode.Outline))
+						</div>
+					</div>
+				</div>
+
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">Validity of the Excavation Permit</h3>
+				</div>
+				<div class="px-2 mb-4">
+					<div class="mb-3">
+						I certify that I have reviewed the proposed work and I am satisfied that the workers understand the hazards and that
+						preventive measures are in place with adequate supervision to proceed.
+					</div>
+					<div class="mb-3">
+						<div class="mb-2">
+							Excavation Permit is allowed between
+						</div>
+						<div class="d-flex flex-column flex-md-row justify-content-evenly mb-3">
+							<div class="w-100 me-0 me-md-3 mb-3 mb-md-0">
+								@(Html.Kendo().TimePicker()
+										.Name("tmpFormD-TimeAllowedFrom")
+										.Label(x => x.Content("From"))
+										.DateInput())
+							</div><div class="w-100 ms-0 ms-md-3">
+								@(Html.Kendo().TimePicker()
+										.Name("tmpFormD-TimeAllowedTo")
+										.Label(x => x.Content("To"))
+										.DateInput())
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">Excavation Certificate is Withdrawn</h3>
+				</div>
+				<div class="px-2 mb-4">
+					<div>
+						<div class="d-flex flex-row align-items-center">
+							<div class="me-5">
+								@(Html.Kendo().Switch()
+										.Name("swtFormD-Withdrawn")
+										.Size(ComponentSize.Small)
+										.Messages(x => x.Checked("YES").Unchecked("NO"))
+										.Events(x => x.Change("onChangeWithdrawnFormD")))
+							</div>
+							<label class="form-label me-3" for="tbxFormD-Withdrawn-Reason">Reason</label>
+							<div class="flex-grow-1">
+								@(Html.Kendo().TextBox()
+										.Name("tbxFormD-Withdrawn-Reason")
+										.Enable(false)
+										.Size(ComponentSize.Medium)
+										.Rounded(Rounded.Large)
+										.FillMode(FillMode.Outline))
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-primary" id="btnSaveFormD" data-bs-dismiss="modal">Save changes</button>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->

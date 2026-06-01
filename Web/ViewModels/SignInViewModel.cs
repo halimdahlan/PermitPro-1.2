@@ -1,0 +1,33 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace PermitPro.App.ViewModels;
+
+public class SignInViewModel
+{
+	[Required(ErrorMessage = "This field is required")]
+	[DataType(DataType.EmailAddress)]
+	[Display(Name = "Email address")]
+	public required string Email { get; set; }
+
+	[Required(ErrorMessage = "This field is required")]
+	[DataType(DataType.Password)]
+	[Display(Name = "Password")]
+	public required string Password { get; set; }
+
+	[Display(Name = "Remember me")]
+	public bool RememberMe { get; set; }
+
+	[Required(ErrorMessage = "This field is required")]
+	[Display(Name = "Company")]
+	public required string CompanyId { get; set; }
+
+	public string? Token { get; set; }
+
+	public string? ReturnUrl { get; set; }
+
+	public string? Entity { get; set; }
+
+	public string? EntityId { get; set; }
+
+	public string? Origin { get; set; }
+}

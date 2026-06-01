@@ -1,0 +1,385 @@
+﻿@using Kendo.Mvc.UI
+
+@model EditPermitViewModel
+
+<h2 class="accordion-header">
+	<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
+		<h3 class="mb-0">Operational Measures</h3>
+	</button>
+</h2>
+<div id="collapse5" class="accordion-collapse collapse" data-bs-parent="#accordionPermit">
+	<div class="accordion-body" style="position: relative;">
+		@if (Model.PermitStatus != PermitPro.Core.Enums.PermitStatusEnum.Draft)
+		{
+			<div class="edit-disable"></div>
+		}
+		<div class="mb-3">
+			<h4>Mechanical</h4>
+			<div class="d-flex flex-md-row flex-column justify-content-evenly">
+				<div class="form-group flex-grow-1 me-md-3">
+					<label class="form-label">Equipment</label>
+					@(Html.Kendo().TextBox()
+							.Size(ComponentSize.Medium)
+							.Rounded(Rounded.Large)
+							.FillMode(FillMode.Outline)
+							.Name("tbOpMeasureMech1"))
+				</div>
+				<div class="form-group flex-grow-1 ms-md-3">
+					<label class="form-label">ID/Tag number</label>
+					@(Html.Kendo().TextBox()
+							.Size(ComponentSize.Medium)
+							.Rounded(Rounded.Large)
+							.FillMode(FillMode.Outline)
+							.Name("tbOpMeasureMech2"))
+				</div>
+			</div>
+			<ul class="list-group list-group-flush">
+				<li class="list-group-item d-flex justify-content-between align-items-center">
+					<div class="me-auto">
+						<div><label for="swOpMeasure3">Pressure free</label></div>
+					</div>
+					<div class="">
+						@(Html.Kendo().Switch()
+								.Name("swOpMeasureMech1")
+								.Size(ComponentSize.Small)
+								.HtmlAttributes(new { data_elem = "pressureFree" })
+								.Messages(x => x.Checked("YES").Unchecked("NO")))
+					</div>
+				</li>
+				<li class="list-group-item d-flex justify-content-between align-items-center">
+					<div class="me-auto">
+						<div><label for="swOpMeasure4">Empty</label></div>
+					</div>
+					<div class="">
+						@(Html.Kendo().Switch()
+								.Name("swOpMeasureMech2")
+								.Size(ComponentSize.Small)
+								.HtmlAttributes(new { data_elem = "empty" })
+								.Messages(x => x.Checked("YES").Unchecked("NO")))
+					</div>
+				</li>
+				<li class="list-group-item d-flex justify-content-between align-items-center">
+					<div class="me-auto">
+						<div><label for="swOpMeasure5">Disconnected</label></div>
+					</div>
+					<div class="">
+						@(Html.Kendo().Switch()
+								.Name("swOpMeasureMech3")
+								.Size(ComponentSize.Small)
+								.HtmlAttributes(new { data_elem = "disconnected" })
+								.Messages(x => x.Checked("YES").Unchecked("NO")))
+					</div>
+				</li>
+				<li class="list-group-item d-flex justify-content-between align-items-center">
+					<div class="me-auto">
+						<div><label for="swOpMeasure6">Blank off</label></div>
+					</div>
+					<div class="">
+						@(Html.Kendo().Switch()
+								.Name("swOpMeasureMech4")
+								.Size(ComponentSize.Small)
+								.HtmlAttributes(new { data_elem = "blankOff" })
+								.Messages(x => x.Checked("YES").Unchecked("NO")))
+					</div>
+				</li>
+				<li class="list-group-item d-flex justify-content-between align-items-center">
+					<div class="me-auto">
+						<div><label for="swOpMeasure7">Locked off</label></div>
+					</div>
+					<div class="">
+						@(Html.Kendo().Switch()
+								.Name("swOpMeasureMech5")
+								.Size(ComponentSize.Small)
+								.HtmlAttributes(new { data_elem = "lockedOff" })
+								.Messages(x => x.Checked("YES").Unchecked("NO")))
+					</div>
+				</li>
+				<li class="list-group-item d-flex justify-content-between align-items-center">
+					<div class="me-auto">
+						<div><label for="swOpMeasure8">Flushed</label></div>
+					</div>
+					<div class="">
+						@(Html.Kendo().Switch()
+								.Name("swOpMeasureMech6")
+								.Size(ComponentSize.Small)
+								.HtmlAttributes(new { data_elem = "flushed" })
+								.Messages(x => x.Checked("YES").Unchecked("NO")))
+					</div>
+				</li>
+				<li class="list-group-item d-flex justify-content-between align-items-center">
+					<div class="me-auto">
+						<div><label for="swOpMeasure9">Ventilated</label></div>
+					</div>
+					<div class="">
+						@(Html.Kendo().Switch()
+								.Name("swOpMeasureMech7")
+								.Size(ComponentSize.Small)
+								.HtmlAttributes(new { data_elem = "ventilated" })
+								.Messages(x => x.Checked("YES").Unchecked("NO")))
+					</div>
+				</li>
+				<li class="list-group-item d-flex justify-content-between align-items-center">
+					<div class="me-auto">
+						<div><label for="swOpMeasure11">Other (please specify)</label></div>
+						@(Html.Kendo().TextBox()
+								.Size(ComponentSize.Medium)
+								.Rounded(Rounded.Large)
+								.FillMode(FillMode.Outline)
+								.HtmlAttributes(new { @class = "swOpMeasureMech8" })
+								.Name("tbOpMeasureMech8"))
+					</div>
+					<div class="">
+						@(Html.Kendo().Switch()
+								.Name("swOpMeasureMech8")
+								.Size(ComponentSize.Small)
+								.HtmlAttributes(new { data_elem = "other" })
+								.Messages(x => x.Checked("YES").Unchecked("NO")))
+					</div>
+				</li>
+			</ul>
+		</div>
+		<hr />
+		<div class="">
+			<h4>Electrical</h4>
+			<div class="d-flex flex-md-row flex-column justify-content-evenly">
+				<div class="form-group flex-grow-1 me-md-3">
+					<label class="form-label" for="tbOpMeasure12">Equipment/Electrical motor</label>
+					@(Html.Kendo().TextBox()
+							.Size(ComponentSize.Medium)
+							.Rounded(Rounded.Large)
+							.FillMode(FillMode.Outline)
+							.Name("tbOpMeasureElec1"))
+				</div>
+				<div class="form-group flex-grow-1 ms-md-3">
+					<label class="form-label" for="tbOpMeasure13">ID/Tag number</label>
+					@(Html.Kendo().TextBox()
+							.Size(ComponentSize.Medium)
+							.Rounded(Rounded.Large)
+							.FillMode(FillMode.Outline)
+							.Name("tbOpMeasureElec2"))
+				</div>
+			</div>
+			<hr />
+			<ul class="list-group list-group-flush">
+				<li class="list-group-item d-flex justify-content-between align-items-center">
+					<div class="me-auto">
+						<div><label for="swOpMeasure14">Locked off</label></div>
+					</div>
+					<div class="">
+						@(Html.Kendo().Switch()
+								.Name("swOpMeasureElec1")
+								.Size(ComponentSize.Small)
+								.HtmlAttributes(new { data_elem = "lockedOff" })
+								.Messages(x => x.Checked("YES").Unchecked("NO")))
+					</div>
+				</li>
+				<li class="list-group-item d-flex justify-content-between">
+					<div class="me-auto">
+						<div><label for="swOpMeasure15">Isolated</label></div>
+					</div>
+					<div class="">
+						@(Html.Kendo().Switch()
+								.Name("swOpMeasureElec2")
+								.Size(ComponentSize.Small)
+								.HtmlAttributes(new { data_elem = "isolated" })
+								.Messages(x => x.Checked("YES").Unchecked("NO")))
+					</div>
+				</li>
+				<li class="list-group-item d-flex justify-content-between align-items-center border-bottom-0">
+					<div class="me-auto">
+						<div><label for="swOpMeasure16">See Isolation Certificate</label></div>
+					</div>
+					<div class="">
+						@(Html.Kendo().Switch()
+								.Name("swOpMeasureElec3")
+								.Size(ComponentSize.Small)
+								.HtmlAttributes(new { data_elem = "isolationCertificate" })
+								.Messages(x => x.Checked("YES").Unchecked("NO")))
+					</div>
+				</li>
+				<li class="list-group-item d-flex justify-content-between align-items-center border-bottom-0">
+					<div class="me-auto">
+						<div><label for="numOpMeasure17">No. of Isolation Certificate(s)</label></div>
+					</div>
+					<div class="">
+						@(Html.Kendo().NumericTextBox()
+								.Name("numOpMeasureElec1")
+								.Format("0")
+								.Value(0)
+								.Min(0)
+								.Max(500))
+					</div>
+				</li>
+			</ul>
+		</div>
+		<hr />
+		<div class="">
+			<h4>Instrument &lt; 24V</h4>
+			<div class="d-flex flex-md-row flex-column justify-content-evenly">
+				<div class="form-group flex-grow-1 me-md-3">
+					<label class="form-label" for="txOpMeasureInst1">Instrument</label>
+					@(Html.Kendo().TextBox()
+							.Size(ComponentSize.Medium)
+							.Rounded(Rounded.Large)
+							.FillMode(FillMode.Outline)
+							.Name("tbOpMeasureInst1"))
+				</div>
+				<div class="form-group flex-grow-1 ms-md-3">
+					<label class="form-label" for="txOpMeasureInst2">ID/Tag number</label>
+					@(Html.Kendo().TextBox()
+							.Size(ComponentSize.Medium)
+							.Rounded(Rounded.Large)
+							.FillMode(FillMode.Outline)
+							.Name("tbOpMeasureInst2"))
+				</div>
+			</div>
+			<ul class="list-group list-group-flush">
+				<li class="list-group-item d-flex justify-content-between align-items-center">
+					<div class="me-auto">
+						<div><label for="swPpeWorkArea20">Locked off</label></div>
+					</div>
+					<div class="">
+						@(Html.Kendo().Switch()
+								.Name("swOpMeasureInst1")
+								.Size(ComponentSize.Small)
+								.HtmlAttributes(new { data_elem = "lockedOff" })
+								.Messages(x => x.Checked("YES").Unchecked("NO")))
+					</div>
+				</li>
+				<li class="list-group-item d-flex justify-content-between align-items-center">
+					<div class="me-auto">
+						<div><label for="swPpeWorkArea21">Isolated</label></div>
+					</div>
+					<div class="">
+						@(Html.Kendo().Switch()
+								.Name("swOpMeasureInst2")
+								.Size(ComponentSize.Small)
+								.HtmlAttributes(new { data_elem = "isolated" })
+								.Messages(x => x.Checked("YES").Unchecked("NO")))
+					</div>
+				</li>
+				<li class="list-group-item d-flex justify-content-between align-items-center border-bottom-0">
+					<div class="me-auto">
+						<div><label for="swPpeWorkArea22">Disconnected</label></div>
+					</div>
+					<div class="">
+						@(Html.Kendo().Switch()
+								.Name("swOpMeasureInst3")
+								.Size(ComponentSize.Small)
+								.HtmlAttributes(new { data_elem = "disconnected" })
+								.Messages(x => x.Checked("YES").Unchecked("NO")))
+					</div>
+				</li>
+				<li class="list-group-item d-flex justify-content-between align-items-center border-bottom-0">
+					<div class="me-auto">
+						<div><label for="swPpeWorkArea23">Bypass</label></div>
+					</div>
+					<div class="">
+						@(Html.Kendo().Switch()
+								.Name("swOpMeasureInst4")
+								.Size(ComponentSize.Small)
+								.HtmlAttributes(new { data_elem = "bypass" })
+								.Messages(x => x.Checked("YES").Unchecked("NO")))
+					</div>
+				</li>
+				<li class="list-group-item d-flex justify-content-between align-items-center border-bottom-0">
+					<div class="me-auto">
+						<div><label for="numOpMeasure24">No. of Isolation Certificate(s)</label></div>
+					</div>
+					<div class="">
+						@(Html.Kendo().NumericTextBox()
+								.Name("numOpMeasureInst1")
+								.Format("0")
+								.Value(0)
+								.Min(0)
+								.Max(500))
+					</div>
+				</li>
+			</ul>
+		</div>
+		<hr />
+		<div>
+			<ul class="list-group list-group-flush">
+				<li class="list-group-item d-flex justify-content-between align-items-center">
+					<div class="me-auto">
+						<div><label for="swPpeWorkArea24">Shutdown system operational?</label></div>
+					</div>
+					<div class="">
+						@(Html.Kendo().Switch()
+								.Name("swOpMeasureInst5")
+								.Size(ComponentSize.Small)
+								.HtmlAttributes(new { data_elem = "shutdownSystemOperational" })
+								.Messages(x => x.Checked("YES").Unchecked("NO")))
+					</div>
+				</li>
+				<li class="list-group-item d-flex justify-content-between align-items-center">
+					<div class="me-auto">
+						<div><label for="swPpeWorkArea25">Fire protection system operational?</label></div>
+					</div>
+					<div class="">
+						@(Html.Kendo().Switch()
+								.Name("swOpMeasureInst6")
+								.Size(ComponentSize.Small)
+								.HtmlAttributes(new { data_elem = "fireProtectionSysOperational" })
+								.Messages(x => x.Checked("YES").Unchecked("NO")))
+					</div>
+				</li>
+				<li class="list-group-item d-flex justify-content-between align-items-center border-bottom-0">
+					<div class="me-auto">
+						<div><label for="swPpeWorkArea26">Automatic fire protection system operational?</label></div>
+					</div>
+					<div class="">
+						@(Html.Kendo().Switch()
+								.Name("swOpMeasureInst7")
+								.Size(ComponentSize.Small)
+								.HtmlAttributes(new { data_elem = "autoFireProtectionSysOperational" })
+								.Messages(x => x.Checked("YES").Unchecked("NO")))
+					</div>
+				</li>
+			</ul>
+		</div>
+		<hr />
+		<div>
+			<div class="mb-2">
+				<label class="form-label" for="tbOpMeasure27">Any other measures?</label>
+				@(Html.Kendo().TextArea()
+						.Name("txtOpMeasureInst1")
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline)
+						.Rows(2))
+			</div>
+		</div>
+		<hr />
+		<div>
+			<h4>PTW Handover to Holder</h4>
+			<ul class="list-group list-group-flush">
+				<li class="list-group-item d-flex justify-content-between align-items-center">
+					<div class="me-auto">
+						<div><label for="swPpeWorkArea28">Is aware of the safety instructions as in the Terminal Safety Manual?</label></div>
+					</div>
+					<div class="">
+						@(Html.Kendo().Switch()
+								.Name("swPpeWorkAreaInst8")
+								.Size(ComponentSize.Small)
+								.Messages(x => x.Checked("YES").Unchecked("NO")))
+					</div>
+				</li>
+				<li class="list-group-item d-flex justify-content-between align-items-center">
+					<div class="me-auto">
+						<div><label for="swPpeWorkArea29">Is aware of the safety instructions as in the Permit to Work and associated certificates?</label></div>
+					</div>
+					<div class="">
+						@(Html.Kendo().Switch()
+								.Name("swPpeWorkAreaInst9")
+								.Size(ComponentSize.Small)
+								.Messages(x => x.Checked("YES").Unchecked("NO")))
+					</div>
+				</li>
+			</ul>
+		</div>
+		<hr />
+		<div class="p-3 border border-info">
+			<h4>SIGNED-OFF</h4>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,44 @@
+﻿{
+	"data": [
+		{
+			"id": 1,
+			"siteName": "Effertz-Walker",
+			"siteDesc": "quisque erat eros viverra eget",
+			"contactName": "Whitaker Van der Son",
+			"contactEmail": "wvan0@cnn.com",
+			"isActive": false
+		},
+		{
+			"id": 2,
+			"siteName": "Harvey-Blanda",
+			"siteDesc": "dui maecenas tristique est et",
+			"contactName": "Harvey Ohm",
+			"contactEmail": "hohm1@webnode.com",
+			"isActive": true
+		},
+		{
+			"id": 3,
+			"siteName": "Lowe-Hettinger",
+			"siteDesc": "dui maecenas tristique est et",
+			"contactName": "Gustie Bradnock",
+			"contactEmail": "gbradnock2@ebay.co.uk",
+			"isActive": true
+		},
+		{
+			"id": 4,
+			"siteName": "Dibbert and Sons",
+			"siteDesc": "magna ac consequat metus sapien",
+			"contactName": "Fey Riepel",
+			"contactEmail": "friepel3@geocities.com",
+			"isActive": false
+		},
+		{
+			"id": 5,
+			"siteName": "Conn Group",
+			"siteDesc": "volutpat in congue etiam",
+			"contactName": "Gisela Lipman",
+			"contactEmail": "glipman4@blogtalkradio.com",
+			"isActive": false
+		}
+	]
+}

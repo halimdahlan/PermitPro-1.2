@@ -1,0 +1,103 @@
+﻿var permitInfo = {
+	general: {
+		location: null,
+		description: null,
+		startDateTime: null,
+		endDateTime: null,
+		certificates: [],
+	},
+	operation: {
+		activities: [],
+		activityLocations: [],
+		activityTools: [],
+		activityProducts: [],
+	},
+	permitHolder: {
+		name: null,
+		company: null,
+		numOfStaff: 0,
+		additionalStaff: null,
+	},
+	ppe: {
+		safetyGlass: false,
+		safetyHelmet: false,
+		fullFaceMask: false,
+		leatherGloves: false,
+		neopreneGloves: false,
+		safetyHarness: false,
+		fallProtection: false,
+		safetyShoes: false,
+		earProtection: false,
+		breathingProtection: false,
+		others: {
+			selected: false,
+			value: null,
+		},
+		otherPpeRequiredInJHA: null,
+	},
+	workArea: {
+		demarcation: false,
+		fireExtinguisher: false,
+		warningSigns: false,
+		others: {
+			selected: false,
+			value: null,
+		},
+	},
+	operationMeasures: {
+		mechanical: {
+			equipmentName: null,
+			tagNumber: null,
+			pressureFree: false,
+			empty: false,
+			disconnected: false,
+			blankOff: false,
+			lockedOff: false,
+			flushed: false,
+			ventilated: false,
+			other: {
+				selected: false,
+				value: null,
+			},
+		},
+		electrical: {
+			equipmentName: null,
+			tagNumber: null,
+			lockedOff: false,
+			isolated: false,
+			isolationCertificate: false,
+			numOfIsolationCertificate: 0,
+		},
+		instrument: {
+			equipmentName: null,
+			tagNumber: null,
+			lockedOff: false,
+			isolated: false,
+			disconnected: false,
+			byPass: false,
+			numOfIsolationCertificate: 0,
+			shutdownSystemOperational: false,
+			fireProtectionSysOperational: false,
+			autoFireProtectionSysOperational: false,
+			otherMeasures: null,
+		},
+		pwtHandOver: {
+			terminalSafetyAwareness: false,
+			ptwAwareness: false,
+		},
+	},
+	precautions: {
+		precautionsForWork: null,
+		additionalPrecautions: null,
+		methodOfStatementAttached: false,
+		declaration: false,
+		engineeringAdviceRequired: false,
+		permitIssuerDeclaration: {
+			authorizedForExecution: false,
+		},
+		leadPermitIssuerDeclaration: {
+			authorizedForExecution: false,
+		},
+		permitValidity: false,
+	}
+};

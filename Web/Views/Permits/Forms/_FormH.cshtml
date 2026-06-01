@@ -1,0 +1,220 @@
+﻿@using Kendo.Mvc.UI
+
+<div class="modal fade" id="dlgFormH" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="dlgFormHLabel" aria-hidden="true">
+	<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+		<div class="modal-content">
+			<div class="modal-header bg-primary-soft">
+				<div class="modal-title" id="dlgFormHLabel">
+					<div class="d-flex flex-row align-items-center">
+						<!--div-- class="avatar">
+							<span class="avatar-title rounded-circle bg-info" style="font-size: 22.75px !important; font-weight: 700 !important;">H</span>
+						</!--div-->
+						<img title="(H) OVERRIDE" src="/img/icons/certs/override.png" style="width:40px;height:40px;" />
+						<span class="ms-3 dialog-title">OVERRIDE</span>
+					</div>
+				</div>
+				<a href="" class="text-dark no-loading" data-bs-dismiss="modal" aria-label="Close"><i class="fa-sharp fa-solid fa-xmark fa-xl"></i></a>
+			</div>
+			<div class="modal-body">
+				<div class="mb-3 fs-3 fw-bold">
+					Override of safeguarding protective devices may utilize a standing procedure, the MOC process, 
+					or PTW process (including this certificate).
+				</div>
+				<div class="mb-4 fs-3 fw-bold">
+					This PTW Override may not be utilized for the purpose of preventing an alarm trip associated 
+					with a known actual exceedence of an established operating parameter (pressure, flow, temperature, 
+					fill height, etc) for which the device is intended. It may be utilized for scheduled and planned 
+					overrides (typically for testing or maintenance) when the operating parameters are otherwise 
+					controlled within approved limits during the override period.
+				</div>
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">TO BE COMPLETED BY THE PERMIT HOLDER</h3>
+				</div>
+				<div class="mb-3">
+					@(Html.Kendo()
+						.TextBox()
+						.Name("formH-1")
+						.Label(x => x.Content("Identify the protective device/system including alarms that are to be overridden"))
+						.Size(ComponentSize.Medium)
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline))
+				</div>
+				<div class="mb-3">
+					@(Html.Kendo()
+						.TextBox()
+						.Name("formH-2")
+						.Label(x => x.Content("Name of person responsible for the override while it in place"))
+						.Size(ComponentSize.Medium)
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline))
+				</div>
+				<div class="mb-3">
+					@(Html.Kendo()
+						.TextBox()
+						.Name("formH-3")
+						.Label(x => x.Content("Name of person who will assure that the protective device or system has been properly returned to correct operating condition upon completion of the override"))
+						.Size(ComponentSize.Medium)
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline))
+				</div>
+				<div class="mb-3">
+					@(Html.Kendo()
+						.TextBox()
+						.Name("formH-4")
+						.Label(x => x.Content("Name of person who will assure that Operating personnel are made aware that the override is completed and the device is ready for normal service"))
+						.Size(ComponentSize.Medium)
+						.Rounded(Rounded.Large)
+						.FillMode(FillMode.Outline))
+				</div>
+				<div class="mb-3">
+					<label for="formH-5" class="mb-1">
+						The risks of the override must be evaluated and sufficient barriers put in place to prevent unintended consequences 
+						related to the override. Communication prior to and after the override is critically important. This PTW and 
+						certificate are intended to put in place such communications and any other barriers identified to prevent unintended 
+						consequences related to the override during the period of and after its’ implementation. Use the space below to 
+						document any additional barriers not already covered elsewhere in this PTW.
+					</label>
+					<div>
+						@(Html.Kendo()
+							.TextArea()
+							.Name("formH-5")
+							.Rounded(Rounded.Large)
+							.FillMode(FillMode.Outline)
+							.Rows(5))
+					</div>
+				</div>
+				<div class="mb-4">
+					<label for="formH-5" class="mb-1">
+						Operating precautions (people and equipment barriers) including measures to prevent a related process upset condition 
+						while the override is in place and the plans including communications for return to normal service.
+					</label>
+					<div>
+						@(Html.Kendo()
+							.TextArea()
+							.Name("formH-6")
+							.Rounded(Rounded.Large)
+							.FillMode(FillMode.Outline)
+							.Rows(5))
+					</div>
+				</div>
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">PLANNED DURATION OF OVERRIDE</h3>
+				</div>
+				<div class="mb-4">
+					<div class="mb-2">
+						Over rides extending beyond a single shift must have the PTW for the override re-issued at the 
+						beginning of the next shift. Longer term overrides (lasting into a weekend) should utilize the MOC process.
+					</div>
+					<div class="d-flex flex-row justify-content-evenly align-items-center">
+						<div class="me-4 w-100">
+							@(Html.Kendo()
+								.DateTimePicker()
+								.Name("formH-plannedDuration-1")
+								.Label(x => x.Content("From"))
+								.Format("{0:dd/MM/yyyy hh:mm tt}")
+								.Min(DateTime.Today)
+								.Size(ComponentSize.Medium)
+								.Rounded(Rounded.Large)
+								.FillMode(FillMode.Outline)
+								.AdaptiveMode(AdaptiveMode.Auto)
+								.ComponentType("modern")
+								.DateInput())
+						</div>
+						<div class="ms-4 w-100">
+							@(Html.Kendo()
+								.DateTimePicker()
+								.Name("formH-plannedDuration-2")
+								.Label(x => x.Content("To"))
+								.Format("{0:dd/MM/yyyy hh:mm tt}")
+								.Min(DateTime.Today)
+								.Size(ComponentSize.Medium)
+								.Rounded(Rounded.Large)
+								.FillMode(FillMode.Outline)
+								.AdaptiveMode(AdaptiveMode.Auto)
+								.ComponentType("modern")
+								.DateInput())
+						</div>
+					</div>
+				</div>
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">VALIDITY OF THE OVERRIDE PERMIT</h3>
+				</div>
+				<div class="mb-3">
+					<div>
+						<div class="mb-2">Lead Permit Issuer (LPI)</div>
+						<div class="d-flex flex-row mb-3">
+							<div class="me-4">
+								@(Html.Kendo()
+									.CheckBox()
+									.Name("formH-signed-1")
+									.Size(ComponentSize.Large)
+									.Rounded(BasicRounded.Medium))
+							</div>
+							<div>
+								<label for="formH-signed-1">
+									I certify that I have reviewed the proposed work and I am satisfied that it is adequately described
+									on the Permit to Work documents and that the precautions detailed in this certificate are adequate
+									and clearly defined. The Permit to Work is allowed between:
+								</label>
+							</div>
+						</div>
+						<div class="d-flex flex-row justify-content-evenly align-items-center">
+							<div class="me-4 w-100">
+								@(Html.Kendo()
+									.DateTimePicker()
+									.Name("formH-validity-1")
+									.Label(x => x.Content("From"))
+									.Format("{0:dd/MM/yyyy hh:mm tt}")
+									.Min(DateTime.Today)
+									.Size(ComponentSize.Medium)
+									.Rounded(Rounded.Large)
+									.FillMode(FillMode.Outline)
+									.AdaptiveMode(AdaptiveMode.Auto)
+									.ComponentType("modern")
+									.DateInput())
+							</div>
+							<div class="ms-4 w-100">
+								@(Html.Kendo()
+									.DateTimePicker()
+									.Name("formH-validity-2")
+									.Label(x => x.Content("To"))
+									.Format("{0:dd/MM/yyyy hh:mm tt}")
+									.Min(DateTime.Today)
+									.Size(ComponentSize.Medium)
+									.Rounded(Rounded.Large)
+									.FillMode(FillMode.Outline)
+									.AdaptiveMode(AdaptiveMode.Auto)
+									.ComponentType("modern")
+									.DateInput())
+							</div>
+						</div>
+					</div>
+				</div>
+				<hr />
+				<div class="mb-2">
+					Permit Holder (PH)
+				</div>
+				<div class="mb-3 d-flex flex-row">
+					<div class="me-4">
+						@(Html.Kendo()
+							.CheckBox()
+							.Name("formH-signed-2")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium))
+					</div>
+					<div>
+						<label for="formH-signed-2">
+							I certify that I am aware of the planned work and that the precautions detailed on the Permit
+							documents are established and will be maintained throughout the work activity involving the over ride.
+						</label>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-primary" id="btnSaveFormH" data-bs-dismiss="modal">Save changes</button>
+			</div>
+		</div>
+	</div>
+</div>
+

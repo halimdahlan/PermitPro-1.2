@@ -1,0 +1,181 @@
+﻿@{
+	ViewData["Title"] = "Settings / Workflow";
+	ViewData["SubTitle"] = "Edit workflow step";
+
+	var companyId = ViewContext.RouteData.Values["company"] as string;
+}
+
+<div id="div-panel">
+	<ul class="nav nav-tabs" id="myTab" role="tablist">
+		<li class="nav-item" role="presentation">
+			<button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general-tab-pane" type="button" role="tab" aria-controls="general-tab-pane" aria-selected="true">General</button>
+		</li>
+		<li class="nav-item" role="presentation">
+			<button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users-tab-pane" type="button" role="tab" aria-controls="users-tab-pane" aria-selected="false">Users</button>
+		</li>
+	</ul>
+	<div class="tab-content" id="myTabContent">
+		<div class="tab-pane fade show active py-3" id="general-tab-pane" role="tabpanel" aria-labelledby="general-tab" tabindex="0">
+			<div class="d-flex flex-column form-edit-workflow">
+				<div class="form-group mt-3">
+					<label class="form-label">Workflow step name</label>
+					<input type="text" class="form-control" value="1st Reviewer" />
+				</div>
+				<div class="form-group">
+					<label class="form-label">Description</label>
+					<textarea class="form-control">First level approval for reviewer</textarea>
+				</div>
+				<div class="form-group">
+					<label class="form-label">Duration</label>
+					<div class="d-flex flex-row align-items-center">
+						<div class="me-3">
+							<input type="text" class="form-control" value="2" />
+						</div>
+						<div>
+							<select class="form-select">
+								<option>DAY</option>
+								<option>HOUR</option>
+								<option>MINUTE</option>
+							</select>
+						</div>
+					</div>
+				</div>
+				<div class="d-flex flex-row justify-content-end">
+					<button class="btn btn-primary mt-3"><span class="px-3">Save changes</span></button>
+				</div>
+			</div>
+		</div>
+		<div class="tab-pane fade py-3" id="users-tab-pane" role="tabpanel" aria-labelledby="users-tab" tabindex="0">
+			<div class="form-edit-workflow">
+				<table id="tbl" class="table table-striped display pt-3 mb-3" style="width: 100% !important;">
+					<thead>
+						<tr>
+							<th>NAME</th>
+							<th style="width:30px !important;">&nbsp;</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>John Smith</td>
+							<td>
+								<div class="d-flex flex-row action-icons">
+									<a href="#" class="no-loading text-danger"><i class="fa-solid fa-trash-xmark fa-lg"></i></a>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<td>Gary Barlow</td>
+							<td>
+								<div class="d-flex flex-row action-icons">
+									<a href="#" class="no-loading text-danger"><i class="fa-solid fa-trash-xmark fa-lg"></i></a>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<div class="d-flex flex-row justify-content-end">
+					<button class="btn btn-primary mt-5" data-bs-toggle="modal" data-bs-target="#dlg"><span class="px-3">Add users</span></button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="d-flex flex-row align-items-center justify-content-between mt-5">
+	<div>
+		<a asp-controller="workflow" asp-action="edit"><i class="fa-sharp fa-solid fa-chevrons-left me-2"></i> Back</a>
+	</div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="dlg" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="dlgLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h1 class="modal-title" id="dlgLabel">Add users</h1>
+				<a href="#" class="no-loading text-dark" data-bs-dismiss="modal" aria-label="Close"><i class="fa-sharp fa-solid fa-xmark fa-xl"></i></a>
+			</div>
+			<div class="modal-body">
+				<table id="tblUsers" class="table table-striped display pt-3 mb-3" style="width:100% !important;">
+					<thead>
+						<tr>
+							<th data-orderable="false" data-class-name="check-column">&nbsp;</th>
+							<th>FULL NAME</th>
+							<th>EMAIL</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+				<a class="btn btn-primary no-loading" data-bs-dismiss="modal"><span class="mx-3">Save changes</span></a>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section CustomCss {
+	<!-- DataTables -->
+	<link rel="stylesheet" href="~/lib/DataTables/datatables.min.css" />
+	<script src="~/lib/DataTables/datatables.min.js"></script>
+
+	<link rel="stylesheet" href="~/css/workflow.css" />
+}
+
+@section Scripts {
+	<script>
+		var tbl;
+
+		$(document).ready(() => {
+			tbl = $('#tbl').DataTable({
+				responsive: true,
+				pageLength: 10,
+				searching: false,
+				ordering: false,
+			});
+
+
+
+			$('button[data-bs-toggle="tab"]').on('shown.bs.tab', (e) => {
+				if (e.currentTarget.id == 'users-tab') {
+					reloadTable();
+				}
+			});
+
+
+			$('#dlg').on('shown.bs.modal', (e) => {
+				//console.log($.fn.dataTable.tables());
+
+				var tbl2 = $('#tblUsers').DataTable({
+					pageLength: 5,
+					responsive: true,
+					ordering: false,
+					ajax: '/js/data/users.json',
+					columns: [
+						{
+							data: 'id', render: (data, type, row) => {
+								var icons = '<input type="checkbox" class="form-check" />';
+
+								return icons;
+							},
+							orderable: false,
+						},
+						{
+							data: 'name', render: (data, type, row) => {
+								return '<a href="users/edit">' + data + '</a>';
+							}
+						},
+						{ data: 'email' },
+					]
+				});
+			});
+		});
+
+		var reloadTable = () => {
+			$.fn.dataTable
+				.tables({ visible: true, api: true })
+				.columns.adjust();
+		};
+	</script>
+}

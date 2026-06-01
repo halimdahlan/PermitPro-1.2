@@ -1,0 +1,19 @@
+{
+	"data": [
+		{
+			"id": 1,
+			"name": "Draft",
+			"description": "Start of workflow"
+		},
+		{
+			"id": 2,
+			"name": "1st reviewer",
+			"description": "First level of approval for 1st reviewer"
+		},
+		{
+			"id": 3,
+			"name": "2nd reviewer",
+			"description": "Second level of approval for 2nd reviewer"
+		}
+	]
+}

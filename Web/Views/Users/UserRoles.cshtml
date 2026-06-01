@@ -1,0 +1,202 @@
+﻿@{
+	ViewData["Title"] = "Settings / Users / Roles";
+	ViewData["SubTitle"] = "Summary";
+
+	int ndx = 0;
+}
+
+@model UsersViewModel
+
+<div class="user-roles">
+	<ul class="list-group">
+		<li class="list-group-item d-flex justify-content-between align-items-center bg-light">
+			<div class="d-flex flex-row w-100 justify-content-between">
+				<h3 class="mb-0">ROLE NAME</h3>
+				<h3 class="mb-0">USERS</h3>
+			</div>
+		</li>
+
+		@foreach (var role in Model.UserRolesInfos!)
+		{
+			<li class="list-group-item @(((ndx + 1) % 2 == 0) ? "bg-light" : "")">
+				<div class="d-flex justify-content-between align-items-center">
+					@if (role.IsNonEditable)
+					{
+						@role.Name
+					}
+					else
+					{
+						<a href="javascript:;" onclick="editRole('@role.Id')" class="no-loading">@role.Name</a>
+					}
+					<span class="badge bg-secondary rounded-pill">@role.NumOfUsers</span>
+				</div>
+			</li>
+
+			ndx++;
+		}
+
+	</ul>
+
+	<div class="d-flex flex-row justify-content-end mt-3">
+		<button type="button" class="btn btn-primary lift" data-bs-toggle="modal" data-bs-target="#dlgRole"><span class="mx-3">Add new role</span></button>
+	</div>
+</div>
+
+<div class="d-flex flex-row align-items-center justify-content-between mt-5">
+	<div>
+		<a asp-controller="users" asp-action="index"><i class="fa-sharp fa-solid fa-chevrons-left me-2"></i> Back</a>
+	</div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="dlgRole" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="dlgRoleLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h1 class="modal-title" id="dlgRoleLabel">New role</h1>
+				<a href="#" class="no-loading text-dark" data-bs-dismiss="modal" aria-label="Close"><i class="fa-sharp fa-solid fa-xmark fa-xl"></i></a>
+			</div>
+			<div class="modal-body">
+				<form id="frmRole" class="needs-validation" onsubmit="return onSubmit()" novalidate>
+					<div class="form-group">
+						<label class="form-label" for="frm-name">Role name</label>
+						<input type="text" id="frm-name" class="form-control" required />
+						<div class="invalid-feedback">
+							Please enter the role name
+						</div>
+					</div>
+					<input type="hidden" id="frm-mode" value="new" />
+					<input type="hidden" id="frm-id" value="" />
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-primary btn-save"><span class="mx-3">Save changes</span></button>
+			</div>
+		</div>
+	</div>
+</div>
+
+@Html.AntiForgeryToken()
+
+@section CustomCss {
+	<!-- DataTables -->
+	<link rel="stylesheet" href="~/lib/DataTables/datatables.min.css" />
+	<script src="~/lib/DataTables/datatables.min.js"></script>
+
+	<link rel="stylesheet" href="/css/user-roles.css" />
+}
+
+
+@section Scripts {
+	<script>
+		$(document).ready(() => {
+
+			$('.btn-save').click(() => {
+				$('#frmRole').removeClass('needs-validation').addClass('was-validated');
+
+				var mode = $('#frm-mode').val();
+				var roleName = $('#frm-name').val();
+				var postData = {
+					id: null,
+					name: roleName,
+				};
+
+				if (roleName != '') {
+					$('.loading').show();
+
+					if (mode == 'edit') {
+						postData.id = $('#frm-id').val();
+					}
+
+					var formData = new FormData();
+					formData.append('Id', mode == 'edit' ? $('#frm-id').val() : null);
+					formData.append('Name', roleName);
+
+					var xhr = $.ajax({
+						method: 'POST',
+						url: '/users/roles/' + mode,
+						data: formData,
+						contentType: false,
+						processData: false,
+						cache: false,
+						beforeSend: (xhr) => {
+							xhr.setRequestHeader('RequestVerificationToken', $('input:hidden[name="__RequestVerificationToken"]').val());
+						},
+					});
+
+					xhr.done((response, status) => {
+						if (status == 'success') {
+							document.location.reload();
+						}
+					});
+
+					xhr.fail((response, status) => {
+						if (status == 'error') {
+							var data = response.responseJSON;
+							alert(data.errorMessage);
+						}
+					});
+
+					xhr.always(() => {
+						$('.loading').hide();
+					});
+				}
+			});
+
+
+			$('#dlgRole').on('show.bs.modal', () => {
+				var mode = $('#frm-mode').val();
+
+				if (mode == 'edit') {
+					var roleId = $('#frm-id').val();
+
+					if (roleId != '') {
+						$('.loading').show();
+
+						var xhr = $.ajax({
+							method: 'GET',
+							url: '/users/roles/' + roleId
+						});
+
+						xhr.done((response, status) => {
+							if (status == 'success') {
+								$('#frm-name').val(response.name);
+							}
+						});
+
+						xhr.fail(() => {
+						});
+
+						xhr.always(() => {
+							$('.loading').hide();
+						});
+					}
+				}
+			});
+
+
+			$('#dlgRole').on('hidden.bs.modal', () => {
+				$('#frmRole').removeClass('was-validated').addClass('needs-validation');
+				$('#dlgRoleLabel').html('New role');
+				$('#frm-mode').val('new');
+				$('#frm-name').val('');
+				$('#frm-id').val('');
+			});
+
+		});
+
+
+		var editRole = (e) => {
+			$('#frm-mode').val('edit');
+			$('#frm-id').val(e);
+			$('#dlgRoleLabel').html('Edit role');
+			$('#dlgRole').modal('show');
+		};
+
+
+		var onSubmit = () => {
+			return false;
+		};
+	</script>
+}

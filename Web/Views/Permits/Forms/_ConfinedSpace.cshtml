@@ -1,0 +1,1334 @@
+﻿@using Kendo.Mvc.UI
+
+<!-- Modal: FORM B /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+<div class="modal fade" id="dlgFormB" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="dlgFormBLabel" aria-hidden="true">
+	<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+		<div class="modal-content">
+			<div class="modal-header bg-primary-soft">
+				<div class="modal-title" id="dlgFormBLabel">
+					<div class="d-flex flex-row align-items-center">
+						<!--div class="avatar">
+							<span class="avatar-title rounded-circle bg-info" style="font-size: 22.75px !important; font-weight: 700 !important;">B</span>
+						</div-->
+						<img title="(B) CONFINED SPACE" src="/img/icons/certs/confinedspace.png" style="width:40px;height:40px;" />
+						<span class="ms-3 dialog-title">CONFINED SPACE</span>
+					</div>
+				</div>
+				<a href="" class="text-dark no-loading" data-bs-dismiss="modal" aria-label="Close"><i class="fa-sharp fa-solid fa-xmark fa-xl"></i></a>
+			</div>
+			<div class="modal-body">
+
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">INSTRUCTIONS</h3>
+				</div>
+				<div class="px-2 mb-4">
+					<ul>
+						<li>
+							This Certificate along with its base PTW is intended to assure identification and communication of potential
+							hazards and threats along with the preventive and mitigating barrier plans to anyone who could impact or is impacted by the work activity.
+						</li>
+						<li>
+							Prior to ANY WORKER ENTERING a confined space, the Permit Holder will review the potential hazards and controls
+							to prevent harm to impacted workers.
+						</li>
+					</ul>
+				</div>
+
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">Attendant Name and Description of Work Information</h3>
+				</div>
+				<div class="px-2 mb-4">
+					<div class="mb-3">
+						@(Html.Kendo().TextBox()
+								.Name("tbFormBAttendantNames")
+								.Label(x => x.Content("Designated attendant(s) name"))
+								.Rounded(Rounded.Large)
+								.FillMode(FillMode.Outline))
+					</div>
+					<div>
+						@(Html.Kendo().TextArea()
+								.Name("taFormBDescription")
+								.Label(x => x.Content("Description of the confined space"))
+								.Rounded(Rounded.Large)
+								.FillMode(FillMode.Outline)
+								.Rows(3))
+					</div>
+				</div>
+
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">GAS TEST PERFORMED BY (AGT name and signature)</h3>
+				</div>
+				<div class="px-2 mb-4">
+					<div class="mb-4 text-secondary">
+						Allowable atmospheres: Utilize MSDS and Shell Site Industrial Hygienist as needed for support for specifying
+						respirator protection and assuring fitness to work when respirator protection used.
+					</div>
+					<div class="mb-4">
+						<table class="table table-sm table-bordered table-gas-info">
+							<thead>
+								<tr>
+									<th scope="col">&nbsp;</th>
+									<th scope="col">Without Respiratory Protection</th>
+									<th scope="col">With Respiratory Protection</th>
+									<th scope="col">Inert Entry</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>Oxygen %</td>
+									<td>20 to max. 21.5</td>
+									<td>&gt;16 to max. 21.5</td>
+									<td>&lt;4</td>
+								</tr>
+								<tr>
+									<td>Toxics</td>
+									<td>&lt; ½ OEL</td>
+									<td>&lt; IDLH</td>
+									<td>Not applicable</td>
+								</tr>
+								<tr>
+									<td>Flammables % of LEL</td>
+									<td>Not detectable (&lt;1)</td>
+									<td>
+										&lt;10; For hot work - not detectable
+									</td>
+									<td>&lt;10</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="d-flex flex-row align-items-center">
+						<label class="form-label me-3" for="tbFormBGasTestBy">AGT name</label>
+						<div class="flex-grow-1">
+							@(Html.Kendo().TextBox()
+									.Name("tbFormBGasTestBy")
+									.Size(ComponentSize.Medium)
+									.Rounded(Rounded.Large)
+									.FillMode(FillMode.Outline))
+						</div>
+					</div>
+				</div>
+
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">INITIAL GAS READINGS by AGT prior to Permit approval: Input applicable toxic below</h3>
+				</div>
+				<div class="px-2 mb-4">
+					<div class="d-flex flex-column flex-md-row align-items-center justify-content-evenly mb-3">
+						<div class="w-100 mb-2 mb-md-0 me-0 me-md-3">
+							@(Html.Kendo().DateTimePicker()
+									.Name("dtmFormBInitialGasRead")
+									.Label(x => x.Content("Date and time"))
+									.Format("{0:dd/MM/yyyy hh:mm tt}")
+									.Min(DateTime.Today)
+									.Size(ComponentSize.Medium)
+									.Rounded(Rounded.Large)
+									.FillMode(FillMode.Outline)
+									.AdaptiveMode(AdaptiveMode.Auto)
+									.ComponentType("modern")
+									.DateInput())
+						</div>
+						<div class="w-100 mb-2 mb-md-0 ms-0 ms-md-3 me-0 me-md-3">
+							@(Html.Kendo().TextBox()
+									.Name("tbFormBInitialLELPercentage")
+									.Label(x => x.Content("Initial LEL %"))
+									.Size(ComponentSize.Medium)
+									.Rounded(Rounded.Large)
+									.FillMode(FillMode.Outline))
+						</div>
+						<div class="w-100 mb-2 mb-md-0 ms-0 ms-md-3 me-0 me-md-3">
+							@(Html.Kendo().TextBox()
+									.Name("tbFormBInitialO2Percentage")
+									.Label(x => x.Content("Oxygen %"))
+									.Size(ComponentSize.Medium)
+									.Rounded(Rounded.Large)
+									.FillMode(FillMode.Outline))
+						</div>
+						<div class="w-100 mb-2 mb-md-0 ms-0 ms-md-3 me-0 me-md-3">
+							@(Html.Kendo().TextBox()
+									.Name("tbFormBInitialToxic1")
+									.Label(x => x.Content("Toxic"))
+									.Size(ComponentSize.Medium)
+									.Rounded(Rounded.Large)
+									.FillMode(FillMode.Outline))
+						</div>
+						<div class="w-100 mb-0 ms-0 ms-md-3">
+							@(Html.Kendo().TextBox()
+									.Name("tbFormBInitialToxic2")
+									.Label(x => x.Content("Toxic"))
+									.Size(ComponentSize.Medium)
+									.Rounded(Rounded.Large)
+									.FillMode(FillMode.Outline))
+						</div>
+					</div>
+					<div class="mb-3 text-secondary">
+						Monitoring while entrants are inside the confined space. Continuous gas monitoring is the preferred method.
+						When non continuous testing is used, document the required interval and the gas monitoring results while workers
+						are inside the confined space. Input below toxic gas to be monitored as applicable.
+					</div>
+					<div class="d-flex flex-row align-items-center mb-4">
+						<label class="form-label" for="tbFormBDesignatedRequiredFrequency">Designated required frequency of testing</label>
+						<div class="ms-3">
+							@(Html.Kendo().TextBox()
+									.Name("tbFormBDesignatedRequiredFrequency")
+									.Rounded(Rounded.Large)
+									.FillMode(FillMode.Outline))
+						</div>
+					</div>
+					<div class="mb-4">
+						<table id="tbl1FormB" class="table table-striped display responsive nowrap" style="width: 100%;">
+							<thead>
+								<tr>
+									<th scope="col" data-priority="1">Time of test</th>
+									<th scope="col" class="text-center" data-priority="2">Flammable Gas % LEL</th>
+									<th scope="col" class="text-center" data-priority="3">Oxygen %</th>
+									<th scope="col" class="text-center">Toxic</th>
+									<th scope="col" class="text-center">Toxic</th>
+									<th scope="col">&nbsp;</th>
+								</tr>
+							</thead>
+						</table>
+						<div class="d-flex flex-row justify-content-end mt-3">
+							<button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#dlgFormBGasRead"><span class="mx-3">Add reading</span></button>
+						</div>
+					</div>
+					<div class="list-group list-group-flush">
+						<div class="list-group-item bg-light px-3">
+							<div class="d-flex flex-row justify-content-end">
+								<div class="flex-grow-1"><h3 class="mb-0">POTENTIAL HAZARDS</h3></div>
+								<div class="hazard-option text-center mx-1"><h3 class="mb-0">YES</h3></div>
+								<div class="hazard-option text-center mx-1"><h3 class="mb-0">NO</h3></div>
+								<div class="hazard-option text-center mx-1"><h3 class="mb-0">N/A</h3></div>
+							</div>
+						</div>
+						<div class="list-group-item px-3">
+							<div class="d-flex flex-row justify-content-end">
+								<div class="flex-grow-1">H<sub>2</sub>S (Hydrogen Sulphide)</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-01-1")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-01-2")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-01-3")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+							</div>
+						</div>
+						<div class="list-group-item px-3">
+							<div class="d-flex flex-row justify-content-end">
+								<div class="flex-grow-1">Oxygen Deficiency (e.g. Nitrogen)</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-02-1")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-02-2")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-02-3")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+							</div>
+						</div>
+						<div class="list-group-item px-3">
+							<div class="d-flex flex-row justify-content-end">
+								<div class="flex-grow-1">Flammable/Explosive Gas</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-03-1")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-03-2")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-03-3")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+							</div>
+						</div>
+						<div class="list-group-item px-3">
+							<div class="d-flex flex-row justify-content-end">
+								<div class="flex-grow-1">Flammable, Liquids/Solids</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-04-1")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-04-2")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-04-3")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+							</div>
+						</div>
+						<div class="list-group-item px-3">
+							<div class="d-flex flex-row justify-content-end">
+								<div class="flex-grow-1">Electrical</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-05-1")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-05-2")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-05-3")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+							</div>
+						</div>
+						<div class="list-group-item px-3">
+							<div class="d-flex flex-row justify-content-end">
+								<div class="flex-grow-1">Ionizing Radiation (X-Ray)</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-06-1")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-06-2")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-06-3")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+							</div>
+						</div>
+						<div class="list-group-item px-3">
+							<div class="d-flex flex-row justify-content-end">
+								<div class="flex-grow-1">Below Ground Level (Cave In)</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-07-1")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-07-2")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-07-3")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+							</div>
+						</div>
+						<div class="list-group-item px-3">
+							<div class="d-flex flex-row justify-content-end">
+								<div class="flex-grow-1">Environmental Conditions</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-08-1")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-08-2")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-08-3")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+							</div>
+						</div>
+						<div class="list-group-item px-3">
+							<div class="d-flex flex-row justify-content-end">
+								<div class="flex-grow-1">Engulfment by liquids or solids</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-09-1")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-09-2")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-09-3")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+							</div>
+						</div>
+						<div class="list-group-item px-3">
+							<div class="d-flex flex-row justify-content-end">
+								<div class="flex-grow-1">Temperature</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-10-1")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-10-2")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-10-3")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+							</div>
+						</div>
+						<div class="list-group-item px-3">
+							<div class="d-flex flex-row justify-content-end">
+								<div class="flex-grow-1">Ignition Sources</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-11-1")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-11-2")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-11-3")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+							</div>
+						</div>
+						<div class="list-group-item px-3">
+							<div class="d-flex flex-row justify-content-end">
+								<div class="flex-grow-1">
+									<div class="d-flex flex-row align-items-center">
+										<label>Other</label>
+										<div class="ms-2">
+											@(Html.Kendo().TextBox()
+													.Name("tbxFormBHazard-12-0")
+													.Size(ComponentSize.Small)
+													.Rounded(Rounded.Medium)
+													.FillMode(FillMode.Outline))
+										</div>
+									</div>
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-12-1")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-12-2")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-12-3")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+							</div>
+						</div>
+						<div class="list-group-item px-3">
+							<div class="d-flex flex-row justify-content-end">
+								<div class="flex-grow-1">
+									<div class="d-flex flex-row align-items-center">
+										<label>Other</label>
+										<div class="ms-2">
+											@(Html.Kendo().TextBox()
+													.Name("tbxFormBHazard-13-0")
+													.Size(ComponentSize.Small)
+													.Rounded(Rounded.Medium)
+													.FillMode(FillMode.Outline))
+										</div>
+									</div>
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-13-1")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-13-2")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-13-3")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+							</div>
+						</div>
+						<div class="list-group-item px-3">
+							<div class="d-flex flex-row justify-content-end">
+								<div class="flex-grow-1">
+									<div class="d-flex flex-row align-items-center">
+										<label>Other</label>
+										<div class="ms-2">
+											@(Html.Kendo().TextBox()
+													.Name("tbxFormBHazard-14-0")
+													.Size(ComponentSize.Small)
+													.Rounded(Rounded.Medium)
+													.FillMode(FillMode.Outline))
+										</div>
+									</div>
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-14-1")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-14-2")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+								<div class="hazard-option text-center mx-1">
+									@(Html.Kendo().CheckBox()
+											.Name("chkFormBHazard-14-3")
+											.Size(ComponentSize.Large)
+											.Rounded(BasicRounded.Medium))
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">COMMUNICATION REQUIREMENTS</h3>
+				</div>
+				<div class="px-2 mb-4">
+					<div class="mb-2">
+						Check the (√) means of communication to be used
+					</div>
+					<div class="d-flex flex-column align-items-md-center flex-md-row mb-3">
+						<div class="me-5 mb-3 mb-md-0">
+							@(Html.Kendo().CheckBox()
+									.Name("chkFormBComm1")
+									.Label("  Radio")
+									.Size(ComponentSize.Large)
+									.Rounded(BasicRounded.Medium))
+						</div>
+						<div class="me-5 mb-3 mb-md-0">
+							@(Html.Kendo().CheckBox()
+									.Name("chkFormBComm2")
+									.Label("  Voice")
+									.Size(ComponentSize.Large)
+									.Rounded(BasicRounded.Medium))
+						</div>
+						<div class="me-5 mb-3 mb-md-0">
+							@(Html.Kendo().CheckBox()
+									.Name("chkFormBComm3")
+									.Label("  Visual")
+									.Size(ComponentSize.Large)
+									.Rounded(BasicRounded.Medium))
+						</div>
+						<div class="me-3 mb-3 mb-md-0">
+							@(Html.Kendo().CheckBox()
+									.Name("chkFormBComm4")
+									.Label("  Other")
+									.Size(ComponentSize.Large)
+									.Rounded(BasicRounded.Medium))
+						</div>
+						<div>
+							@(Html.Kendo().TextBox()
+									.Name("tbxFormBComm4")
+									.Size(ComponentSize.Medium)
+									.Rounded(Rounded.Large)
+									.FillMode(FillMode.Outline))
+						</div>
+					</div>
+					<div>
+						<ul>
+							<li>
+								The Attendant must be able to communicate with the worker(s) inside the confined space at all times.
+							</li>
+							<li>
+								Should the Attendant be unable to establish communications after several attempts, activate the Rescue Plan
+							</li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">Personal Protective and Emergency/Rescue Equipment Required On Site</h3>
+				</div>
+				<div class="px-2 mb-4">
+					<div class="mb-3">
+						Check items below in addition to the PPE specified on base PWT. Respiratory equipment requires fitness to work acceptability.
+					</div>
+					<div>
+						<div class="list-group list-group-flush">
+							<div class="list-group-item bg-light px-3">
+								<div class="d-flex flex-row justify-content-end">
+									<div class="flex-grow-1"><h3 class="mb-0">PPE EQUIPMENT</h3></div>
+									<div class="hazard-option text-center mx-1"><h3 class="mb-0">YES</h3></div>
+									<div class="hazard-option text-center mx-1"><h3 class="mb-0">NO</h3></div>
+									<div class="hazard-option text-center mx-1"><h3 class="mb-0">N/A</h3></div>
+								</div>
+							</div>
+							<div class="list-group-item px-3">
+								<div class="d-flex flex-row justify-content-end">
+									<div class="flex-grow-1">Self Contained Breathing Apparatus</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-01-1")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-01-2")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-01-3")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+								</div>
+							</div>
+							<div class="list-group-item px-3">
+								<div class="d-flex flex-row justify-content-end">
+									<div class="flex-grow-1">Supplied Air Breathing Apparatus</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-02-1")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-02-2")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-02-3")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+								</div>
+							</div>
+							<div class="list-group-item px-3">
+								<div class="d-flex flex-row justify-content-end">
+									<div class="flex-grow-1">
+										Ground Fault interrupters in place for portable lighting and small electrical tools
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-03-1")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-03-2")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-03-3")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+								</div>
+							</div>
+							<div class="list-group-item px-3">
+								<div class="d-flex flex-row justify-content-end">
+									<div class="flex-grow-1">
+										Ropes (Life Lines)
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-04-1")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-04-2")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-04-3")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+								</div>
+							</div>
+							<div class="list-group-item px-3">
+								<div class="d-flex flex-row justify-content-end">
+									<div class="flex-grow-1">
+										Full Body Harness
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-05-1")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-05-2")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-05-3")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+								</div>
+							</div>
+							<div class="list-group-item px-3">
+								<div class="d-flex flex-row justify-content-end">
+									<div class="flex-grow-1">
+										Head, Hearing, Hand, Foot, And Body Protection Provided
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-06-1")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-06-2")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-06-3")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+								</div>
+							</div>
+							<div class="list-group-item px-3">
+								<div class="d-flex flex-row justify-content-end">
+									<div class="flex-grow-1">
+										Barriers in place to prevent unauthorized access/entry to confined space
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-07-1")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-07-2")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-07-3")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+								</div>
+							</div>
+							<div class="list-group-item px-3">
+								<div class="d-flex flex-row justify-content-end">
+									<div class="flex-grow-1">
+										Ventilation equipment
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-08-1")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-08-2")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-08-3")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+								</div>
+							</div>
+							<div class="list-group-item px-3">
+								<div class="d-flex flex-row justify-content-end">
+									<div class="flex-grow-1">
+										Calibrated Gas testing equipment
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-09-1")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-09-2")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-09-3")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+								</div>
+							</div>
+							<div class="list-group-item px-3">
+								<div class="d-flex flex-row justify-content-end">
+									<div class="flex-grow-1">
+										Portable Lighting
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-10-1")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-10-2")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-10-3")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+								</div>
+							</div>
+							<div class="list-group-item px-3">
+								<div class="d-flex flex-row justify-content-end">
+									<div class="flex-grow-1">
+										<div class="d-flex flex-row align-items-center">
+											<label>Other</label>
+											<div class="ms-2">
+												@(Html.Kendo().TextBox()
+														.Name("tbxFormBPPEEquip-11-0")
+														.Size(ComponentSize.Small)
+														.Rounded(Rounded.Medium)
+														.FillMode(FillMode.Outline))
+											</div>
+										</div>
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-11-1")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-11-2")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBPPEEquip-11-3")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+								</div>
+							</div>
+							<div class="list-group-item bg-light px-3">
+								<div class="d-flex flex-row justify-content-end">
+									<div class="flex-grow-1"><h3 class="mb-0">RESCUE EQUIPMENT</h3></div>
+								</div>
+							</div>
+							<div class="list-group-item px-3">
+								<div class="d-flex flex-row justify-content-end">
+									<div class="flex-grow-1">
+										Confined Space Rescue Package
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBRescueEquip-01-1")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBRescueEquip-01-2")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBRescueEquip-01-3")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+								</div>
+							</div>
+							<div class="list-group-item px-3">
+								<div class="d-flex flex-row justify-content-end">
+									<div class="flex-grow-1">
+										<span class="ms-4">Horizontal</span>
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBRescueEquip-02-1")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBRescueEquip-02-2")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBRescueEquip-02-3")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+								</div>
+							</div>
+							<div class="list-group-item px-3">
+								<div class="d-flex flex-row justify-content-end">
+									<div class="flex-grow-1">
+										<span class="ms-4">Vertical</span>
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBRescueEquip-03-1")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBRescueEquip-03-2")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBRescueEquip-03-3")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+								</div>
+							</div>
+							<div class="list-group-item px-3">
+								<div class="d-flex flex-row justify-content-end">
+									<div class="flex-grow-1">
+										Portable Breathing Air Systems
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBRescueEquip-04-1")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBRescueEquip-04-2")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBRescueEquip-04-3")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+								</div>
+							</div>
+							<div class="list-group-item px-3">
+								<div class="d-flex flex-row justify-content-end">
+									<div class="flex-grow-1">
+										Safe exit (ladders or other means in place)
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBRescueEquip-05-1")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBRescueEquip-05-2")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBRescueEquip-05-3")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+								</div>
+							</div>
+							<div class="list-group-item px-3">
+								<div class="d-flex flex-row justify-content-end">
+									<div class="flex-grow-1">
+										Defibrillator available?
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBRescueEquip-06-1")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBRescueEquip-06-2")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBRescueEquip-06-3")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+								</div>
+							</div>
+							<div class="list-group-item px-3">
+								<div class="d-flex flex-row justify-content-end">
+									<div class="flex-grow-1">
+										Fire Extinguishers available?
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBRescueEquip-07-1")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBRescueEquip-07-2")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBRescueEquip-07-3")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+								</div>
+							</div>
+							<div class="list-group-item px-3">
+								<div class="d-flex flex-row justify-content-end">
+									<div class="flex-grow-1">
+										<div class="d-flex flex-row align-items-center">
+											<label>Other</label>
+											<div class="ms-2">
+												@(Html.Kendo().TextBox()
+														.Name("tbxFormBRescueEquip-08-0")
+														.Size(ComponentSize.Small)
+														.Rounded(Rounded.Medium)
+														.FillMode(FillMode.Outline))
+											</div>
+										</div>
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBRescueEquip-08-1")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBRescueEquip-08-2")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+									<div class="hazard-option text-center mx-1">
+										@(Html.Kendo().CheckBox()
+												.Name("chkFormBRescueEquip-08-3")
+												.Size(ComponentSize.Large)
+												.Rounded(BasicRounded.Medium))
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">Validity of the Confined Space Permit</h3>
+				</div>
+				<div class="px-2 mb-4">
+					<div class="mb-3">
+						I certify that I have reviewed the proposed work and I am satisfied that the workers understand the hazards
+						and that preventive measures are in place with adequate supervision to proceed.
+					</div>
+					<div class="mb-3">
+						<div class="mb-2">
+							Confined Space Permit is allowed between
+						</div>
+						<div class="d-flex flex-column flex-md-row justify-content-evenly mb-3">
+							<div class="w-100 me-0 me-md-3 mb-3 mb-md-0">
+								@(Html.Kendo().TimePicker()
+										.Name("tmpFormB-TimeAllowedFrom")
+										.Label(x => x.Content("From"))
+										.DateInput())
+							</div>
+							<div class="w-100 ms-0 ms-md-3">
+								@(Html.Kendo().TimePicker()
+										.Name("tmpFormB-TimeAllowedTo")
+										.Label(x => x.Content("To"))
+										.DateInput())
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">Confined Space Certificate is Withdrawn</h3>
+				</div>
+				<div class="px-2 mb-4">
+					<div class="d-flex flex-row align-items-center">
+						<div class="me-5">
+							@(Html.Kendo().Switch()
+									.Name("swtFormB-Withdrawn")
+									.Size(ComponentSize.Small)
+									.Messages(x => x.Checked("YES").Unchecked("NO"))
+									.Events(x => x.Change("onChangeWithdrawnFormB")))
+						</div>
+						<label class="form-label me-3" for="tbWithdrawnReason">Reason</label>
+						<div class="flex-grow-1">
+							@(Html.Kendo().TextBox()
+									.Name("tbxFormB-Withdrawn-Reason")
+									.Enable(false)
+									.Size(ComponentSize.Medium)
+									.Rounded(Rounded.Large)
+									.FillMode(FillMode.Outline))
+						</div>
+					</div>
+				</div>
+
+				<div class="bg-light p-2 mb-3 border-top border-bottom border-secondary">
+					<h3 class="mb-0">Confined Space Entry Record</h3>
+				</div>
+				<div class="px-2 mb-4">
+					<div>
+						<table id="tbl2FormB" class="table table-striped display responsive" style="width: 100%;">
+							<thead>
+								<tr>
+									<th scope="col" class="">Worker Name</th>
+									<th scope="col" class="">Worker Signature</th>
+									<th scope="col" class="">Reason For Entry</th>
+									<th scope="col" class="">Time Of Entry</th>
+									<th scope="col" class="">Time Of Exit</th>
+									<th scope="col" class="">&nbsp;</th>
+								</tr>
+							</thead>
+						</table>
+
+						<div class="d-flex flex-row justify-content-end mt-3">
+							<button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#dlgFormB-Entry"><span class="mx-3">Add entry</span></button>
+						</div>
+					</div>
+				</div>
+
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-primary" id="btnSaveFormB" data-bs-dismiss="modal">Save changes</button>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- Modal: ADD GAS READING -->
+<div class="modal fade" id="dlgFormBGasRead" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="dlgFormBGasReadLabel" aria-hidden="true">
+	<div class="modal-dialog modal-sm modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header bg-warning-soft">
+				<h2 class="modal-title" id="dlgFormBGasReadLabel">Add gas reading</h2>
+				<button type="button" class="btn-close" data-bs-toggle="modal" data-bs-target="#dlgFormB" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<div>
+					<div class="mb-3">
+						@(Html.Kendo().TimePicker()
+								.Name("dtmFormBGasReadTime")
+								.Label(x => x.Content("Time of test"))
+								.DateInput())
+					</div>
+					<div class="mb-3">
+						@(Html.Kendo().TextBox()
+								.Name("tbFormBGasReadGasPercentageLEL")
+								.Label(x => x.Content("Flammable gas % LEL"))
+								.Size(ComponentSize.Medium)
+								.Rounded(Rounded.Large)
+								.FillMode(FillMode.Outline))
+					</div>
+					<div class="mb-3">
+						@(Html.Kendo().TextBox()
+								.Name("tbFormBGasReadOxyPercentage")
+								.Label(x => x.Content("Oxygen %"))
+								.Size(ComponentSize.Medium)
+								.Rounded(Rounded.Large)
+								.FillMode(FillMode.Outline))
+					</div>
+					<div class="mb-3">
+						@(Html.Kendo().TextBox()
+								.Name("tbFormBGasReadOxyToxic1")
+								.Label(x => x.Content("Toxic 1"))
+								.Size(ComponentSize.Medium)
+								.Rounded(Rounded.Large)
+								.FillMode(FillMode.Outline))
+					</div>
+					<div>
+						@(Html.Kendo().TextBox()
+								.Name("tbFormBGasReadOxyToxic2")
+								.Label(x => x.Content("Toxic 2"))
+								.Size(ComponentSize.Medium)
+								.Rounded(Rounded.Large)
+								.FillMode(FillMode.Outline))
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#dlgFormB">Close</button>
+				<button type="button" class="btn btn-primary btn-add-gas-reading" data-bs-toggle="modal" data-bs-target="#dlgFormB">Save changes</button>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- Modal: ADD ENTRY RECORD -->
+<div class="modal fade" id="dlgFormB-Entry" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="dlgFormB-EntryLabel" aria-hidden="true">
+	<div class="modal-dialog modal-sm modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header bg-warning-soft">
+				<h2 class="modal-title" id="dlgFormB-EntryLabel">Add entry record</h2>
+				<button type="button" class="btn-close" data-bs-toggle="modal" data-bs-target="#dlgFormB" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<div>
+					<div class="mb-3">
+						@(Html.Kendo().TextBox()
+								.Name("tbxFormB-Entry-WorkerName")
+								.Label(x => x.Content("Worker name"))
+								.Size(ComponentSize.Medium)
+								.Rounded(Rounded.Large)
+								.FillMode(FillMode.Outline)
+								.Events(x => x.Change("entryRecordsOnChange")))
+					</div>
+					<div class="mb-3">
+						@(Html.Kendo().TextBox()
+								.Name("tbxFormB-Entry-WorkerSignature")
+								.Label(x => x.Content("Worker signature"))
+								.Size(ComponentSize.Medium)
+								.Rounded(Rounded.Large)
+								.FillMode(FillMode.Outline)
+								.Events(x => x.Change("entryRecordsOnChange")))
+					</div>
+					<div class="mb-3">
+						@(Html.Kendo().TextArea()
+								.Name("txtFormB-Entry-Reason")
+								.Label(x => x.Content("Reason for entry"))
+								.Rounded(Rounded.Large)
+								.FillMode(FillMode.Outline)
+								.Rows(2)
+								.Events(x => x.Change("entryRecordsOnChange")))
+					</div>
+					<div class="mb-3">
+						@(Html.Kendo().TimePicker()
+								.Name("tpkFormB-Entry-TimeEntry")
+								.Label(x => x.Content("Time of entry"))
+								.DateInput()
+								.Events(x => x.Change("entryRecordsOnChange")))
+					</div>
+					<div>
+						@(Html.Kendo().TimePicker()
+								.Name("tpkFormB-Entry-TimeExit")
+								.Label(x => x.Content("Time of exit"))
+								.DateInput()
+								.Events(x => x.Change("entryRecordsOnChange")))
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#dlgFormB">Close</button>
+				<button type="button" class="btn btn-primary disabled" data-bs-toggle="modal" data-bs-target="#dlgFormB" disabled>Save changes</button>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->

@@ -1,0 +1,55 @@
+﻿#nullable disable
+
+using PermitPro.Core.Entities;
+using PermitPro.Core.Enums;
+
+namespace PermitPro.App.ViewModels;
+
+public record EditPermitViewModel
+{
+	public string PermitNo { get; set; }
+
+	public Guid PermitId { get; set; }
+
+	public string PermitJson { get; set; }
+
+	public string WorkflowStepName { get; set; }
+
+	public bool ExecuteWorkflowAction { get; set; }
+
+	public string AlertBgColor { get; set; }
+
+	public PermitStatusEnum PermitStatus { get; set; }
+
+	public string PermitStatusDisplay { get; set; }
+
+	public string PermitCreatedByInfo { get; set; }
+	public string PermitUpdatedByInfo { get; set; }
+
+	public Guid CompanyId { get; set; }
+
+	public IList<string> UserRoles { get; set; }
+
+	public IEnumerable<WorkflowHistoryViewModel> WorkflowHistories { get; set; }
+
+	public Site Location {  get; set; }
+
+	public DateTime? SuspendDate { get; set; }
+
+	public bool SuspendAutoResume { get; set; }
+
+	public long UploadFileSizeLimit
+	{
+		get { return Convert.ToInt32(Environment.GetEnvironmentVariable("UPLOAD_MAX_FILE_SIZE")); }
+	}
+
+	public int UploadMaxFileCount
+	{
+		get { return Convert.ToInt32(Environment.GetEnvironmentVariable("UPLOAD_MAX_FILE_COUNT")); }
+	}
+
+	public string[] UploadAllowedFileTypes
+	{
+		get { return Environment.GetEnvironmentVariable("UPLOAD_ALLOWED_FILE_TYPES").ToString().Split(";"); }
+	}
+}

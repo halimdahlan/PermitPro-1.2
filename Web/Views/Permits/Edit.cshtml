@@ -1,0 +1,3391 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+	ViewData["Title"] = "Permits";
+	ViewData["SubTitle"] = "Edit permit";
+}
+
+@model EditPermitViewModel
+
+<div class="d-flex flex-column flex-md-row mb-2">
+	<div id="form-permit" class="flex-grow-1 mb-3">
+		<div id="systemAlert" class="alert mb-2" role="alert" style="display: none;">
+			<div class="d-flex align-items-center">
+				<div class="alert-icon">
+					<i class="fa-solid fa-triangle-exclamation"></i>
+				</div>
+				<div class="ms-3 alert-message"></div>
+			</div>
+		</div>
+
+		<div class="alert alert-@Model.AlertBgColor" role="alert">
+			<div class="d-flex flex-row align-items-center">
+				<div>
+					<a class="me-3 text-white" href="/@Model.CompanyId/permits"><i class="fa-sharp fa-regular fa-chevron-left fa-xl"></i></a>
+				</div>
+				<h2 class="mb-0">@Model.PermitNo</h2>
+				<div class="w-100 text-end">
+					<span>@Model.PermitStatusDisplay</span>
+				</div>
+			</div>
+		</div>
+		<form id="formPermit" enctype="multipart/form-data">
+			<div class="accordion permit-new" id="accordionPermit">
+				<div class="accordion-item">
+					<partial name="~/Views/Permits/Panels/_GeneralInfo.cshtml" model="Model" />
+				</div>
+				<div class="accordion-item">
+					<partial name="~/Views/Permits/Panels/_PermitHolderInfo.cshtml" model="Model" />
+				</div>
+				<div class="accordion-item">
+					<partial name="~/Views/Permits/Panels/_OperationalInfo.cshtml" model="Model" />
+				</div>
+				<div class="accordion-item">
+					<partial name="~/Views/Permits/Panels/_OperationalMeasures.cshtml" model="Model" />
+				</div>
+				<div class="accordion-item">
+					<partial name="~/Views/Permits/Panels/_PPEWorkArea.cshtml" model="Model" />
+				</div>
+				<div class="accordion-item">
+					<partial name="~/Views/Permits/Panels/_Precautions.cshtml" model="Model" />
+				</div>
+				<div class="accordion-item">
+					<partial name="~/Views/Permits/Panels/_Notes.cshtml" model="Model" />
+				</div>
+				<div class="accordion-item">
+					<partial name="~/Views/Permits/Panels/_FileAttachments.cshtml" model="Model" />
+				</div>
+				<div class="accordion-item">
+					<partial name="~/Views/Permits/Panels/_WorkflowHistory.cshtml" model="Model" />
+				</div>
+			</div>
+
+			<div class="mx-2 my-2">
+				<div><small>Created by: @Model.PermitCreatedByInfo</small></div>
+				<div><small>Updated by: @Model.PermitUpdatedByInfo</small></div>
+			</div>
+
+			<div class="d-md-flex flex-row align-items-center justify-content-between mt-5 d-none mb-5">
+				<div>
+					<a asp-controller="permits" asp-action="index"><i class="fa-sharp fa-solid fa-chevrons-left me-2"></i> Back</a>
+				</div>
+				<div>
+					@if (Model.PermitStatus == PermitPro.Core.Enums.PermitStatusEnum.Draft)
+					{
+						<button type="button" class="btn btn-secondary btn-draft me-2"><span class="mx-3">Save as draft</span></button>
+						<button type="button" class="btn btn-primary btn-approval me-4"><span class="mx-3">Submit for approval</span></button>
+						<button type="button" class="btn btn-danger btn-delete" data-id="@Model.PermitId"><span class="mx-3">Delete</span></button>
+					}
+				</div>
+			</div>
+			<input type="hidden" id="formJson" />
+		</form>
+	</div>
+
+	<div class="ms-0 ms-md-5 attached-certs mt-5 mt-md-0">
+		<div>
+			<h3>ATTACHED CERTIFICATES</h3>
+			<ul class="list-group shadow-sm selected-certs">
+				<li class="list-group-item fade show">
+					<span>No associated certificate attached</span>
+				</li>
+			</ul>
+		</div>
+
+		@if (Model.PermitStatus == PermitPro.Core.Enums.PermitStatusEnum.Pending && Model.ExecuteWorkflowAction)
+		{
+			<div class="mt-5">
+				<h3>PERMIT APPROVAL</h3>
+				<div class="card shadow-sm">
+					<div class="card-body">
+						<div class="form-group mb-3">
+							<label class="form-label" for="txtComments">Comments</label>
+							@(
+								Html.Kendo().TextArea()
+									.Name("txtComments")
+									.Rows(3)
+									.Size(ComponentSize.Medium)
+									.Rounded(Rounded.Large)
+									.FillMode(FillMode.Outline)
+							)
+						</div>
+						<div class="d-flex flex-row justify-content-evenly align-items-center">
+							<div class="flex-grow-1 me-2">
+								<button type="button" class="btn btn-danger w-100 btn-workflow-action" data-mode="reject"><span class="mx-3">REJECT</span></button>
+							</div>
+							<div class="flex-grow-1 ms-2">
+								<button type="button" class="btn btn-primary w-100 btn-workflow-action" data-mode="approve"><span class="mx-3">APPROVE</span></button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+
+		@if (Model.PermitStatus == PermitPro.Core.Enums.PermitStatusEnum.Pending || 
+			Model.PermitStatus == PermitPro.Core.Enums.PermitStatusEnum.Suspended ||
+			Model.PermitStatus == PermitPro.Core.Enums.PermitStatusEnum.Approved)
+		{
+			<div class="mt-5">
+				<h3>SUSPEND PERMIT</h3>
+				<div class="card shadow-sm">
+					<div class="card-body">
+						<div class="d-flex flex-row align-items-center" style="height:38px;">
+							<div class="me-3">
+								@(
+									Html.Kendo().Switch()
+										.Name("swSuspend")
+										.Size(ComponentSize.Small)
+										.Messages(x => x.Checked("YES").Unchecked("NO"))
+										.Checked(false)
+										.Events(ev => ev.Change("onSuspendChange"))
+								)
+							</div>
+							<div class="flex-grow-1 suspend-date">
+								<div class="d-flex flex-row align-items-center">
+									<div class="me-3">until</div>
+									<div class="flex-grow-1">
+										@(
+											Html.Kendo().DatePicker()
+												.Name("suspendDate")
+												.Format("{0:dd/MM/yyyy}")
+												.Min(DateTime.Now)
+												.Enable(false)
+												.Size(ComponentSize.Small)
+												.Rounded(Rounded.Large)
+												.FillMode(FillMode.Outline)
+												.AdaptiveMode(AdaptiveMode.Auto)
+												.ComponentType("modern")
+												.DateInput()
+												.HtmlAttributes(new { @class = "", style = "width:100%" })
+										)
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="suspend-date mt-2">
+							<div class="d-flex flex-row align-items-center">
+								<div>
+									@(
+										Html.Kendo().CheckBox()
+											.Name("suspendAutoResume")
+											.Checked(false)
+											.Enable(false)
+											.Label("Auto-resume")
+											.Events(ev => ev.Change("onAutoResumeChange"))
+									)
+								</div>
+								<div class="flex-grow-1">
+									<div class="d-flex flex-row align-items-center justify-content-end">
+										<div>
+											<a href="javascript:;" class="no-loading suspend-clear me-3">Clear</a>
+										</div>
+										<button type="button" class="btn btn-sm btn-secondary btn-suspend disable" disabled><span class="mx-3"></span></button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+
+
+		@if (Model.PermitStatus == PermitPro.Core.Enums.PermitStatusEnum.Draft || Model.PermitStatus == PermitPro.Core.Enums.PermitStatusEnum.Closed)
+		{
+			<div class="mt-5">
+				<button class="btn btn-info shadow-sm btn-export" type="button">
+					<span class="mx-3">Export to PDF <i class="fa-duotone fa-file-pdf fa-xl ms-2"></i></span>
+				</button>
+			</div>
+		}
+
+		
+		@if (Model.PermitStatus == PermitPro.Core.Enums.PermitStatusEnum.Approved)
+		{
+			<div class="mt-5">
+				<button class="btn btn-info shadow-sm btn-export" type="button">
+					<span class="mx-3">Export to PDF <i class="fa-duotone fa-file-pdf fa-xl ms-2"></i></span>
+				</button>
+			</div>
+			<hr />
+			<div class="d-flex flex-row align-items-center">
+				<div class="w-100">Mark permit as closed</div>
+				<div>
+					@(
+						Html.Kendo().Switch()
+							.Name("swMarkAsClosed")
+							.Size(ComponentSize.Small)
+							.Messages(x => x.Checked("YES").Unchecked("NO"))
+							.Events(ev => ev.Change("onMarkAsClosedChange"))
+					)
+				</div>
+			</div>
+			<div class="mt-3 close-notes" style="display:none;">
+				<div class="card border shadow-sm">
+					<div class="card-body">
+						<div>
+							@(
+								Html.Kendo().TextArea()
+									.Name("txtNotes")
+									.Label(lbl => lbl.Content("Notes"))
+									.Rows(2)
+									.Size(ComponentSize.Medium)
+									.Rounded(Rounded.Large)
+									.FillMode(FillMode.Outline)
+							)
+						</div>
+						<div class="mt-3 d-flex flex-row justify-content-end">
+							<button type="button" class="btn btn-primary btn-mark-closed" data-id="@Model.PermitId"><span class="mx-3">Mark as closed</span></button>
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+	</div>
+
+	<div class="d-flex flex-row align-items-center justify-content-between mt-5 d-md-none mb-5">
+		<div>
+			<a asp-controller="permits" asp-action="index"><i class="fa-sharp fa-solid fa-chevrons-left me-2"></i> Back</a>
+		</div>
+		<div>
+			@if (Model.PermitStatus == PermitPro.Core.Enums.PermitStatusEnum.Draft)
+			{
+				<button type="button" class="btn btn-secondary btn-draft me-2"><span class="mx-2">Save as draft</span></button>
+				<button type="button" class="btn btn-primary btn-approval me-4"><span class="mx-3">Submit for approval</span></button>
+				<button type="button" class="btn btn-danger btn-delete" data-id="@Model.PermitId"><span class="mx-3">Delete</span></button>
+			}
+		</div>
+	</div>
+</div>
+
+@await Html.PartialAsync("~/Views/Permits/Forms/_HotWork.cshtml")
+@await Html.PartialAsync("~/Views/Permits/Forms/_ConfinedSpace.cshtml")
+@await Html.PartialAsync("~/Views/Permits/Forms/_Radiation.cshtml")
+@await Html.PartialAsync("~/Views/Permits/Forms/_Excavation.cshtml")
+@await Html.PartialAsync("~/Views/Permits/Forms/_Isolation.cshtml")
+@await Html.PartialAsync("~/Views/Permits/Forms/_FormF.cshtml")
+@await Html.PartialAsync("~/Views/Permits/Forms/_FormG.cshtml")
+@await Html.PartialAsync("~/Views/Permits/Forms/_FormH.cshtml")
+
+<!-- Modal: EXPORT PDF //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+<div class="modal fade" id="dlgExportPdf" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="dlgExportPdfLabel" aria-hidden="true">
+	<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+		<div class="modal-content">
+			<div class="modal-header bg-info-soft">
+				<div class="modal-title" id="dlgExportPdfLabel">
+					Export to PDF
+				</div>
+				<a href="#" class="no-loading text-dark" data-bs-dismiss="modal" aria-label="Close"><i class="fa-sharp fa-solid fa-xmark fa-xl"></i></a>
+			</div>
+			<div class="modal-body">
+				[FORM]
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><span class="mx-3">Close</span></button>
+				<button type="button" class="btn btn-primary"><span class="mx-3">Export</span></button>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+
+
+<div class="modal fade" id="dlgInputError" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="dlgInputErrorLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header bg-danger">
+				<div class="modal-title" id="dlgInputErrorLabel">
+					<span class="text-white">Invalid Input</span>
+				</div>
+				<a href="#" class="no-loading text-white" data-bs-dismiss="modal" aria-label="Close"><i class="fa-sharp fa-solid fa-xmark fa-xl"></i></a>
+			</div>
+			<div class="modal-body">
+				<p>Please note the following error(s):</p>
+				<div id="divInputErrors"></div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><span class="mx-3">Close</span></button>
+			</div>
+		</div>
+	</div>
+</div>
+
+@Html.AntiForgeryToken()
+
+@section CustomCss {
+	<link rel="stylesheet" href="~/css/permits.css" />
+
+	<!-- DataTables -->
+	<link rel="stylesheet" href="~/lib/DataTables/datatables.min.css" />
+	<script nonce="3xecut3" src="~/lib/DataTables/datatables.min.js"></script>
+
+	<link rel="stylesheet" href="~/lib/DataTables/Responsive-2.5.0/css/responsive.dataTables.min.css" />
+	<script nonce="3xecut3" src="~/lib/DataTables/Responsive-2.5.0/js/dataTables.responsive.min.js"></script>
+
+	<script src="~/lib/FileSaver/FileSaver.min.js"></script>
+}
+
+@section Scripts {
+	<script src="~/js/permit.module.js"></script>
+	<script>
+		const currentPermitStatus = '@Model.PermitStatus';
+		const selectedCerts = [];
+		var tblFiles = null;
+
+		// Global data modification flag
+		var hotWorkDataIsDirty = false;
+
+		// Form A
+		var tblLEL = null;
+		var tblAtmos = null;
+		var lelReadings = [];
+		var atmosReadings = [];
+
+		// Form B
+		var tbl1FormB = null;
+		var tbl2FormB = null;
+		var formBGasReadings = [];
+		var formBEntryRecords = [];
+
+		// Form E
+		var tbl1FormE = null;
+		var tbl2FormE = null;
+		var formEAuthIndividuals = [];
+		var formEIsolationPointIds = [];
+
+		var suspendPermit = {
+			date: null,
+			autoResume: @Model.SuspendAutoResume.ToString().ToLower(),
+		};
+
+		const permitJson = '@Html.Raw(Model.PermitJson.Replace("\\", "\\\\"))';
+
+		PermitModule.companyId('@Model.CompanyId');
+		PermitModule.permitId('@Model.PermitId.ToString().ToLower()');
+
+		var _permitInfo = PermitModule.permitInfo();
+
+		$(document).ready(() => {
+
+			if (currentPermitStatus == 'Closed' || currentPermitStatus == 'Rejected') {
+				$('#btnSaveFormA').css('display', 'none');
+				$('#btnSaveFormB').css('display', 'none');
+				$('#btnSaveFormC').css('display', 'none');
+				$('#btnSaveFormD').css('display', 'none');
+				$('#btnSaveFormE').css('display', 'none');
+				$('#btnSaveFormF').css('display', 'none');
+				$('#btnSaveFormG').css('display', 'none');
+				$('#btnSaveFormH').css('display', 'none');
+			}
+
+			_permitInfo = JSON.parse(permitJson);
+
+			//console.log(_permitInfo);
+
+			var permitStartDateTime = moment(_permitInfo.general.startDateTime);
+			var permitEndDateTime = moment(_permitInfo.general.endDateTime);
+
+			$('#ddtLocation').data('kendoDropDownTree').value('@Model.Location.Id.ToString().ToLower()');
+			$('#ddtLocation').data('kendoDropDownTree').text('@Model.Location.Name');
+
+			$('#tbPermitDesc').data('kendoTextArea').value(_permitInfo.general.description);
+			$('#startDateTime').data('kendoDatePicker').value(permitStartDateTime.format('DD/MM/YYYY'));
+			$('#endDateTime').data('kendoDatePicker').value(permitEndDateTime.format('DD/MM/YYYY'));
+			$('#tbPermitHolderInfo1').data('kendoTextBox').value(_permitInfo.permitHolder.name);
+
+			//console.log(_permitInfo);
+
+			/**
+			 * Suspend permit settings
+			 */
+			var tempSuspendDate = '@(Model.SuspendDate != null ? Model.SuspendDate!.Value.ToString("yyyy-MM-dd") : "")';
+
+			if (tempSuspendDate != '') {
+				var suspendDateSw = $('#swSuspend').data('kendoSwitch');
+				var suspendDate = $('#suspendDate').data('kendoDatePicker');
+				var suspendAutoResume = $('#suspendAutoResume').data('kendoCheckBox');
+				var dtmSuspendDate = moment(tempSuspendDate);
+
+				suspendDateSw.enable(false);
+				suspendDateSw.value(true);
+				suspendDate.value(dtmSuspendDate.format('DD/MM/YYYY'));
+				suspendAutoResume.check(suspendPermit.autoResume);
+
+				$('.suspend-clear').hide();
+				$('.btn-suspend').attr('disabled', null);
+				$('.btn-suspend span').html('Cancel');
+			} else {
+				$('.btn-suspend span').html('Suspend');
+			}
+
+			//console.log(_permitInfo.general.certificates);
+
+			if (_permitInfo.general.certificates.length > 0) {
+				$('.selected-certs').empty();
+
+				_permitInfo.general.certificates.forEach((item, index) => {
+					if (item.name == 'hotwork') {
+						var li = '<li id="item-hotwork" class="list-group-item d-flex flex-row justify-content-between align-items-center fade show">';
+
+						li += '<div class="d-flex flex-row align-items-center justify-content-between">';
+						//li += '  <div class="avatar avatar-xs">';
+						//li += '    <span class="avatar-title rounded-circle bg-info">A</span>';
+						//li += '  </div>';
+						li += '  <img title=" (A) Hot Work " src="/img/icons/certs/hotwork.png" style="width:24px;height:24px;" />';
+						li += '  <h4 class="ms-3 mb-0">HOT WORK</h4>';
+						li += '</div>';
+						li += '<div class="ms-5">';
+						li += '  <a href="#dlgFormA" class="no-loading" data-bs-toggle="modal" data-bs-target="#dlgFormA"><i class="fa-sharp fa-solid fa-pen-to-square"></i></a>';
+						li += '</div>';
+						li += '</li>';
+
+						$('.selected-certs').append(li);
+						$('#chkCertHotWork').data('kendoCheckBox').value(true);
+
+						try {
+
+							lelReadings = item.lowExplosionLevel.readings;
+							atmosReadings = item.atmosTestReadings;
+
+							$('#tbFormAEmergencyContact').data('kendoTextBox').value(item.emergencyContact);
+
+							item.workChecklist.forEach((v, i) => {
+								$('#' + v.id).data('kendoCheckBox').value(v.value);
+							});
+
+							item.ignitionSources.forEach((v, i) => {
+								let elemId = '#' + v.id;
+								$(elemId).data('kendoCheckBox').value(v.value);
+
+								//console.log(elemId);
+
+								if (elemId == '#chkFormAIgnitionSource5') {
+									$('#tbFormAIgnitionSource5').data('kendoTextBox').value(v.other);
+								}
+							});
+
+							$('#tbFormAGasTestBy').data('kendoTextArea').value(item.gasTestPerformedBy.name);
+
+							if (item.lowExplosionLevel.initialTestDateTime != null) {
+								//$('#dtmFormA1').data('kendoDateTimePicker').value(new Date(item.lowExplosionLevel.initialTestDateTime));
+							}
+
+							$('#tbFormALelReading').data('kendoTextBox').value(item.lowExplosionLevel.initialReading);
+							$('#tbLELFrequency').data('kendoTextBox').value(item.lowExplosionLevel.requiredFrequency);
+
+							if (item.permitValidity != undefined) {
+								const validityFrom = moment(item.permitValidity.from);
+								const validityTo = moment(item.permitValidity.to);
+
+								$('#tmpFormA-TimeAllowedFrom').data('kendoTimePicker').value(validityFrom.format('hh:mm A'));
+								$('#tmpFormA-TimeAllowedTo').data('kendoTimePicker').value(validityTo.format('hh:mm A'));
+							}
+
+							$('#swHotworkWithdrawn').data('kendoSwitch').value(item.permitWithdrawn.status);
+							$('#tbWithdrawnReason').data('kendoTextBox').value(item.permitWithdrawn.reason);
+
+						} catch (e) { }
+
+					}
+
+					if (item.name == 'confinedspace') {
+						var li = '<li id="item-confinedspace" class="list-group-item d-flex flex-row justify-content-between align-items-center fade show">';
+
+						li += '<div class="d-flex flex-row align-items-center justify-content-between">';
+						// li += '  <div class="avatar avatar-xs">';
+						// li += '    <span class="avatar-title rounded-circle bg-info">B</span>';
+						// li += '  </div>';
+						li += '  <img title=" (B) Confined Space " src="/img/icons/certs/confinedspace.png" style="width:24px;height:24px;" />';
+						li += '  <h4 class="ms-3 mb-0">CONFINED SPACE</h4>';
+						li += '</div>';
+						li += '<div class="ms-5">';
+						li += '  <a href="#dlgFormB" class="no-loading" data-bs-toggle="modal" data-bs-target="#dlgFormB"><i class="fa-sharp fa-solid fa-pen-to-square"></i></a>';
+						li += '</div>';
+						li += '</li>';
+
+						$('.selected-certs').append(li);
+						$('#chkCertConfinedSpace').data('kendoCheckBox').value(true);
+
+						try {
+
+							formBGasReadings = item.gasTest.readings;
+							formBEntryRecords = item.entryRecords;
+
+							$('#tbFormBAttendantNames').data('kendoTextBox').value(item.attendants);
+							$('#taFormBDescription').data('kendoTextArea').value(item.workDescription);
+							$('#tbFormBGasTestBy').data('kendoTextBox').value(item.gasTest.performedBy);
+							$('#dtmFormBInitialGasRead').data('kendoDateTimePicker').value(item.gasTest.initialTestWhen);
+							$('#tbFormBInitialLELPercentage').data('kendoTextBox').value(item.gasTest.initialLEL);
+							$('#tbFormBInitialO2Percentage').data('kendoTextBox').value(item.gasTest.initialO2);
+							$('#tbFormBDesignatedRequiredFrequency').data('kendoTextBox').value(item.requiredFrequency);
+							$('#tbFormBInitialToxic1').data('kendoTextBox').value(item.gasTest.others[0]);
+							$('#tbFormBInitialToxic2').data('kendoTextBox').value(item.gasTest.others[1]);
+
+							$('#chkFormBHazard-01-1').data('kendoCheckBox').value(item.potentialHazards.hydrogenSulphide.yes);
+							$('#chkFormBHazard-01-2').data('kendoCheckBox').value(item.potentialHazards.hydrogenSulphide.no);
+							$('#chkFormBHazard-01-3').data('kendoCheckBox').value(item.potentialHazards.hydrogenSulphide.na);
+							$('#chkFormBHazard-02-1').data('kendoCheckBox').value(item.potentialHazards.oxygenDeficiency.yes);
+							$('#chkFormBHazard-02-2').data('kendoCheckBox').value(item.potentialHazards.oxygenDeficiency.no);
+							$('#chkFormBHazard-02-3').data('kendoCheckBox').value(item.potentialHazards.oxygenDeficiency.na);
+							$('#chkFormBHazard-03-1').data('kendoCheckBox').value(item.potentialHazards.flammableGas.yes);
+							$('#chkFormBHazard-03-2').data('kendoCheckBox').value(item.potentialHazards.flammableGas.no);
+							$('#chkFormBHazard-03-3').data('kendoCheckBox').value(item.potentialHazards.flammableGas.na);
+							$('#chkFormBHazard-04-1').data('kendoCheckBox').value(item.potentialHazards.flammableSolids.yes);
+							$('#chkFormBHazard-04-2').data('kendoCheckBox').value(item.potentialHazards.flammableSolids.no);
+							$('#chkFormBHazard-04-3').data('kendoCheckBox').value(item.potentialHazards.flammableSolids.na);
+							$('#chkFormBHazard-05-1').data('kendoCheckBox').value(item.potentialHazards.electrical.yes);
+							$('#chkFormBHazard-05-2').data('kendoCheckBox').value(item.potentialHazards.electrical.no);
+							$('#chkFormBHazard-05-3').data('kendoCheckBox').value(item.potentialHazards.electrical.na);
+							$('#chkFormBHazard-06-1').data('kendoCheckBox').value(item.potentialHazards.ionizingRadiation.yes);
+							$('#chkFormBHazard-06-2').data('kendoCheckBox').value(item.potentialHazards.ionizingRadiation.no);
+							$('#chkFormBHazard-06-3').data('kendoCheckBox').value(item.potentialHazards.ionizingRadiation.na);
+							$('#chkFormBHazard-07-1').data('kendoCheckBox').value(item.potentialHazards.belowGroundLevel.yes);
+							$('#chkFormBHazard-07-2').data('kendoCheckBox').value(item.potentialHazards.belowGroundLevel.no);
+							$('#chkFormBHazard-07-3').data('kendoCheckBox').value(item.potentialHazards.belowGroundLevel.na);
+							$('#chkFormBHazard-08-1').data('kendoCheckBox').value(item.potentialHazards.environmentalConditions.yes);
+							$('#chkFormBHazard-08-2').data('kendoCheckBox').value(item.potentialHazards.environmentalConditions.no);
+							$('#chkFormBHazard-08-3').data('kendoCheckBox').value(item.potentialHazards.environmentalConditions.na);
+							$('#chkFormBHazard-09-1').data('kendoCheckBox').value(item.potentialHazards.engulfmentLiquidsOrSolids.yes);
+							$('#chkFormBHazard-09-2').data('kendoCheckBox').value(item.potentialHazards.engulfmentLiquidsOrSolids.no);
+							$('#chkFormBHazard-09-3').data('kendoCheckBox').value(item.potentialHazards.engulfmentLiquidsOrSolids.na);
+							$('#chkFormBHazard-10-1').data('kendoCheckBox').value(item.potentialHazards.temperature.yes);
+							$('#chkFormBHazard-10-2').data('kendoCheckBox').value(item.potentialHazards.temperature.no);
+							$('#chkFormBHazard-10-3').data('kendoCheckBox').value(item.potentialHazards.temperature.na);
+							$('#chkFormBHazard-11-1').data('kendoCheckBox').value(item.potentialHazards.ignitionSources.yes);
+							$('#chkFormBHazard-11-2').data('kendoCheckBox').value(item.potentialHazards.ignitionSources.no);
+							$('#chkFormBHazard-11-3').data('kendoCheckBox').value(item.potentialHazards.ignitionSources.na);
+							$('#chkFormBHazard-12-1').data('kendoCheckBox').value(item.potentialHazards.other1.yes);
+							$('#chkFormBHazard-12-2').data('kendoCheckBox').value(item.potentialHazards.other1.no);
+							$('#chkFormBHazard-12-3').data('kendoCheckBox').value(item.potentialHazards.other1.na);
+							$('#tbxFormBHazard-12-0').data('kendoTextBox').value(item.potentialHazards.other1.value);
+							$('#chkFormBHazard-13-1').data('kendoCheckBox').value(item.potentialHazards.other2.yes);
+							$('#chkFormBHazard-13-2').data('kendoCheckBox').value(item.potentialHazards.other2.no);
+							$('#chkFormBHazard-13-3').data('kendoCheckBox').value(item.potentialHazards.other2.na);
+							$('#tbxFormBHazard-13-0').data('kendoTextBox').value(item.potentialHazards.other2.value);
+							$('#chkFormBHazard-14-1').data('kendoCheckBox').value(item.potentialHazards.other3.yes);
+							$('#chkFormBHazard-14-2').data('kendoCheckBox').value(item.potentialHazards.other3.no);
+							$('#chkFormBHazard-14-3').data('kendoCheckBox').value(item.potentialHazards.other3.na);
+							$('#tbxFormBHazard-14-0').data('kendoTextBox').value(item.potentialHazards.other3.value);
+
+							$('#chkFormBComm1').data('kendoCheckBox').value(item.communicationRequirements.radio);
+							$('#chkFormBComm2').data('kendoCheckBox').value(item.communicationRequirements.voice);
+							$('#chkFormBComm3').data('kendoCheckBox').value(item.communicationRequirements.visual);
+							$('#chkFormBComm4').data('kendoCheckBox').value(item.communicationRequirements.other.state);
+							$('#tbxFormBComm4').data('kendoTextBox').value(item.communicationRequirements.other.value);
+
+							$('#chkFormBPPEEquip-01-1').data('kendoCheckBox').value(item.ppeEquipment.selfContainedBreathingApparatus.yes);
+							$('#chkFormBPPEEquip-01-2').data('kendoCheckBox').value(item.ppeEquipment.selfContainedBreathingApparatus.no);
+							$('#chkFormBPPEEquip-01-3').data('kendoCheckBox').value(item.ppeEquipment.selfContainedBreathingApparatus.na);
+
+							$('#chkFormBPPEEquip-02-1').data('kendoCheckBox').value(item.ppeEquipment.suppliedAirBreathingApparatus.yes);
+							$('#chkFormBPPEEquip-02-2').data('kendoCheckBox').value(item.ppeEquipment.suppliedAirBreathingApparatus.no);
+							$('#chkFormBPPEEquip-02-3').data('kendoCheckBox').value(item.ppeEquipment.suppliedAirBreathingApparatus.na);
+
+							$('#chkFormBPPEEquip-03-1').data('kendoCheckBox').value(item.ppeEquipment.groundFaultInterrupters.yes);
+							$('#chkFormBPPEEquip-03-2').data('kendoCheckBox').value(item.ppeEquipment.groundFaultInterrupters.no);
+							$('#chkFormBPPEEquip-03-3').data('kendoCheckBox').value(item.ppeEquipment.groundFaultInterrupters.na);
+
+							$('#chkFormBPPEEquip-04-1').data('kendoCheckBox').value(item.ppeEquipment.ropes.yes);
+							$('#chkFormBPPEEquip-04-2').data('kendoCheckBox').value(item.ppeEquipment.ropes.no);
+							$('#chkFormBPPEEquip-04-3').data('kendoCheckBox').value(item.ppeEquipment.ropes.na);
+
+							$('#chkFormBPPEEquip-05-1').data('kendoCheckBox').value(item.ppeEquipment.fullBodyHarness.yes);
+							$('#chkFormBPPEEquip-05-2').data('kendoCheckBox').value(item.ppeEquipment.fullBodyHarness.no);
+							$('#chkFormBPPEEquip-05-3').data('kendoCheckBox').value(item.ppeEquipment.fullBodyHarness.na);
+
+							$('#chkFormBPPEEquip-06-1').data('kendoCheckBox').value(item.ppeEquipment.protectionProvided.yes);
+							$('#chkFormBPPEEquip-06-2').data('kendoCheckBox').value(item.ppeEquipment.protectionProvided.no);
+							$('#chkFormBPPEEquip-06-3').data('kendoCheckBox').value(item.ppeEquipment.protectionProvided.na);
+
+							$('#chkFormBPPEEquip-07-1').data('kendoCheckBox').value(item.ppeEquipment.barriers.yes);
+							$('#chkFormBPPEEquip-07-2').data('kendoCheckBox').value(item.ppeEquipment.barriers.no);
+							$('#chkFormBPPEEquip-07-3').data('kendoCheckBox').value(item.ppeEquipment.barriers.na);
+
+							$('#chkFormBPPEEquip-08-1').data('kendoCheckBox').value(item.ppeEquipment.ventilationEquipment.yes);
+							$('#chkFormBPPEEquip-08-2').data('kendoCheckBox').value(item.ppeEquipment.ventilationEquipment.no);
+							$('#chkFormBPPEEquip-08-3').data('kendoCheckBox').value(item.ppeEquipment.ventilationEquipment.na);
+
+							$('#chkFormBPPEEquip-09-1').data('kendoCheckBox').value(item.ppeEquipment.calibratedGasTestingEquipment.yes);
+							$('#chkFormBPPEEquip-09-2').data('kendoCheckBox').value(item.ppeEquipment.calibratedGasTestingEquipment.no);
+							$('#chkFormBPPEEquip-09-3').data('kendoCheckBox').value(item.ppeEquipment.calibratedGasTestingEquipment.na);
+
+							$('#chkFormBPPEEquip-10-1').data('kendoCheckBox').value(item.ppeEquipment.portableLighting.yes);
+							$('#chkFormBPPEEquip-10-2').data('kendoCheckBox').value(item.ppeEquipment.portableLighting.no);
+							$('#chkFormBPPEEquip-10-3').data('kendoCheckBox').value(item.ppeEquipment.portableLighting.na);
+
+							$('#chkFormBPPEEquip-11-1').data('kendoCheckBox').value(item.ppeEquipment.other.yes);
+							$('#chkFormBPPEEquip-11-2').data('kendoCheckBox').value(item.ppeEquipment.other.no);
+							$('#chkFormBPPEEquip-11-3').data('kendoCheckBox').value(item.ppeEquipment.other.na);
+							$('#tbxFormBPPEEquip-11-0').data('kendoTextBox').value(item.ppeEquipment.other.value);
+
+							$('#chkFormBRescueEquip-01-1').data('kendoCheckBox').value(item.rescueEquipment.rescuePackage.yes);
+							$('#chkFormBRescueEquip-01-2').data('kendoCheckBox').value(item.rescueEquipment.rescuePackage.no);
+							$('#chkFormBRescueEquip-01-3').data('kendoCheckBox').value(item.rescueEquipment.rescuePackage.na);
+							$('#chkFormBRescueEquip-02-1').data('kendoCheckBox').value(item.rescueEquipment.rescuePackage.horizontal.yes);
+							$('#chkFormBRescueEquip-02-2').data('kendoCheckBox').value(item.rescueEquipment.rescuePackage.horizontal.no);
+							$('#chkFormBRescueEquip-02-3').data('kendoCheckBox').value(item.rescueEquipment.rescuePackage.horizontal.na);
+							$('#chkFormBRescueEquip-03-1').data('kendoCheckBox').value(item.rescueEquipment.rescuePackage.vertical.yes);
+							$('#chkFormBRescueEquip-03-2').data('kendoCheckBox').value(item.rescueEquipment.rescuePackage.vertical.no);
+							$('#chkFormBRescueEquip-03-3').data('kendoCheckBox').value(item.rescueEquipment.rescuePackage.vertical.na);
+							$('#chkFormBRescueEquip-04-1').data('kendoCheckBox').value(item.rescueEquipment.portableBreathingAirSystems.yes);
+							$('#chkFormBRescueEquip-04-2').data('kendoCheckBox').value(item.rescueEquipment.portableBreathingAirSystems.no);
+							$('#chkFormBRescueEquip-04-3').data('kendoCheckBox').value(item.rescueEquipment.portableBreathingAirSystems.na);
+							$('#chkFormBRescueEquip-05-1').data('kendoCheckBox').value(item.rescueEquipment.safeExit.yes);
+							$('#chkFormBRescueEquip-05-2').data('kendoCheckBox').value(item.rescueEquipment.safeExit.no);
+							$('#chkFormBRescueEquip-05-3').data('kendoCheckBox').value(item.rescueEquipment.safeExit.na);
+							$('#chkFormBRescueEquip-06-1').data('kendoCheckBox').value(item.rescueEquipment.defibrillatorAvailable.yes);
+							$('#chkFormBRescueEquip-06-2').data('kendoCheckBox').value(item.rescueEquipment.defibrillatorAvailable.no);
+							$('#chkFormBRescueEquip-06-3').data('kendoCheckBox').value(item.rescueEquipment.defibrillatorAvailable.na);
+							$('#chkFormBRescueEquip-07-1').data('kendoCheckBox').value(item.rescueEquipment.fireExtinguishersAvailable.yes);
+							$('#chkFormBRescueEquip-07-2').data('kendoCheckBox').value(item.rescueEquipment.fireExtinguishersAvailable.no);
+							$('#chkFormBRescueEquip-07-3').data('kendoCheckBox').value(item.rescueEquipment.fireExtinguishersAvailable.na);
+
+							if (item.permitValidity != undefined) {
+								const validityFrom = moment(item.permitValidity.from);
+								const validityTo = moment(item.permitValidity.to);
+
+								$('#tmpFormB-TimeAllowedFrom').data('kendoTimePicker').value(validityFrom.format('hh:mm A'));
+								$('#tmpFormB-TimeAllowedTo').data('kendoTimePicker').value(validityTo.format('hh:mm A'));
+							}
+
+							$('#swtFormB-Withdrawn').data('kendoSwitch').value(item.permitWithdrawn.status);
+							$('#tbxFormB-Withdrawn-Reason').data('kendoTextBox').value(item.permitWithdrawn.reason);
+
+
+						} catch (e) { }
+
+					}
+
+					if (item.name == 'radiation') {
+						var li = '<li id="item-radiation" class="list-group-item d-flex flex-row justify-content-between align-items-center fade show">';
+
+						li += '<div class="d-flex flex-row align-items-center justify-content-between">';
+						// li += '  <div class="avatar avatar-xs">';
+						// li += '    <span class="avatar-title rounded-circle bg-info">C</span>';
+						// li += '  </div>';
+						li += '  <img title=" (C) Radiation " src="/img/icons/certs/radiation.png" style="width:24px;height:24px;" />';
+						li += '  <h4 class="ms-3 mb-0">RADIATION</h4>';
+						li += '</div>';
+						li += '<div class="ms-5">';
+						li += '  <a href="#dlgFormC" class="no-loading" data-bs-toggle="modal" data-bs-target="#dlgFormC"><i class="fa-sharp fa-solid fa-pen-to-square"></i></a>';
+						li += '</div>';
+						li += '</li>';
+
+						$('.selected-certs').append(li);
+						$('#chkCertRadiation').data('kendoCheckBox').value(true);
+
+						try {
+
+							$('#tbxFormC-MaterialUsed').data('kendoTextBox').value(item.radioactiveMaterialUsed);
+							$('#tbxFormC-MaterialActivity').data('kendoTextBox').value(item.materialActivity);
+							$('#tbxFormC-ContainedWithin').data('kendoTextBox').value(item.containedWithin);
+							$('#chkFormC-XRayMachine').data('kendoCheckBox').value(item.xray.state);
+							$('#tbxFormC-ManufacturerModel').data('kendoTextBox').value(item.xray.manufacturer);
+							$('#tbxFormC-MaxTubeVoltage').data('kendoTextBox').value(item.xray.maxTubeVoltage);
+							$('#tbxFormC-MaxTubeCurrent').data('kendoTextBox').value(item.xray.maxTubeCurrent);
+							$('#chkFormC-OtherEquip').data('kendoCheckBox').value(item.other.state);
+							$('#tbxFormC-OtherEquip').data('kendoTextBox').value(item.other.value);
+							$('#txtFormC-EquipAdditionalInfo').data('kendoTextArea').value(item.additionalInfo);
+
+							var timeUseFrom = moment(item.radiationEquipmentUsed.from);
+							var timeUseTo = moment(item.radiationEquipmentUsed.to);
+
+							$('#tmpFormC-TimeUseFrom').data('kendoTimePicker').value(timeUseFrom.format('hh:mm A'));
+							$('#tmpFormC-TimeUseTo').data('kendoTimePicker').value(timeUseTo.format('hh:mm A'));
+							$('#txtFormC-PreventMeasures').data('kendoTextArea').value(item.measuresPreventExposure);
+							$('#txtFormC-AdditionalControl').data('kendoTextArea').value(item.additionalControls);
+
+							if (item.permitValidity != undefined) {
+								var validityFrom = moment(item.permitValidity.from);
+								var validityTo = moment(item.permitValidity.to);
+
+								$('#tmpFormC-TimeAllowedFrom').data('kendoTimePicker').value(validityFrom.format('hh:mm A'));
+								$('#tmpFormC-TimeAllowedTo').data('kendoTimePicker').value(validityTo.format('hh:mm A'));
+							}
+
+							$('#swtFormC-Withdrawn').data('kendoSwitch').value(item.permitWithdrawn.status);
+							$('#tbxFormC-Withdrawn-Reason').data('kendoTextBox').value(item.permitWithdrawn.value);
+
+						} catch (e) { }
+
+					}
+
+					if (item.name == 'excavation') {
+						var li = '<li id="item-excavation" class="list-group-item d-flex flex-row justify-content-between align-items-center fade show">';
+
+						li += '<div class="d-flex flex-row align-items-center justify-content-between">';
+						// li += '  <div class="avatar avatar-xs">';
+						// li += '    <span class="avatar-title rounded-circle bg-info">D</span>';
+						// li += '  </div>';
+						li += '  <img title=" (D) Excavation " src="/img/icons/certs/excavation.png" style="width:24px;height:24px;" />';
+						li += '  <h4 class="ms-3 mb-0">EXCAVATION</h4>';
+						li += '</div>';
+						li += '<div class="ms-5">';
+						li += '  <a href="#dlgFormD" class="no-loading" data-bs-toggle="modal" data-bs-target="#dlgFormD"><i class="fa-sharp fa-solid fa-pen-to-square"></i></a>';
+						li += '</div>';
+						li += '</li>';
+
+						$('.selected-certs').append(li);
+						$('#chkCertExcavation').data('kendoCheckBox').value(true);
+
+						try {
+
+							$('#tbxFormD-ExcavationDepth').data('kendoTextBox').value(item.excavationDepth);
+							$('#chkFormD-Sloping').data('kendoCheckBox').value(item.controlsUsed.sloping);
+							$('#chkFormD-Shoring').data('kendoCheckBox').value(item.controlsUsed.shoring);
+							$('#chkFormD-Shielding').data('kendoCheckBox').value(item.controlsUsed.shielding);
+							$('#tbxFormD-ExcavationAuthorizedName').data('kendoTextBox').value(item.designatedAuthorizedPerson);
+							$('#txtFormD-OtherInfo').data('kendoTextArea').value(item.additionalInfo);
+							$('#txtFormD-OtherInfoSketch').data('kendoTextArea').value(item.additionalSpaceSketch);
+							$('#tbxFormD-EmergencyContactName').data('kendoTextBox').value(item.emergencyContact);
+
+							if (item.permitValidity != undefined) {
+								var validityFrom = moment(item.permitValidity.from);
+								var validityTo = moment(item.permitValidity.to);
+
+								$('#tmpFormD-TimeAllowedFrom').data('kendoTimePicker').value(validityFrom.format('hh:mm A'));
+								$('#tmpFormD-TimeAllowedTo').data('kendoTimePicker').value(validityTo.format('hh:mm A'));
+							}
+
+							$('#swtFormD-Withdrawn').data('kendoSwitch').value(item.permitWithdrawn.status);
+							$('#tbxFormD-Withdrawn-Reason').data('kendoTextBox').value(item.permitWithdrawn.value);
+
+						} catch (e) { }
+
+					}
+
+					if (item.name == 'isolation') {
+						var li = '<li id="item-isolation" class="list-group-item d-flex flex-row justify-content-between align-items-center fade show">';
+
+						li += '<div class="d-flex flex-row align-items-center justify-content-between">';
+						// li += '  <div class="avatar avatar-xs">';
+						// li += '    <span class="avatar-title rounded-circle bg-info">E</span>';
+						// li += '  </div>';
+						li += '  <img title=" (E) Isolation " src="/img/icons/certs/isolation.png" style="width:24px;height:24px;" />';
+						li += '  <h4 class="ms-3 mb-0">ISOLATION</h4>';
+						li += '</div>';
+						li += '<div class="ms-5">';
+						li += '  <a href="#dlgFormE" class="no-loading" data-bs-toggle="modal" data-bs-target="#dlgFormE"><i class="fa-sharp fa-solid fa-pen-to-square"></i></a>';
+						li += '</div>';
+						li += '</li>';
+
+						$('.selected-certs').append(li);
+						$('#chkCertIsolation').data('kendoCheckBox').value(true);
+
+						try {
+
+							formEAuthIndividuals = item.authorizedIndividuals;
+							formEIsolationPointIds = item.isolationPoints;
+
+							$('#txtFormE-EquipmentUsed').data('kendoTextArea').value(item.equipmentUsed);
+							$('#chkFormE-LOTOType1').data('kendoCheckBox').value(item.lockOutTagOutType.individual);
+							$('#chkFormE-LOTOType2').data('kendoCheckBox').value(item.lockOutTagOutType.group);
+							$('#chkFormE-EnergyType1').data('kendoCheckBox').value(item.isolatedEnergyType.electrical);
+							$('#chkFormE-EnergyType2').data('kendoCheckBox').value(item.isolatedEnergyType.steam);
+							$('#chkFormE-EnergyType3').data('kendoCheckBox').value(item.isolatedEnergyType.hydraulic);
+							$('#chkFormE-EnergyType4').data('kendoCheckBox').value(item.isolatedEnergyType.mechanical);
+							$('#chkFormE-EnergyType5').data('kendoCheckBox').value(item.isolatedEnergyType.pneumatic);
+							$('#chkFormE-EnergyType6').data('kendoCheckBox').value(item.isolatedEnergyType.other.state);
+							$('#tbxFormE-EnergyType6').data('kendoTextBox').value(item.isolatedEnergyType.other.value);
+							$('#chkFormE-IsolationMethod1').data('kendoCheckBox').value(item.isolationMethod.lockTag);
+							$('#chkFormE-IsolationMethod2').data('kendoCheckBox').value(item.isolationMethod.tagOnly);
+							$('#chkFormE-IsolationMethod3').data('kendoCheckBox').value(item.isolationMethod.blinds);
+							$('#chkFormE-IsolationMethod4').data('kendoCheckBox').value(item.isolationMethod.doubleBlockBleed);
+							$('#chkFormE-IsolationMethod5').data('kendoCheckBox').value(item.isolationMethod.other.state);
+							$('#tbxFormE-IsolationMethod5').data('kendoTextBox').value(item.isolationMethod.other.value);
+
+							//console.log(item.permitValidity);
+
+							if (item.permitValidity != undefined) {
+								if (item.permitValidity.from != null) {
+									const validityFrom = moment(item.permitValidity.from);
+									var dtm = new Date(validityFrom.format('YYYY-MM-DD hh:mm A'));
+								
+									$('#tmpFormE-TimeAllowedFrom').data('kendoTimePicker').value(dtm);
+								}
+
+								if (item.permitValidity.to != null) {
+									const validityTo = moment(item.permitValidity.to);
+									var dtm = new Date(validityTo.format('YYYY-MM-DD hh:mm A'));
+								
+									$('#tmpFormE-TimeAllowedTo').data('kendoTimePicker').value(dtm);
+								}
+							}
+
+						} catch (e) { }
+
+					}
+
+					if (item.name == 'methodStatement') {
+						var li = '<li id="item-' + item.name + '" class="list-group-item d-flex flex-row justify-content-between align-items-center fade show">';
+
+						li += '<div class="d-flex flex-row align-items-center justify-content-between">';
+						// li += '  <div class="avatar avatar-xs">';
+						// li += '    <span class="avatar-title rounded-circle bg-info">F</span>';
+						// li += '  </div>';
+						li += '  <img title=" (F) method Statement " src="/img/icons/certs/methodstatement.png" style="width:24px;height:24px;" />';
+						li += '  <h4 class="ms-3 mb-0">METHOD STATEMENT</h4>';
+						li += '</div>';
+						li += '<div class="ms-5">';
+						li += '  <a href="#dlgFormF" class="no-loading" data-bs-toggle="modal" data-bs-target="#dlgFormF"><i class="fa-sharp fa-solid fa-pen-to-square"></i></a>';
+						li += '</div>';
+						li += '</li>';
+
+						$('.selected-certs').append(li);
+						$('#chkCertF').data('kendoCheckBox').value(true);
+					}
+
+					if (item.name == 'liftingHoisting') {
+						var li = '<li id="item-' + item.name + '" class="list-group-item d-flex flex-row justify-content-between align-items-center fade show">';
+
+						li += '<div class="d-flex flex-row align-items-center justify-content-between">';
+						// li += '  <div class="avatar avatar-xs">';
+						// li += '    <span class="avatar-title rounded-circle bg-info">G</span>';
+						// li += '  </div>';
+						li += '  <img title=" (G) Lifting & Hoisting " src="/img/icons/certs/liftinghoisting.png" style="width:24px;height:24px;" />';
+						li += '  <h4 class="ms-3 mb-0">LIFTING &amp; HOISTING</h4>';
+						li += '</div>';
+						li += '<div class="ms-5">';
+						li += '  <a href="#dlgFormG" class="no-loading" data-bs-toggle="modal" data-bs-target="#dlgFormG"><i class="fa-sharp fa-solid fa-pen-to-square"></i></a>';
+						li += '</div>';
+						li += '</li>';
+
+						$('.selected-certs').append(li);
+						$('#chkCertG').data('kendoCheckBox').value(true);
+					}
+
+					if (item.name == 'override') {
+						var li = '<li id="item-' + item.name + '" class="list-group-item d-flex flex-row justify-content-between align-items-center fade show">';
+
+						li += '<div class="d-flex flex-row align-items-center justify-content-between">';
+						// li += '  <div class="avatar avatar-xs">';
+						// li += '    <span class="avatar-title rounded-circle bg-info">H</span>';
+						// li += '  </div>';
+						li += '  <img title=" (H) Override " src="/img/icons/certs/override.png" style="width:24px;height:24px;" />';
+						li += '  <h4 class="ms-3 mb-0">OVERRIDE</h4>';
+						li += '</div>';
+						li += '<div class="ms-5">';
+						li += '  <a href="#dlgFormH" class="no-loading" data-bs-toggle="modal" data-bs-target="#dlgFormH"><i class="fa-sharp fa-solid fa-pen-to-square"></i></a>';
+						li += '</div>';
+						li += '</li>';
+
+						$('.selected-certs').append(li);
+						$('#chkCertH').data('kendoCheckBox').value(true);
+					}
+				});
+			}
+
+			_permitInfo.operation.activities.forEach((item, index) => {
+				$(item.id).data('kendoCheckBox').value(item.status);
+
+				if (item.id == '#chkOpInfo19') {
+					$('#tbOpInfo19').data('kendoTextBox').value(item.value);
+				}
+			});
+
+			_permitInfo.operation.activityLocations.forEach((item, index) => {
+				$(item.id).data('kendoCheckBox').value(item.status);
+			});
+
+			_permitInfo.operation.activityTools.forEach((item, index) => {
+				$(item.id).data('kendoCheckBox').value(item.status);
+
+				if (item.id == '#chkOpInfo27a') {
+					$('#tbOpInfo27a').data('kendoTextBox').value(item.value);
+				}
+			});
+
+			_permitInfo.operation.activityProducts.forEach((item, index) => {
+				$(item.id).data('kendoCheckBox').value(item.status);
+
+				if (item.id == '#chkOpInfo31') {
+					$('#tbOpInfo31').data('kendoTextBox').value(item.value);
+				}
+			});
+
+			$('#tbPermitHolderInfo2').data('kendoTextBox').value(_permitInfo.permitHolder.company);
+			$('#tbPermitHolderInfo3').data('kendoNumericTextBox').value(_permitInfo.permitHolder.numOfStaff);
+			$('#tbPermitHolderInfo4').data('kendoTextArea').value(_permitInfo.permitHolder.additionalStaff);
+
+			$('#swPpeWorkArea1').data('kendoSwitch').value(_permitInfo.ppe.safetyGlass.status);
+			$('#swPpeWorkArea2').data('kendoSwitch').value(_permitInfo.ppe.safetyHelmet.status);
+			$('#swPpeWorkArea3').data('kendoSwitch').value(_permitInfo.ppe.fullFaceMask.status);
+			$('#swPpeWorkArea4').data('kendoSwitch').value(_permitInfo.ppe.leatherGloves.status);
+			$('#swPpeWorkArea5').data('kendoSwitch').value(_permitInfo.ppe.neopreneGloves.status);
+			$('#swPpeWorkArea6').data('kendoSwitch').value(_permitInfo.ppe.safetyHarness.status);
+			$('#swPpeWorkArea7').data('kendoSwitch').value(_permitInfo.ppe.fallProtection.status);
+			$('#swPpeWorkArea8').data('kendoSwitch').value(_permitInfo.ppe.safetyShoes.status);
+			$('#swPpeWorkArea9').data('kendoSwitch').value(_permitInfo.ppe.earProtection.status);
+			$('#swPpeWorkArea10').data('kendoSwitch').value(_permitInfo.ppe.breathingProtection.status);
+			$('#swPpeWorkArea11').data('kendoSwitch').value(_permitInfo.ppe.otherPpe.status);
+			$('#tbPpeWorkArea11').data('kendoTextBox').value(_permitInfo.ppe.otherPpe.value);
+			$('#otherPpeRequiredInJHA').data('kendoTextBox').value(_permitInfo.ppe.otherPpeRequiredInJHA);
+
+			$('#swPpeWorkArea12').data('kendoSwitch').value(_permitInfo.workArea.demarcation.status);
+			$('#swPpeWorkArea13').data('kendoSwitch').value(_permitInfo.workArea.fireExtinguisher.status);
+			$('#swPpeWorkArea14').data('kendoSwitch').value(_permitInfo.workArea.warningSigns.status);
+			$('#swPpeWorkArea15').data('kendoSwitch').value(_permitInfo.workArea.otherPpeWorkArea.status);
+			$('#tbPpeWorkArea15').data('kendoTextBox').value(_permitInfo.workArea.otherPpeWorkArea.value);
+
+			$('#tbOpMeasureMech1').data('kendoTextBox').value(_permitInfo.operationMeasures.mechanical.equipmentName);
+			$('#tbOpMeasureMech2').data('kendoTextBox').value(_permitInfo.operationMeasures.mechanical.tagNumber);
+			$('#swOpMeasureMech1').data('kendoSwitch').value(_permitInfo.operationMeasures.mechanical.pressureFree.status);
+			$('#swOpMeasureMech2').data('kendoSwitch').value(_permitInfo.operationMeasures.mechanical.empty.status);
+			$('#swOpMeasureMech3').data('kendoSwitch').value(_permitInfo.operationMeasures.mechanical.disconnected.status);
+			$('#swOpMeasureMech4').data('kendoSwitch').value(_permitInfo.operationMeasures.mechanical.blankOff.status);
+			$('#swOpMeasureMech5').data('kendoSwitch').value(_permitInfo.operationMeasures.mechanical.lockedOff.status);
+			$('#swOpMeasureMech6').data('kendoSwitch').value(_permitInfo.operationMeasures.mechanical.flushed.status);
+			$('#swOpMeasureMech7').data('kendoSwitch').value(_permitInfo.operationMeasures.mechanical.ventilated.status);
+			$('#swOpMeasureMech8').data('kendoSwitch').value(_permitInfo.operationMeasures.mechanical.other.status);
+			$('#tbOpMeasureMech8').data('kendoTextBox').value(_permitInfo.operationMeasures.mechanical.other.value);
+
+			$('#tbOpMeasureElec1').data('kendoTextBox').value(_permitInfo.operationMeasures.electrical.equipmentName);
+			$('#tbOpMeasureElec2').data('kendoTextBox').value(_permitInfo.operationMeasures.electrical.tagNumber);
+			$('#swOpMeasureElec1').data('kendoSwitch').value(_permitInfo.operationMeasures.electrical.lockedOff.status);
+			$('#swOpMeasureElec2').data('kendoSwitch').value(_permitInfo.operationMeasures.electrical.isolated.status);
+			$('#swOpMeasureElec3').data('kendoSwitch').value(_permitInfo.operationMeasures.electrical.isolationCertificate.status);
+			$('#numOpMeasureElec1').data('kendoNumericTextBox').value(_permitInfo.operationMeasures.electrical.numOfIsolationCertificate);
+
+			$('#tbOpMeasureInst1').data('kendoTextBox').value(_permitInfo.operationMeasures.instrument.equipmentName);
+			$('#tbOpMeasureInst2').data('kendoTextBox').value(_permitInfo.operationMeasures.instrument.tagNumber);
+			$('#numOpMeasureInst1').data('kendoNumericTextBox').value(_permitInfo.operationMeasures.instrument.numOfIsolationCertificate);
+			$('#txtOpMeasureInst1').data('kendoTextArea').value(_permitInfo.operationMeasures.instrument.otherMeasures);
+			$('#swOpMeasureInst1').data('kendoSwitch').value(_permitInfo.operationMeasures.instrument.lockedOff.status);
+			$('#swOpMeasureInst2').data('kendoSwitch').value(_permitInfo.operationMeasures.instrument.isolated.status);
+			$('#swOpMeasureInst3').data('kendoSwitch').value(_permitInfo.operationMeasures.instrument.disconnected.status);
+			$('#swOpMeasureInst4').data('kendoSwitch').value(_permitInfo.operationMeasures.instrument.bypass.status);
+			$('#swOpMeasureInst5').data('kendoSwitch').value(_permitInfo.operationMeasures.instrument.shutdownSystemOperational.status);
+			$('#swOpMeasureInst6').data('kendoSwitch').value(_permitInfo.operationMeasures.instrument.fireProtectionSysOperational.status);
+			$('#swOpMeasureInst7').data('kendoSwitch').value(_permitInfo.operationMeasures.instrument.autoFireProtectionSysOperational.status);
+
+			$('#swPpeWorkAreaInst8').data('kendoSwitch').value(_permitInfo.operationMeasures.pwtHandOver.terminalSafetyAwareness);
+			$('#swPpeWorkAreaInst9').data('kendoSwitch').value(_permitInfo.operationMeasures.pwtHandOver.ptwAwareness);
+
+			$('#precautionsForWork').data('kendoTextArea').value(_permitInfo.precautions.precautionsForWork);
+			$('#additionalPrecautions').data('kendoTextArea').value(_permitInfo.precautions.additionalPrecautions);
+			$('#methodOfStatementAttached').data('kendoSwitch').value(_permitInfo.precautions.methodOfStatementAttached);
+			$('#engineeringAdviceRequired').data('kendoSwitch').value(_permitInfo.precautions.engineeringAdviceRequired);
+			$('#declaration').data('kendoCheckBox').value(_permitInfo.precautions.declaration);
+			$('#authorizedForExecution1').data('kendoCheckBox').value(_permitInfo.precautions.permitIssuerDeclaration.authorizedForExecution);
+			$('#authorizedForExecution2').data('kendoCheckBox').value(_permitInfo.precautions.leadPermitIssuerDeclaration.authorizedForExecution);
+			$('#permitValidity').data('kendoCheckBox').value(_permitInfo.precautions.permitValidity);
+
+
+			$('.btn-approval').click(() => {
+				PermitModule.permitInfo(_permitInfo);
+
+				if (!PermitModule.submit('approval')) {
+					PermitModule.getErrorMessages();
+				}
+			});
+
+
+			$('.btn-draft').click(() => {
+				PermitModule.permitInfo(_permitInfo);
+				
+				if (!PermitModule.submit('draft')) {
+					PermitModule.getErrorMessages();
+				}
+			});
+
+
+			$('.btn-delete').click(() => {
+				const permitId = $('.btn-delete').data('id');
+
+				$('.loading').show();
+
+				const xhr = $.ajax({
+					url: '/@Model.CompanyId/permits/' + permitId,
+					method: 'DELETE',
+				});
+
+				xhr.done((response, status) => {
+					if (response.data == 'OK') {
+						document.location.href = '/@Model.CompanyId/permits';
+					}
+				});
+
+				xhr.fail((response, status) => {
+					$('.loading').hide();
+					alert(response.message);
+				});
+			});
+
+
+			$('.btn-workflow-action').click((e) => {
+				const mode = $(e.currentTarget).data('mode');
+				const comments = $('#txtComments').data('kendoTextArea').value();
+
+				const postData = {
+					PermitId: '@Model.PermitId',
+					mode,
+					comments,
+				};
+
+				$('.loading').show();
+
+				var frmData = new FormData();
+				frmData.append('PermitId', '@Model.PermitId');
+				frmData.append('Mode', mode);
+				frmData.append('Comments', comments);
+
+				const xhr = $.ajax({
+					method: 'POST',
+					url: '/@Model.CompanyId/permits/permit/status',
+					data: frmData,
+					contentType: false,
+					processData: false,
+					cache: false,
+				});
+
+				xhr.done((response, status) => {
+					document.location.href = '/@Model.CompanyId/permits/index';
+				});
+
+				xhr.fail((response, status) => {
+				});
+
+				xhr.always(() => {
+					$('.loading').hide();
+				});
+			});
+
+
+			$('#dlgExportPdf').on('show.bs.modal', (e) => {
+				const regex1 = /accordion-item/gm;
+				const regex2 = /data-bs-toggle="collapse"/gm;
+				const regex3 = / collapsed/gm;
+				const regex4 = /class="accordion-collapse collapse"/gm;
+
+				const str = $('#accordionPermit').html();
+				const subst1 = 'accordion-item-print';
+				const subst2 = 'data-bs="x"';
+				const subst3 = '';
+				const subst4 = 'class="accordion-collapse"';
+
+				// The substituted value will be contained in the result variable
+				let result = str.replace(regex1, subst1);
+				result = result.replace(regex2, subst2);
+				result = result.replace(regex3, subst3);
+				result = result.replace(regex4, subst4);
+
+				$('.loading').show();
+
+				const xhr = $.ajax({
+					url: '/@Model.CompanyId/permits/templates/permit',
+					method: 'GET',
+				});
+
+				xhr.done((response, status) => {
+					$('#dlgExportPdf .modal-body').html(response.data);
+				});
+
+				xhr.fail((response, status) => {
+				});
+
+				xhr.always((response, status) => {
+					$('.loading').hide();
+				});
+			});
+
+
+			$('.btn-export').click(() => {
+				$('.loading').show();
+
+				var html = $('#dlgFormA .modal-body').html();
+				
+				var frm = new FormData();
+				frm.append('Id', '@Model.PermitId');
+
+				var ajaxPost = $.ajax({
+					url: '/@Model.CompanyId/permits/permit/export/pdf',
+					method: 'POST',
+					data: frm,
+					contentType: false,
+					processData: false,
+					cache: false,
+					xhrFields: {
+						responseType: 'blob'
+					},
+				});
+
+				ajaxPost.done((response, status) => {
+					var permitNo = '@Model.PermitNo';
+					var blob = new Blob([response], { type: 'application/pdf' });
+					saveAs(blob, permitNo + '.pdf');
+				});
+
+				ajaxPost.fail((response, status) => {
+					//console.log(response);
+				});
+
+				ajaxPost.always(() => {
+					$('.loading').hide();
+				});
+
+			});
+
+
+			$('.btn-mark-closed').click(() => {
+				var notes = $('#txtNotes').data('kendoTextArea');
+
+				var formData = new FormData();
+				formData.append('PermitId', $('.btn-mark-closed').data('id'));
+				formData.append('Notes', notes.value());
+
+				$('.loading').show();
+
+				const xhr = $.ajax({
+					method: 'PUT',
+					url: '/@Model.CompanyId/permits/closed',
+					data: formData,
+					contentType: false,
+					processData: false,
+					cache: false,
+				});
+
+				xhr.done((response) => {
+					if (response.result) {
+						document.location.href = '/@Model.CompanyId/permits';
+					}
+				});
+
+				xhr.fail((response) => {
+					$('.loading').hide();
+					alert('Unable to process your request at the moment. Please try again.');
+				});
+
+				xhr.always(() => {
+				});
+
+			});
+
+
+			$('.collapse').on('shown.bs.collapse', (e) => {
+				const elem = $(e.target);
+				const panel = elem.data('panelName');
+				const permitStatus = '@Model.PermitStatus';
+
+				if (panel == 'fileAttachments') {
+					if (tblFiles == null) {
+						tblFiles = $('#tblFiles')
+							.on('preXhr.dt', function (e, settings, data) {
+        						$('.attachment-list-loading').css('display', 'grid');
+    						})
+							.on('xhr.dt', function (e, settings, data) {
+        						$('.attachment-list-loading').css('display', 'none');
+    						})
+							.DataTable({
+								ajax: '/@Model.CompanyId/permits/permit/@Model.PermitId/files',
+								responsive: true,
+								ordering: false,
+								searching: false,
+								columns: [
+									{
+										data: 'fileName',
+										render: (data, type, row) => {
+											return '<a href="/attachments/permits/' + row.permitId + '/' + data + '" target="_blank">' + data + '</a>';
+										},
+									},
+									{
+										data: 'fileSize',
+										render: (data, type, row) => {
+											return '<div class="text-right">' + data + '</div>';
+										},
+									},
+									{ data: 'createdWhen' },
+									{
+										data: 'id',
+										render: (data, type, row) => {
+											if (permitStatus == 'Draft') {
+												return '<a href="javascript:;" onclick="removeFile(\'' + data + '\')"><i class="fa-solid fa-trash-can text-danger"></i></a>';
+											}
+
+											return '';
+										},
+									}
+								],
+						});
+					} else {
+						tblFiles.draw();
+					}
+				}
+			});
+
+
+			/********************************************************************************************************/
+			/* FORM A
+			/********************************************************************************************************/
+			$('#dlgFormA').on('shown.bs.modal', (e) => {
+				var hotWork = null;
+
+				try {
+					_permitInfo.general.certificates.forEach((value, index) => {
+						if (value.name == 'hotwork') {
+							hotWork = value;
+						}
+					});
+
+					if (hotWork != null) {
+						if (hotWork.lowExplosionLevel.initialTestDateTime != null) {
+							var initialTestDateTime = $('#dtmFormA1').data('kendoDateTimePicker');
+							initialTestDateTime.value(new Date(hotWork.lowExplosionLevel.initialTestDateTime));
+						}
+					
+						$('#tbFormALelReading').data('kendoTextBox').value(hotWork.lowExplosionLevel.initialReading);
+						$('#tbLELFrequency').data('kendoTextBox').value(hotWork.lowExplosionLevel.requiredFrequency);
+
+						if (hotWork.permitValidity.from != null) {
+							var permitValidityFrom = $('#tmpFormA-TimeAllowedFrom').data('kendoTimePicker');
+							permitValidityFrom.value(new Date(hotWork.permitValidity.from));
+						}
+
+						if (hotWork.permitValidity.to != null) {
+							var permitValidityTo = $('#tmpFormA-TimeAllowedTo').data('kendoTimePicker');
+							permitValidityTo.value(new Date(hotWork.permitValidity.to));
+						}
+
+						$('#swHotworkWithdrawn').data('kendoSwitch').value(hotWork.permitWithdrawn.status);
+						$('#tbWithdrawnReason').data('kendoTextBox').value(hotWork.permitWithdrawn.reason);
+					}
+
+					if (tblLEL == null) {
+						tblLEL = $('#tblLEL').DataTable({
+							responsive: true,
+							searching: false,
+							paging: false,
+							ordering: false,
+							data: lelReadings,
+							columns: [
+								{ data: 'time' },
+								{ data: 'value' },
+								{
+									data: 'id',
+									render: (data, type, row) => {
+										return '<a href="javascript:;" onclick="removeRow(\'' + data + '\', tblLEL, lelReadings)"><i class="fa-solid fa-trash-can"></i></a>';
+									},
+								},
+							]
+						});
+					}
+
+					if (tblAtmos == null) {
+						tblAtmos = $('#tblAtmos').DataTable({
+							responsive: true,
+							searching: false,
+							paging: false,
+							ordering: false,
+							data: atmosReadings,
+							columns: [
+								{ data: 'time' },
+								{ data: 'value' },
+								{
+									data: 'id',
+									render: (data, type, row) => {
+										return '<a href="javascript:;" onclick="removeRow(\'' + data + '\', tblAtmos, atmosReadings)"><i class="fa-solid fa-trash-can"></i></a>';
+									},
+								},
+							]
+						});
+					}
+				} catch (e) { }
+			});
+
+			$('#dlgFormA').on('hidden.bs.modal', (e) => {
+				/*
+				var alert = $('#systemAlert');
+				var alertIcon = $('#systemAlert .alert-icon');
+				var alertMessage = $('#systemAlert .alert-message');
+
+				if (hotWorkDataIsDirty) {
+					alert.addClass('alert-warning');
+					alertIcon.html('<i class="fa-solid fa-triangle-exclamation"></i>');
+					alertMessage.html('You have unsaved data in one or more certificates.');
+					alert.css('display', 'block');
+				}*/
+			});
+
+			$('#dlgLelReading').on('show.bs.modal', () => {
+				const readTime = $("#dtmReadTime").data("kendoTimePicker");
+				const readValue = $("#tbReadValue").data("kendoTextBox");
+
+				readTime.value(null);
+				readValue.value(null);
+			});
+
+			$('#dlgLelReading').on('hidden.bs.modal', () => {
+				const readTime = $("#dtmReadTime").data("kendoTimePicker");
+				const readValue = $("#tbReadValue").data("kendoTextBox");
+
+				if (readTime.value() != null && readValue.value() != null) {
+					if (lelReadings.length == 0) {
+						$('#tblLEL tbody').empty();
+					}
+
+					const m = moment(readTime.value());
+					const n = moment().unix();
+
+					lelReadings.push({
+						id: n,
+						timestamp: m.unix(),
+						time: m.format('hh:mm A'),
+						date: m.format('YYYY/MM/DD'),
+						value: readValue.value(),
+					});
+
+					tblLEL.clear().draw();
+					tblLEL.data = lelReadings;
+					tblLEL.rows.add(lelReadings).draw();
+
+					$('#dlgLelReading').modal('hide');
+
+					hotWorkDataIsDirty = true;
+				}
+
+				setTimeout(() => {
+					$('#tblLEL')[0].scrollIntoView();
+				}, 500);
+			});
+
+			$('#dlgAtmos').on('show.bs.modal', () => {
+				const readTime = $("#dtmAtmosReadTime").data("kendoTimePicker");
+				const readValue = $("#tbAtmosReadValue").data("kendoTextBox");
+
+				readTime.value(null);
+				readValue.value(null);
+			});
+
+			$('#dlgAtmos').on('hidden.bs.modal', () => {
+				const readTime = $("#dtmAtmosReadTime").data("kendoTimePicker");
+				const readValue = $("#tbAtmosReadValue").data("kendoTextBox");
+
+				if (readTime.value() != null && readValue.value() != null) {
+					if (lelReadings.length == 0) {
+						$('#tblAtmos tbody').empty();
+					}
+
+					const m = moment(readTime.value());
+					const n = moment().unix();
+
+					atmosReadings.push({
+						id: n,
+						timestamp: m.unix(),
+						time: m.format('hh:mm A'),
+						date: m.format('YYYY/MM/DD'),
+						value: readValue.value(),
+					});
+
+					tblAtmos.clear().draw();
+					tblAtmos.data = atmosReadings;
+					tblAtmos.rows.add(atmosReadings).draw();
+
+					$('#dlgAtmos').modal('hide');
+
+					hotWorkDataIsDirty = true;
+				}
+
+				setTimeout(() => {
+					$('#tblAtmos')[0].scrollIntoView();
+				}, 500);
+
+			});
+
+			$('#btnSaveFormA').click((e) => {
+				const hotWork = {
+					name: 'hotwork',
+					emergencyContact: $('#tbFormAEmergencyContact').data('kendoTextBox').value(),
+					workChecklist: [
+						{
+							id: 'chkFormACheckList1',
+							value: $('#chkFormACheckList1').data('kendoCheckBox').value(),
+						},
+						{
+							id: 'chkFormACheckList2',
+							value: $('#chkFormACheckList2').data('kendoCheckBox').value(),
+						},
+						{
+							id: 'chkFormACheckList3',
+							value: $('#chkFormACheckList3').data('kendoCheckBox').value(),
+						},
+						{
+							id: 'chkFormACheckList4',
+							value: $('#chkFormACheckList4').data('kendoCheckBox').value(),
+						},
+						{
+							id: 'chkFormACheckList5',
+							value: $('#chkFormACheckList5').data('kendoCheckBox').value(),
+						},
+						{
+							id: 'chkFormACheckList6',
+							value: $('#chkFormACheckList6').data('kendoCheckBox').value(),
+						},
+						{
+							id: 'chkFormACheckList7',
+							value: $('#chkFormACheckList7').data('kendoCheckBox').value(),
+						},
+					],
+					ignitionSources: [
+						{
+							id: 'chkFormAIgnitionSource1',
+							value: $('#chkFormAIgnitionSource1').data('kendoCheckBox').value(),
+						},
+						{
+							id: 'chkFormAIgnitionSource2',
+							value: $('#chkFormAIgnitionSource2').data('kendoCheckBox').value(),
+						},
+						{
+							id: 'chkFormAIgnitionSource3',
+							value: $('#chkFormAIgnitionSource3').data('kendoCheckBox').value(),
+						},
+						{
+							id: 'chkFormAIgnitionSource4',
+							value: $('#chkFormAIgnitionSource4').data('kendoCheckBox').value(),
+						},
+						{
+							id: 'chkFormAIgnitionSource5',
+							value: $('#chkFormAIgnitionSource5').data('kendoCheckBox').value(),
+							other: $('#tbFormAIgnitionSource5').data('kendoTextBox').value(),
+						},
+					],
+					gasTestPerformedBy: {
+						id: '',
+						name: $('#tbFormAGasTestBy').data('kendoTextArea').value(),
+					},
+					lowExplosionLevel: {
+						initialTestDateTime: $('#dtmFormA1').data('kendoDateTimePicker').value(),
+						initialReading: $('#tbFormALelReading').data('kendoTextBox').value(),
+						requiredFrequency: $('#tbLELFrequency').data('kendoTextBox').value(),
+						readings: lelReadings,
+					},
+					atmosTestReadings: atmosReadings,
+					permitValidity: {
+						from: $('#tmpFormA-TimeAllowedFrom').data('kendoTimePicker').value(),
+						to: $('#tmpFormA-TimeAllowedTo').data('kendoTimePicker').value(),
+					},
+					permitWithdrawn: {
+						status: $('#swHotworkWithdrawn').data('kendoSwitch').value(),
+						reason: $('#tbWithdrawnReason').data('kendoTextBox').value(),
+					},
+				};
+
+				var i = -1;
+				var foundHotWork = false;
+
+				_permitInfo.general.certificates.forEach((value, index) => {
+					if (value.name == 'hotwork') {
+						i = index;
+						foundHotWork = true;
+					}
+				});
+
+				if (foundHotWork) {
+					_permitInfo.general.certificates[i] = hotWork;
+				} else {
+					_permitInfo.general.certificates.push(hotWork);
+				}
+
+				if (currentPermitStatus == 'Approved') {
+					PermitModule.permitInfo(_permitInfo);
+					PermitModule.updateCertificate();
+				}
+
+			});
+
+			/********************************************************************************************************/
+
+
+			/********************************************************************************************************/
+			/* FORM B
+			/********************************************************************************************************/
+			$('#dlgFormB').on('shown.bs.modal', (e) => {
+				try {
+					if (tbl1FormB == null) {
+						tbl1FormB = $('#tbl1FormB').DataTable({
+							responsive: true,
+							searching: false,
+							paging: false,
+							ordering: false,
+							data: formBGasReadings,
+							columns: [
+								{ data: 'time' },
+								{ data: 'gas' },
+								{ data: 'oxygen' },
+								{ data: 'toxic1' },
+								{ data: 'toxic2' },
+								{
+									data: 'id',
+									render: (data, type, row) => {
+										var html = '<a href="javascript:;" onclick="removeRow(\'' + data + '\', tbl1FormB, formBGasReadings)"><i class="fa-solid fa-trash-can"></i></a>';
+										return html;
+									}
+								}
+							],
+						});
+					}
+
+					if (tbl2FormB == null) {
+						tbl2FormB = $('#tbl2FormB').DataTable({
+							responsive: true,
+							searching: false,
+							paging: false,
+							ordering: false,
+							data: formBEntryRecords,
+							columns: [
+								{ data: 'workerName' },
+								{ data: 'workerSignature' },
+								{ data: 'reason' },
+								{ data: 'timeEntry' },
+								{ data: 'timeExit' },
+								{
+									data: 'id',
+									render: (data, type, row) => {
+										var html = '<a href="javascript:;" onclick="removeRow(\'' + data + '\', tbl2FormB, formBEntryRecords)"><i class="fa-solid fa-trash-can"></i></a>';
+										return html;
+									}
+								}
+							],
+						});
+					}
+				} catch (e) {}
+			});
+
+			$('#dlgFormBGasRead').on('show.bs.modal', () => {
+				const readTime = $("#dtmFormBGasReadTime").data("kendoTimePicker");
+				const gasPercentage = $("#tbFormBGasReadGasPercentageLEL").data("kendoTextBox");
+				const oxyPercentage = $("#tbFormBGasReadOxyPercentage").data("kendoTextBox");
+				const toxic1 = $("#tbFormBGasReadOxyToxic1").data("kendoTextBox");
+				const toxic2 = $("#tbFormBGasReadOxyToxic2").data("kendoTextBox");
+
+				readTime.value(null);
+				gasPercentage.value(null);
+				oxyPercentage.value(null);
+				toxic1.value(null);
+				toxic2.value(null);
+			});
+
+			$('#dlgFormBGasRead').on('hidden.bs.modal', () => {
+				const readTime = $("#dtmFormBGasReadTime").data("kendoTimePicker");
+				const gasPercentage = $("#tbFormBGasReadGasPercentageLEL").data("kendoTextBox");
+				const oxyPercentage = $("#tbFormBGasReadOxyPercentage").data("kendoTextBox");
+				const toxic1 = $("#tbFormBGasReadOxyToxic1").data("kendoTextBox");
+				const toxic2 = $("#tbFormBGasReadOxyToxic2").data("kendoTextBox");
+
+				if (readTime.value() != null && gasPercentage.value() != null && oxyPercentage.value() != null) {
+					if (formBGasReadings.length == 0) {
+						$('#tbl1FormB tbody').empty();
+					}
+
+					const m = moment(readTime.value());
+					const n = moment().unix();
+
+					formBGasReadings.push({
+						id: n,
+						timestamp: m.unix(),
+						time: m.format('hh:mm A'),
+						date: m.format('YYYY/MM/DD'),
+						gas: gasPercentage.value(),
+						oxygen: oxyPercentage.value(),
+						toxic1: toxic1.value(),
+						toxic2: toxic2.value(),
+					});
+
+					tbl1FormB.clear().draw();
+					tbl1FormB.data = formBGasReadings;
+					tbl1FormB.rows.add(formBGasReadings).draw();
+
+					$('#dlgFormBGasRead').modal('hide');
+				}
+
+				setTimeout(() => {
+					$('#tbl1FormB')[0].scrollIntoView();
+
+					tbl1FormB.responsive.recalc();
+					tbl1FormB.responsive.rebuild();
+
+				}, 500);
+
+			});
+
+			$('#dlgFormB-Entry').on('show.bs.modal', (e) => {
+				const workerName = $("#tbxFormB-Entry-WorkerName").data("kendoTextBox");
+				const workerSignature = $("#tbxFormB-Entry-WorkerSignature").data("kendoTextBox");
+				const entryReason = $("#txtFormB-Entry-Reason").data("kendoTextArea");
+				const timeEntry = $("#tpkFormB-Entry-TimeEntry").data("kendoTimePicker");
+				const timeExit = $("#tpkFormB-Entry-TimeExit").data("kendoTimePicker");
+
+				workerName.value(null);
+				workerSignature.value(null);
+				entryReason.value(null);
+				timeEntry.value(null);
+				timeExit.value(null);
+			});
+
+			$('#dlgFormB-Entry').on('hidden.bs.modal', (e) => {
+				const workerName = $("#tbxFormB-Entry-WorkerName").data("kendoTextBox");
+				const workerSignature = $("#tbxFormB-Entry-WorkerSignature").data("kendoTextBox");
+				const entryReason = $("#txtFormB-Entry-Reason").data("kendoTextArea");
+				const timeEntry = $("#tpkFormB-Entry-TimeEntry").data("kendoTimePicker");
+				const timeExit = $("#tpkFormB-Entry-TimeExit").data("kendoTimePicker");
+
+				if (workerName.value() != null && workerSignature.value() != null && entryReason.value() != null && timeEntry.value() != null && timeExit.value() != null) {
+					if (formBEntryRecords.length == 0) {
+						$('#tbl2FormB tbody').empty();
+					}
+
+					const n = moment().unix();
+
+					formBEntryRecords.push({
+						id: n,
+						timestamp: n,
+						workerName: workerName.value(),
+						workerSignature: workerSignature.value(),
+						reason: entryReason.value(),
+						timeEntry: moment(timeEntry.value()).format('hh:mm A'),
+						timeExit: moment(timeExit.value()).format('hh:mm A'),
+						timeEntryTs: moment(timeEntry.value()).unix(),
+						timeExitTs: moment(timeExit.value()).unix(),
+					});
+
+					tbl2FormB.clear().draw();
+					tbl2FormB.data = formBEntryRecords;
+					tbl2FormB.rows.add(formBEntryRecords).draw();
+
+					$('#dlgFormB-Entry').modal('hide');
+				}
+
+				setTimeout(() => {
+					$('#tbl2FormB')[0].scrollIntoView();
+
+					tbl2FormB.responsive.recalc();
+					tbl2FormB.responsive.rebuild();
+
+				}, 500);
+			});
+
+			$('#btnSaveFormB').click((e) => {
+				const confinedSpace = {
+					name: 'confinedspace',
+					attendants: $('#tbFormBAttendantNames').data('kendoTextBox').value(),
+					workDescription: $('#taFormBDescription').data('kendoTextArea').value(),
+					gasTest: {
+						performedBy: $('#tbFormBGasTestBy').data('kendoTextBox').value(),
+						initialTestWhen: $('#dtmFormBInitialGasRead').data('kendoDateTimePicker').value(),
+						initialLEL: $('#tbFormBInitialLELPercentage').data('kendoTextBox').value(),
+						initialO2: $('#tbFormBInitialO2Percentage').data('kendoTextBox').value(),
+						others: [
+							$('#tbFormBInitialToxic1').data('kendoTextBox').value(),
+							$('#tbFormBInitialToxic2').data('kendoTextBox').value()
+						],
+						requiredFrequency: $('#tbFormBDesignatedRequiredFrequency').data('kendoTextBox').value(),
+						readings: formBGasReadings,
+					},
+					potentialHazards: {
+						hydrogenSulphide: {
+							yes: $('#chkFormBHazard-01-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBHazard-01-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBHazard-01-3').data('kendoCheckBox').value(),
+						},
+						oxygenDeficiency: {
+							yes: $('#chkFormBHazard-02-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBHazard-02-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBHazard-02-3').data('kendoCheckBox').value(),
+						},
+						flammableGas: {
+							yes: $('#chkFormBHazard-03-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBHazard-03-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBHazard-03-3').data('kendoCheckBox').value(),
+						},
+						flammableSolids: {
+							yes: $('#chkFormBHazard-04-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBHazard-04-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBHazard-04-3').data('kendoCheckBox').value(),
+						},
+						electrical: {
+							yes: $('#chkFormBHazard-05-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBHazard-05-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBHazard-05-3').data('kendoCheckBox').value(),
+						},
+						ionizingRadiation: {
+							yes: $('#chkFormBHazard-06-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBHazard-06-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBHazard-06-3').data('kendoCheckBox').value(),
+						},
+						belowGroundLevel: {
+							yes: $('#chkFormBHazard-07-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBHazard-07-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBHazard-07-3').data('kendoCheckBox').value(),
+						},
+						environmentalConditions: {
+							yes: $('#chkFormBHazard-08-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBHazard-08-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBHazard-08-3').data('kendoCheckBox').value(),
+						},
+						engulfmentLiquidsOrSolids: {
+							yes: $('#chkFormBHazard-09-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBHazard-09-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBHazard-09-3').data('kendoCheckBox').value(),
+						},
+						temperature: {
+							yes: $('#chkFormBHazard-10-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBHazard-10-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBHazard-10-3').data('kendoCheckBox').value(),
+						},
+						ignitionSources: {
+							yes: $('#chkFormBHazard-11-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBHazard-11-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBHazard-11-3').data('kendoCheckBox').value(),
+						},
+						other1: {
+							yes: $('#chkFormBHazard-12-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBHazard-12-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBHazard-12-3').data('kendoCheckBox').value(),
+							value: $('#tbxFormBHazard-12-0').data('kendoTextBox').value(),
+						},
+						other2: {
+							yes: $('#chkFormBHazard-13-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBHazard-13-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBHazard-13-3').data('kendoCheckBox').value(),
+							value: $('#tbxFormBHazard-13-0').data('kendoTextBox').value(),
+						},
+						other3: {
+							yes: $('#chkFormBHazard-14-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBHazard-14-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBHazard-14-3').data('kendoCheckBox').value(),
+							value: $('#tbxFormBHazard-14-0').data('kendoTextBox').value(),
+						},
+					},
+					communicationRequirements: {
+						radio: $('#chkFormBComm1').data('kendoCheckBox').value(),
+						voice: $('#chkFormBComm2').data('kendoCheckBox').value(),
+						visual: $('#chkFormBComm3').data('kendoCheckBox').value(),
+						other: {
+							state: $('#chkFormBComm4').data('kendoCheckBox').value(),
+							value: $('#tbxFormBComm4').data('kendoTextBox').value(),
+						},
+					},
+					ppeEquipment: {
+						selfContainedBreathingApparatus: {
+							yes: $('#chkFormBPPEEquip-01-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBPPEEquip-01-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBPPEEquip-01-3').data('kendoCheckBox').value(),
+						},
+						suppliedAirBreathingApparatus: {
+							yes: $('#chkFormBPPEEquip-02-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBPPEEquip-02-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBPPEEquip-02-3').data('kendoCheckBox').value(),
+						},
+						groundFaultInterrupters: {
+							yes: $('#chkFormBPPEEquip-03-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBPPEEquip-03-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBPPEEquip-03-3').data('kendoCheckBox').value(),
+						},
+						ropes: {
+							yes: $('#chkFormBPPEEquip-04-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBPPEEquip-04-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBPPEEquip-04-3').data('kendoCheckBox').value(),
+						},
+						fullBodyHarness: {
+							yes: $('#chkFormBPPEEquip-05-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBPPEEquip-05-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBPPEEquip-05-3').data('kendoCheckBox').value(),
+						},
+						protectionProvided: {
+							yes: $('#chkFormBPPEEquip-06-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBPPEEquip-06-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBPPEEquip-06-3').data('kendoCheckBox').value(),
+						},
+						barriers: {
+							yes: $('#chkFormBPPEEquip-07-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBPPEEquip-07-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBPPEEquip-07-3').data('kendoCheckBox').value(),
+						},
+						ventilationEquipment: {
+							yes: $('#chkFormBPPEEquip-08-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBPPEEquip-08-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBPPEEquip-08-3').data('kendoCheckBox').value(),
+						},
+						calibratedGasTestingEquipment: {
+							yes: $('#chkFormBPPEEquip-09-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBPPEEquip-09-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBPPEEquip-09-3').data('kendoCheckBox').value(),
+						},
+						portableLighting: {
+							yes: $('#chkFormBPPEEquip-10-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBPPEEquip-10-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBPPEEquip-10-3').data('kendoCheckBox').value(),
+						},
+						other: {
+							yes: $('#chkFormBPPEEquip-11-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBPPEEquip-11-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBPPEEquip-11-3').data('kendoCheckBox').value(),
+							value: $('#tbxFormBPPEEquip-11-0').data('kendoTextBox').value(),
+						},
+					},
+					rescueEquipment: {
+						rescuePackage: {
+							yes: $('#chkFormBRescueEquip-01-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBRescueEquip-01-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBRescueEquip-01-3').data('kendoCheckBox').value(),
+							horizontal: {
+								yes: $('#chkFormBRescueEquip-02-1').data('kendoCheckBox').value(),
+								no: $('#chkFormBRescueEquip-02-2').data('kendoCheckBox').value(),
+								na: $('#chkFormBRescueEquip-02-3').data('kendoCheckBox').value(),
+							},
+							vertical: {
+								yes: $('#chkFormBRescueEquip-03-1').data('kendoCheckBox').value(),
+								no: $('#chkFormBRescueEquip-03-2').data('kendoCheckBox').value(),
+								na: $('#chkFormBRescueEquip-03-3').data('kendoCheckBox').value(),
+							},
+						},
+						portableBreathingAirSystems: {
+							yes: $('#chkFormBRescueEquip-04-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBRescueEquip-04-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBRescueEquip-04-3').data('kendoCheckBox').value(),
+						},
+						safeExit: {
+							yes: $('#chkFormBRescueEquip-05-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBRescueEquip-05-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBRescueEquip-05-3').data('kendoCheckBox').value(),
+						},
+						defibrillatorAvailable: {
+							yes: $('#chkFormBRescueEquip-06-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBRescueEquip-06-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBRescueEquip-06-3').data('kendoCheckBox').value(),
+						},
+						fireExtinguishersAvailable: {
+							yes: $('#chkFormBRescueEquip-07-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBRescueEquip-07-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBRescueEquip-07-3').data('kendoCheckBox').value(),
+						},
+						other: {
+							yes: $('#chkFormBRescueEquip-08-1').data('kendoCheckBox').value(),
+							no: $('#chkFormBRescueEquip-08-2').data('kendoCheckBox').value(),
+							na: $('#chkFormBRescueEquip-08-3').data('kendoCheckBox').value(),
+							value: $('#tbxFormBRescueEquip-08-0').data('kendoTextBox').value(),
+						},
+					},
+					permitValidity: {
+						from: $('#tmpFormB-TimeAllowedFrom').data('kendoTimePicker').value(),
+						to: $('#tmpFormB-TimeAllowedTo').data('kendoTimePicker').value(),
+					},
+					permitWithdrawn: {
+						status: $('#swtFormB-Withdrawn').data('kendoSwitch').value(),
+						reason: $('#tbxFormB-Withdrawn-Reason').data('kendoTextBox').value(),
+					},
+					entryRecords: formBEntryRecords,
+				};
+
+				var i = -1;
+
+				_permitInfo.general.certificates.forEach((value, index) => {
+					if (value.name == 'confinedspace') {
+						i = index;
+					}
+				});
+
+				if (i > -1) {
+					_permitInfo.general.certificates[i] = confinedSpace;
+				} else {
+					_permitInfo.general.certificates.push(confinedSpace);
+				}
+
+				if (currentPermitStatus == 'Approved') {
+					//console.log(formBEntryRecords);
+
+					PermitModule.permitInfo(_permitInfo);
+					PermitModule.updateCertificate();
+				}
+
+			});
+
+			/********************************************************************************************************/
+
+
+			/********************************************************************************************************/
+			/* FORM C
+			/********************************************************************************************************/
+			$('#dlgFormC').on('shown.bs.modal', (e) => {
+				var radiationUseFrom = $('#tmpFormC-TimeUseFrom').data('kendoTimePicker');
+				var radiationUseTo = $('#tmpFormC-TimeUseTo').data('kendoTimePicker');
+			});
+
+			$('#btnSaveFormC').click((e) => {
+				const radiation = {
+					name: 'radiation',
+					radioactiveMaterialUsed: $('#tbxFormC-MaterialUsed').data('kendoTextBox').value(),
+					materialActivity: $('#tbxFormC-MaterialActivity').data('kendoTextBox').value(),
+					containedWithin: $('#tbxFormC-ContainedWithin').data('kendoTextBox').value(),
+					xray: {
+						state: $('#chkFormC-XRayMachine').data('kendoCheckBox').value(),
+						manufacturer: $('#tbxFormC-ManufacturerModel').data('kendoTextBox').value(),
+						maxTubeVoltage: $('#tbxFormC-MaxTubeVoltage').data('kendoTextBox').value(),
+						maxTubeCurrent: $('#tbxFormC-MaxTubeCurrent').data('kendoTextBox').value(),
+					},
+					other: {
+						state: $('#chkFormC-OtherEquip').data('kendoCheckBox').value(),
+						value: $('#tbxFormC-OtherEquip').data('kendoTextBox').value(),
+					},
+					additionalInfo: $('#txtFormC-EquipAdditionalInfo').data('kendoTextArea').value(),
+					radiationEquipmentUsed: {
+						from: $('#tmpFormC-TimeUseFrom').data('kendoTimePicker').value(),
+					},
+					measuresPreventExposure: $('#txtFormC-PreventMeasures').data('kendoTextArea').value(),
+					additionalControls: $('#txtFormC-AdditionalControl').data('kendoTextArea').value(),
+					permitValidity: {
+						from: $('#tmpFormC-TimeAllowedFrom').data('kendoTimePicker').value(),
+						to: $('#tmpFormC-TimeAllowedTo').data('kendoTimePicker').value(),
+					},
+					permitWithdrawn: {
+						status: $('#swtFormC-Withdrawn').data('kendoSwitch').value(),
+						reason: $('#tbxFormC-Withdrawn-Reason').data('kendoTextBox').value(),
+					},
+				};
+
+				var i = -1;
+
+				_permitInfo.general.certificates.forEach((value, index) => {
+					if (value.name == 'radiation') {
+						i = index;
+					}
+				});
+
+				if (i > -1) {
+					_permitInfo.general.certificates[i] = radiation;
+				} else {
+					_permitInfo.general.certificates.push(radiation);
+				}
+
+				if (currentPermitStatus == 'Approved') {
+					PermitModule.permitInfo(_permitInfo);
+					PermitModule.updateCertificate();
+				}
+
+			});
+
+			/********************************************************************************************************/
+
+
+			/********************************************************************************************************/
+			/* FORM D
+			/********************************************************************************************************/
+			$('#dlgFormD').on('shown.bs.modal', (e) => {
+			});
+
+			$('#btnSaveFormD').click((e) => {
+				const excavation = {
+					name: 'excavation',
+					excavationDepth: $('#tbxFormD-ExcavationDepth').data('kendoTextBox').value(),
+					controlsUsed: {
+						sloping: $('#chkFormD-Sloping').data('kendoCheckBox').value(),
+						shoring: $('#chkFormD-Shoring').data('kendoCheckBox').value(),
+						shielding: $('#chkFormD-Shielding').data('kendoCheckBox').value(),
+					},
+					designatedAuthorizedPerson: $('#tbxFormD-ExcavationAuthorizedName').data('kendoTextBox').value(),
+					additionalInfo: $('#txtFormD-OtherInfo').data('kendoTextArea').value(),
+					additionalSpaceSketch: $('#txtFormD-OtherInfoSketch').data('kendoTextArea').value(),
+					emergencyContact: $('#tbxFormD-EmergencyContactName').data('kendoTextBox').value(),
+					permitValidity: {
+						from: $('#tmpFormD-TimeAllowedFrom').data('kendoTimePicker').value(),
+						to: $('#tmpFormD-TimeAllowedTo').data('kendoTimePicker').value(),
+					},
+					permitWithdrawn: {
+						status: $('#swtFormD-Withdrawn').data('kendoSwitch').value(),
+						reason: $('#tbxFormD-Withdrawn-Reason').data('kendoTextBox').value(),
+					},
+				};
+
+				var i = -1;
+
+				_permitInfo.general.certificates.forEach((value, index) => {
+					if (value.name == 'excavation') {
+						i = index;
+					}
+				});
+
+				if (i > -1) {
+					_permitInfo.general.certificates[i] = excavation;
+				} else {
+					_permitInfo.general.certificates.push(excavation);
+				}
+
+				if (currentPermitStatus == 'Approved') {
+					PermitModule.permitInfo(_permitInfo);
+					PermitModule.updateCertificate();
+				}
+
+			});
+			/********************************************************************************************************/
+
+
+			/********************************************************************************************************/
+			/* FORM E
+			/********************************************************************************************************/
+			$('#dlgFormE').on('shown.bs.modal', (e) => {
+				try {
+					if (tbl1FormE == null) {
+						tbl1FormE = $('#tbl1FormE').DataTable({
+							responsive: true,
+							searching: false,
+							paging: false,
+							ordering: false,
+							data: formEAuthIndividuals,
+							columns: [
+								{
+									data: 'date',
+									render: (data, type, row) => {
+										if (data != null) {
+											return moment(data).format('DD/MM/YYYY');
+										}
+
+										return 'N/A';
+									},
+								},
+								{ data: 'name' },
+								{ data: 'company' },
+								{
+									data: 'id',
+									render: (data, type, row) => {
+										var html = '<a href="javascript:;" onclick="removeRow(\'' + data + '\', tbl1FormE, formEAuthIndividuals)"><i class="fa-solid fa-trash-can"></i></a>';
+										return html;
+									}
+								},
+							],
+						});
+					}
+
+					if (tbl2FormE == null) {
+						tbl2FormE = $('#tbl2FormE').DataTable({
+							responsive: true,
+							searching: false,
+							paging: false,
+							ordering: false,
+							data: formEIsolationPointIds,
+							columns: [
+								{ data: 'isolationPoint' },
+								{
+									data: 'tagInstalled',
+									render: (data, type, row) => {
+										if (data) {
+											return '<i class="fa-sharp fa-solid fa-circle-check"></i>';
+										}
+
+										return '';
+									},
+								},
+								{
+									data: 'lockInstalled',
+									render: (data, type, row) => {
+										if (data) {
+											return '<i class="fa-sharp fa-solid fa-circle-check"></i>';
+										}
+
+										return '';
+									},
+								},
+								{
+									data: 'blindInstalled',
+									render: (data, type, row) => {
+										if (data) {
+											return '<i class="fa-sharp fa-solid fa-circle-check"></i>';
+										}
+
+										return '';
+									},
+								},
+								{ data: 'normalOperatePos' },
+								{
+									data: 'dateInstalled',
+									render: (data, type, row) => {
+										if (data != null) {
+											return moment(data).format('DD/MM/YYYY');
+										}
+
+										return 'N/A';
+									},
+								},
+								{
+									data: 'dateRemoved',
+									render: (data, type, row) => {
+										if (data != null) {
+											return moment(data).format('DD/MM/YYYY');
+										}
+
+										return 'N/A';
+									},
+								},
+								{
+									data: 'id',
+									render: (data, type, row) => {
+										var html = '<a href="javascript:;" onclick="removeRow(\'' + data + '\', tbl2FormE, formEIsolationPointIds)"><i class="fa-solid fa-trash-can"></i></a>';
+										return html;
+									}
+								},
+							],
+						});
+					}
+				} catch (e) {}
+			});
+
+			$('#dlgFormE-AuthPersons').on('show.bs.modal', (e) => {
+				var date = $('#ddpFormE-AuthPerson-Date').data('kendoDatePicker');
+				var name = $('#tbxFormE-AuthPerson-Name').data('kendoTextBox');
+				var company = $('#tbxFormE-AuthPerson-Company').data('kendoTextBox');
+
+				date.value(null);
+				name.value(null);
+				company.value(null);
+			});
+
+			$('#dlgFormE-AuthPersons').on('hidden.bs.modal', (e) => {
+				var date = $('#ddpFormE-AuthPerson-Date').data('kendoDatePicker');
+				var name = $('#tbxFormE-AuthPerson-Name').data('kendoTextBox');
+				var company = $('#tbxFormE-AuthPerson-Company').data('kendoTextBox');
+
+				if (date.value() != null && name.value() != null && company.value() != null) {
+					if (formEAuthIndividuals.length == 0) {
+						$('#tbl1FormE tbody').empty();
+					}
+
+					const n = moment().unix();
+
+					formEAuthIndividuals.push({
+						id: n,
+						date: date.value(),
+						dateTs: moment(date.value()).unix(),
+						name: name.value(),
+						company: company.value(),
+					});
+
+					tbl1FormE.clear().draw();
+					tbl1FormE.data = formEAuthIndividuals;
+					tbl1FormE.rows.add(formEAuthIndividuals).draw();
+
+					$('#dlgFormE-AuthPersons').modal('hide');
+				}
+
+
+				setTimeout(() => {
+					$('#tbl1FormE')[0].scrollIntoView();
+
+					tbl1FormE.responsive.recalc();
+					tbl1FormE.responsive.rebuild();
+
+				}, 500);
+			});
+
+			$('#dlgFormE-IsolationPointID').on('show.bs.modal', (e) => {
+				var isolationPoint = $('#tbxFormE-IsolationPoint-ID').data('kendoTextBox');
+				var tagInstalled = $('#swtFormE-IsolationPoint-TagInstalled').data('kendoSwitch');
+				var lockInstalled = $('#swtFormE-IsolationPoint-LockInstalled').data('kendoSwitch');
+				var blindInstalled = $('#swtFormE-IsolationPoint-BlindInstalled').data('kendoSwitch');
+				var normalOperatePos = $('#tbxFormE-IsolationPoint-NormalOperatePosition').data('kendoTextBox');
+				var dateInstalled = $('#ddpFormE-IsolationPoint-DateInstalled').data('kendoDatePicker');
+				var dateRemoved = $('#ddpFormE-IsolationPoint-DateRemoved').data('kendoDatePicker');
+
+				isolationPoint.value(null);
+				tagInstalled.value(false);
+				lockInstalled.value(false);
+				blindInstalled.value(false);
+				normalOperatePos.value(null);
+				dateInstalled.value(null);
+				dateRemoved.value(null);
+			});
+
+			$('#dlgFormE-IsolationPointID').on('hidden.bs.modal', (e) => {
+				var isolationPoint = $('#tbxFormE-IsolationPoint-ID').data('kendoTextBox');
+				var tagInstalled = $('#swtFormE-IsolationPoint-TagInstalled').data('kendoSwitch');
+				var lockInstalled = $('#swtFormE-IsolationPoint-LockInstalled').data('kendoSwitch');
+				var blindInstalled = $('#swtFormE-IsolationPoint-BlindInstalled').data('kendoSwitch');
+				var normalOperatePos = $('#tbxFormE-IsolationPoint-NormalOperatePosition').data('kendoTextBox');
+				var dateInstalled = $('#ddpFormE-IsolationPoint-DateInstalled').data('kendoDatePicker');
+				var dateRemoved = $('#ddpFormE-IsolationPoint-DateRemoved').data('kendoDatePicker');
+
+				if (isolationPoint.value() != null) {
+					if (formEIsolationPointIds.length == 0) {
+						$('#tbl2FormE tbody').empty();
+					}
+
+					const n = moment().unix();
+
+					formEIsolationPointIds.push({
+						id: n,
+						isolationPoint: isolationPoint.value(),
+						tagInstalled: tagInstalled.value(),
+						lockInstalled: lockInstalled.value(),
+						blindInstalled: blindInstalled.value(),
+						normalOperatePos: normalOperatePos.value(),
+						dateInstalled: dateInstalled.value(),
+						dateRemoved: dateRemoved.value(),
+					});
+
+					tbl2FormE.clear().draw();
+					tbl2FormE.data = formEIsolationPointIds;
+					tbl2FormE.rows.add(formEIsolationPointIds).draw();
+
+					$('#dlgFormE-AuthPersons').modal('hide');
+				}
+			});
+
+			$('#btnSaveFormE').click((e) => {
+				const isolation = {
+					name: 'isolation',
+					equipmentUsed: $('#txtFormE-EquipmentUsed').data('kendoTextArea').value(),
+					lockOutTagOutType: {
+						individual: $('#chkFormE-LOTOType1').data('kendoCheckBox').value(),
+						group: $('#chkFormE-LOTOType2').data('kendoCheckBox').value(),
+					},
+					isolatedEnergyType: {
+						electrical: $('#chkFormE-EnergyType1').data('kendoCheckBox').value(),
+						steam: $('#chkFormE-EnergyType2').data('kendoCheckBox').value(),
+						hydraulic: $('#chkFormE-EnergyType3').data('kendoCheckBox').value(),
+						mechanical: $('#chkFormE-EnergyType4').data('kendoCheckBox').value(),
+						pneumatic: $('#chkFormE-EnergyType5').data('kendoCheckBox').value(),
+						other: {
+							state: $('#chkFormE-EnergyType6').data('kendoCheckBox').value(),
+							value: $('#tbxFormE-EnergyType6').data('kendoTextBox').value(),
+						},
+					},
+					isolationMethod: {
+						lockTag: $('#chkFormE-IsolationMethod1').data('kendoCheckBox').value(),
+						tagOnly: $('#chkFormE-IsolationMethod2').data('kendoCheckBox').value(),
+						blinds: $('#chkFormE-IsolationMethod3').data('kendoCheckBox').value(),
+						doubleBlockBleed: $('#chkFormE-IsolationMethod4').data('kendoCheckBox').value(),
+						other: {
+							state: $('#chkFormE-IsolationMethod5').data('kendoCheckBox').value(),
+							value: $('#tbxFormE-IsolationMethod5').data('kendoTextBox').value(),
+						},
+					},
+					authorizedIndividuals: formEAuthIndividuals,
+					isolationPoints: formEIsolationPointIds,
+					permitValidity: {
+						from: $('#tmpFormE-TimeAllowedFrom').data('kendoTimePicker').value(),
+						to: $('#tmpFormE-TimeAllowedTo').data('kendoTimePicker').value(),
+					},
+				};
+
+				var i = -1;
+
+				_permitInfo.general.certificates.forEach((value, index) => {
+					if (value.name == 'isolation') {
+						i = index;
+					}
+				});
+
+				if (i > -1) {
+					_permitInfo.general.certificates[i] = isolation;
+				} else {
+					_permitInfo.general.certificates.push(isolation);
+				}
+
+				if (currentPermitStatus == 'Approved') {
+					PermitModule.permitInfo(_permitInfo);
+					PermitModule.updateCertificate();
+				}
+
+			});
+
+			/********************************************************************************************************/
+
+
+			/********************************************************************************************************/
+			/* FORM F
+			/********************************************************************************************************/
+			$('#dlgFormF').on('shown.bs.modal', (e) => {
+				var methodStatement = null;
+
+				try {
+					_permitInfo.general.certificates.forEach((value, index) => {
+						if (value.name == 'methodStatement') {
+							methodStatement = value;
+						}
+					});
+
+					if (methodStatement != null) {
+						$('#workDescription-1').data('kendoTextArea').value(methodStatement.worksDescription[1]);
+						$('#workDescription-2').data('kendoTextArea').value(methodStatement.worksDescription[2]);
+						$('#workDescription-3').data('kendoTextArea').value(methodStatement.worksDescription[3]);
+						$('#workDescription-4').data('kendoTextArea').value(methodStatement.worksDescription[4]);
+						$('#workDescription-5').data('kendoTextArea').value(methodStatement.worksDescription[5]);
+						$('#workDescription-6').data('kendoTextArea').value(methodStatement.worksDescription[6]);
+						$('#workDescription-7').data('kendoTextArea').value(methodStatement.worksDescription[7]);
+						$('#workDescription-8').data('kendoTextArea').value(methodStatement.worksDescription[8]);
+						$('#names-1').data('kendoTextBox').value(methodStatement.responsiblePersonNames[1]);
+						$('#names-2').data('kendoTextBox').value(methodStatement.responsiblePersonNames[2]);
+						$('#names-3').data('kendoTextBox').value(methodStatement.responsiblePersonNames[3]);
+						$('#names-4').data('kendoTextBox').value(methodStatement.responsiblePersonNames[4]);
+						$('#names-5').data('kendoTextBox').value(methodStatement.responsiblePersonNames[5]);
+						$('#plantEquip-1').data('kendoTextBox').value(methodStatement.plantEquipment[1]);
+						$('#plantEquip-2').data('kendoTextBox').value(methodStatement.plantEquipment[2]);
+						$('#plantEquip-3').data('kendoTextBox').value(methodStatement.plantEquipment[3]);
+						$('#plantEquip-4').data('kendoTextBox').value(methodStatement.plantEquipment[4]);
+						$('#plantEquip-5').data('kendoTextBox').value(methodStatement.plantEquipment[5]);
+						$('#plantEquip-6').data('kendoTextBox').value(methodStatement.plantEquipment[6]);
+						$('#plantEquip-7').data('kendoTextBox').value(methodStatement.plantEquipment[7]);
+						$('#plantEquip-8').data('kendoTextBox').value(methodStatement.plantEquipment[8]);
+						$('#plantEquip-9').data('kendoTextBox').value(methodStatement.plantEquipment[9]);
+						$('#comms-1').data('kendoTextBox').value(methodStatement.communicationsWorkforce[1]);
+						$('#comms-2').data('kendoTextBox').value(methodStatement.communicationsWorkforce[2]);
+						$('#comms-3').data('kendoTextBox').value(methodStatement.communicationsWorkforce[3]);
+						$('#comms-4').data('kendoTextBox').value(methodStatement.communicationsWorkforce[4]);
+
+						if (methodStatement.workToBeCompleted[1] != null) {
+							$('#workCompleted-1').data('kendoDateTimePicker').value(new Date(methodStatement.workToBeCompleted[1]));
+						}
+
+						if (methodStatement.workToBeCompleted[2] != null) {
+							$('#workCompleted-2').data('kendoDateTimePicker').value(new Date(methodStatement.workToBeCompleted[2]));
+						}
+
+						$('#workCompleted-3').data('kendoTextArea').value(methodStatement.workToBeCompleted[3]);
+					}
+				} catch (e) {}
+			});
+
+			$('#dlgFormF').on('hidden.bs.modal', (e) => {
+				$('#workDescription-1').data('kendoTextArea').value(null);
+				$('#workDescription-2').data('kendoTextArea').value(null);
+				$('#workDescription-3').data('kendoTextArea').value(null);
+				$('#workDescription-4').data('kendoTextArea').value(null);
+				$('#workDescription-5').data('kendoTextArea').value(null);
+				$('#workDescription-6').data('kendoTextArea').value(null);
+				$('#workDescription-7').data('kendoTextArea').value(null);
+				$('#workDescription-8').data('kendoTextArea').value(null);
+				$('#names-1').data('kendoTextBox').value(null);
+				$('#names-2').data('kendoTextBox').value(null);
+				$('#names-3').data('kendoTextBox').value(null);
+				$('#names-4').data('kendoTextBox').value(null);
+				$('#names-5').data('kendoTextBox').value(null);
+				$('#plantEquip-1').data('kendoTextBox').value(null);
+				$('#plantEquip-2').data('kendoTextBox').value(null);
+				$('#plantEquip-3').data('kendoTextBox').value(null);
+				$('#plantEquip-4').data('kendoTextBox').value(null);
+				$('#plantEquip-5').data('kendoTextBox').value(null);
+				$('#plantEquip-6').data('kendoTextBox').value(null);
+				$('#plantEquip-7').data('kendoTextBox').value(null);
+				$('#plantEquip-8').data('kendoTextBox').value(null);
+				$('#plantEquip-9').data('kendoTextBox').value(null);
+				$('#comms-1').data('kendoTextBox').value(null);
+				$('#comms-2').data('kendoTextBox').value(null);
+				$('#comms-3').data('kendoTextBox').value(null);
+				$('#comms-4').data('kendoTextBox').value(null);
+				$('#workCompleted-1').data('kendoDateTimePicker').value(null);
+				$('#workCompleted-2').data('kendoDateTimePicker').value(null);
+				$('#workCompleted-3').data('kendoTextArea').value(null);
+			});
+
+			$('#btnSaveFormF').click(() => {
+				const formF = {
+					name: 'methodStatement',
+					worksDescription: {
+						1: $('#workDescription-1').data('kendoTextArea').value(),
+						2: $('#workDescription-2').data('kendoTextArea').value(),
+						3: $('#workDescription-3').data('kendoTextArea').value(),
+						4: $('#workDescription-4').data('kendoTextArea').value(),
+						5: $('#workDescription-5').data('kendoTextArea').value(),
+						6: $('#workDescription-6').data('kendoTextArea').value(),
+						7: $('#workDescription-7').data('kendoTextArea').value(),
+						8: $('#workDescription-8').data('kendoTextArea').value(),
+					},
+					responsiblePersonNames: {
+						1: $('#names-1').data('kendoTextBox').value(),
+						2: $('#names-2').data('kendoTextBox').value(),
+						3: $('#names-3').data('kendoTextBox').value(),
+						4: $('#names-4').data('kendoTextBox').value(),
+						5: $('#names-5').data('kendoTextBox').value(),
+					},
+					plantEquipment: {
+						1: $('#plantEquip-1').data('kendoTextBox').value(),
+						2: $('#plantEquip-2').data('kendoTextBox').value(),
+						3: $('#plantEquip-3').data('kendoTextBox').value(),
+						4: $('#plantEquip-4').data('kendoTextBox').value(),
+						5: $('#plantEquip-5').data('kendoTextBox').value(),
+						6: $('#plantEquip-6').data('kendoTextBox').value(),
+						7: $('#plantEquip-7').data('kendoTextBox').value(),
+						8: $('#plantEquip-8').data('kendoTextBox').value(),
+						9: $('#plantEquip-9').data('kendoTextBox').value(),
+					},
+					communicationsWorkforce: {
+						1: $('#comms-1').data('kendoTextBox').value(),
+						2: $('#comms-2').data('kendoTextBox').value(),
+						3: $('#comms-3').data('kendoTextBox').value(),
+						4: $('#comms-4').data('kendoTextBox').value(),
+					},
+					workToBeCompleted: {
+						1: $('#workCompleted-1').data('kendoDateTimePicker').value(),
+						2: $('#workCompleted-2').data('kendoDateTimePicker').value(),
+						3: $('#workCompleted-3').data('kendoTextArea').value(),
+					},
+				};
+
+				var i = -1;
+
+				_permitInfo.general.certificates.forEach((value, index) => {
+					if (value.name == 'methodStatement') {
+						i = index;
+					}
+				});
+
+				if (i > -1) {
+					_permitInfo.general.certificates[i] = formF;
+				} else {
+					_permitInfo.general.certificates.push(formF);
+				}
+
+				if (currentPermitStatus == 'Approved') {
+					PermitModule.permitInfo(_permitInfo);
+					PermitModule.updateCertificate();
+				}
+
+			});
+
+			/********************************************************************************************************/
+
+
+			/********************************************************************************************************/
+			/* FORM G
+			/********************************************************************************************************/
+			$('#dlgFormG').on('shown.bs.modal', (e) => {
+				var liftingHoisting = null;
+
+				try {
+					_permitInfo.general.certificates.forEach((value, index) => {
+						if (value.name == 'liftingHoisting') {
+							liftingHoisting = value;
+						}
+					});
+
+					if (liftingHoisting != null) {
+						$('#formG-general-1').data('kendoTextBox').value(liftingHoisting.location);
+						$('#formG-general-2').data('kendoTextBox').value(liftingHoisting.liftingPlanNo);
+						$('#formG-general-3').data('kendoCheckBox').value(liftingHoisting.typeOfLift.level1);
+						$('#formG-general-4').data('kendoCheckBox').value(liftingHoisting.typeOfLift.level2);
+
+						for (var n = 1; n < 14; n++) {
+							$('#formG-safeCheck-' + n + 'a').data('kendoCheckBox').value(liftingHoisting.safeChecks[n].yes);
+							$('#formG-safeCheck-' + n + 'b').data('kendoCheckBox').value(liftingHoisting.safeChecks[n].no);
+							$('#formG-safeCheck-' + n + 'c').data('kendoCheckBox').value(liftingHoisting.safeChecks[n].na);
+						}
+
+						if (liftingHoisting.permitValidity.from != null) {
+							$('#formG-validity-1').data('kendoDateTimePicker').value(new Date(liftingHoisting.permitValidity.from));
+						}
+
+						if (liftingHoisting.permitValidity.to != null) {
+							$('#formG-validity-2').data('kendoDateTimePicker').value(new Date(liftingHoisting.permitValidity.to));
+						}
+
+						$('#formG-signed-1').data('kendoCheckBox').value(liftingHoisting.permitValidity.signedEngineering);
+						$('#formG-signed-2').data('kendoCheckBox').value(liftingHoisting.permitValidity.signedPH);
+						$('#formG-withdrawn').data('kendoSwitch').value(liftingHoisting.permitWithdrawn.status);
+						$('#formG-withdrawnReason').data('kendoTextBox').value(liftingHoisting.permitWithdrawn.reason);
+					}
+				} catch (e) {}
+			});
+
+			$('#dlgFormG').on('hidden.bs.modal', (e) => {
+				$('#formG-general-1').data('kendoTextBox').value(null);
+				$('#formG-general-2').data('kendoTextBox').value(null);
+				$('#formG-general-3').data('kendoCheckBox').value(null);
+				$('#formG-general-4').data('kendoCheckBox').value(null);
+
+				for (var n = 1; n < 14; n++) {
+					$('#formG-safeCheck-' + n + 'a').data('kendoCheckBox').value(null);
+					$('#formG-safeCheck-' + n + 'b').data('kendoCheckBox').value(null);
+					$('#formG-safeCheck-' + n + 'c').data('kendoCheckBox').value(null);
+				}
+
+				$('#formG-validity-1').data('kendoDateTimePicker').value(null);
+				$('#formG-validity-2').data('kendoDateTimePicker').value(null);
+				$('#formG-signed-1').data('kendoCheckBox').value(null);
+				$('#formG-signed-2').data('kendoCheckBox').value(null);
+				$('#formG-withdrawn').data('kendoSwitch').value(null);
+				$('#formG-withdrawnReason').data('kendoTextBox').value(null);
+			});
+
+			$('#btnSaveFormG').click(() => {
+				const formG = {
+					name: 'liftingHoisting',
+					location: $('#formG-general-1').data('kendoTextBox').value(),
+					liftingPlanNo: $('#formG-general-2').data('kendoTextBox').value(),
+					typeOfLift: {
+						level1: $('#formG-general-3').data('kendoCheckBox').value(),
+						level2: $('#formG-general-4').data('kendoCheckBox').value(),
+					},
+					safeChecks: {
+						1: {
+							yes: $('#formG-safeCheck-1a').data('kendoCheckBox').value(),
+							no: $('#formG-safeCheck-1b').data('kendoCheckBox').value(),
+							na: $('#formG-safeCheck-1c').data('kendoCheckBox').value(),
+						},
+						2: {
+							yes: $('#formG-safeCheck-2a').data('kendoCheckBox').value(),
+							no: $('#formG-safeCheck-2b').data('kendoCheckBox').value(),
+							na: $('#formG-safeCheck-2c').data('kendoCheckBox').value(),
+						},
+						3: {
+							yes: $('#formG-safeCheck-3a').data('kendoCheckBox').value(),
+							no: $('#formG-safeCheck-3b').data('kendoCheckBox').value(),
+							na: $('#formG-safeCheck-3c').data('kendoCheckBox').value(),
+						},
+						4: {
+							yes: $('#formG-safeCheck-4a').data('kendoCheckBox').value(),
+							no: $('#formG-safeCheck-4b').data('kendoCheckBox').value(),
+							na: $('#formG-safeCheck-4c').data('kendoCheckBox').value(),
+						},
+						5: {
+							yes: $('#formG-safeCheck-5a').data('kendoCheckBox').value(),
+							no: $('#formG-safeCheck-5b').data('kendoCheckBox').value(),
+							na: $('#formG-safeCheck-5c').data('kendoCheckBox').value(),
+						},
+						6: {
+							yes: $('#formG-safeCheck-6a').data('kendoCheckBox').value(),
+							no: $('#formG-safeCheck-6b').data('kendoCheckBox').value(),
+							na: $('#formG-safeCheck-6c').data('kendoCheckBox').value(),
+						},
+						7: {
+							yes: $('#formG-safeCheck-7a').data('kendoCheckBox').value(),
+							no: $('#formG-safeCheck-7b').data('kendoCheckBox').value(),
+							na: $('#formG-safeCheck-7c').data('kendoCheckBox').value(),
+						},
+						8: {
+							yes: $('#formG-safeCheck-8a').data('kendoCheckBox').value(),
+							no: $('#formG-safeCheck-8b').data('kendoCheckBox').value(),
+							na: $('#formG-safeCheck-8c').data('kendoCheckBox').value(),
+						},
+						9: {
+							yes: $('#formG-safeCheck-9a').data('kendoCheckBox').value(),
+							no: $('#formG-safeCheck-9b').data('kendoCheckBox').value(),
+							na: $('#formG-safeCheck-9c').data('kendoCheckBox').value(),
+						},
+						10: {
+							yes: $('#formG-safeCheck-10a').data('kendoCheckBox').value(),
+							no: $('#formG-safeCheck-10b').data('kendoCheckBox').value(),
+							na: $('#formG-safeCheck-10c').data('kendoCheckBox').value(),
+						},
+						11: {
+							yes: $('#formG-safeCheck-11a').data('kendoCheckBox').value(),
+							no: $('#formG-safeCheck-11b').data('kendoCheckBox').value(),
+							na: $('#formG-safeCheck-11c').data('kendoCheckBox').value(),
+						},
+						12: {
+							yes: $('#formG-safeCheck-12a').data('kendoCheckBox').value(),
+							no: $('#formG-safeCheck-12b').data('kendoCheckBox').value(),
+							na: $('#formG-safeCheck-12c').data('kendoCheckBox').value(),
+						},
+						13: {
+							yes: $('#formG-safeCheck-13a').data('kendoCheckBox').value(),
+							no: $('#formG-safeCheck-13b').data('kendoCheckBox').value(),
+							na: $('#formG-safeCheck-13c').data('kendoCheckBox').value(),
+						},
+					},
+					permitValidity: {
+						from: $('#formG-validity-1').data('kendoDateTimePicker').value(),
+						to: $('#formG-validity-2').data('kendoDateTimePicker').value(),
+						dateSignedLPI: $('#formG-validity-1').data('kendoDateTimePicker').value() != null && $('#formG-validity-2').data('kendoDateTimePicker').value() != null ? new Date() : null,
+						signedEngineering: $('#formG-signed-1').data('kendoCheckBox').value(),
+						dateSignedEngineering: $('#formG-signed-1').data('kendoCheckBox').value() ? new Date() : null,
+						signedPH: $('#formG-signed-2').data('kendoCheckBox').value(),
+						dateSignedPH: $('#formG-signed-2').data('kendoCheckBox').value() ? new Date() : null,
+					},
+					permitWithdrawn: {
+						status: $('#formG-withdrawn').data('kendoSwitch').value(),
+						reason: $('#formG-withdrawnReason').data('kendoTextBox').value(),
+					},
+				};
+
+				var i = -1;
+
+				_permitInfo.general.certificates.forEach((value, index) => {
+					if (value.name == 'liftingHoisting') {
+						i = index;
+					}
+				});
+
+				if (i > -1) {
+					_permitInfo.general.certificates[i] = formG;
+				} else {
+					_permitInfo.general.certificates.push(formG);
+				}
+
+				if (currentPermitStatus == 'Approved') {
+					PermitModule.permitInfo(_permitInfo);
+					PermitModule.updateCertificate();
+				}
+
+			});
+
+			/********************************************************************************************************/
+
+
+			/********************************************************************************************************/
+			/* FORM H
+			/********************************************************************************************************/
+			$('#dlgFormH').on('shown.bs.modal', (e) => {
+				var override = null;
+
+				try {
+					_permitInfo.general.certificates.forEach((value, index) => {
+						if (value.name == 'override') {
+							override = value;
+						}
+					});
+
+					if (override != null) {
+						$('#formH-1').data('kendoTextBox').value(override.general[1]);
+						$('#formH-2').data('kendoTextBox').value(override.general[2]);
+						$('#formH-3').data('kendoTextBox').value(override.general[3]);
+						$('#formH-4').data('kendoTextBox').value(override.general[4]);
+						$('#formH-5').data('kendoTextArea').value(override.general[5]);
+						$('#formH-6').data('kendoTextArea').value(override.general[6]);
+
+						if (override.plannedDuration.from != null) {
+							$('#formH-plannedDuration-1').data('kendoDateTimePicker').value(new Date(override.plannedDuration.from));
+						}
+
+						if (override.plannedDuration.to != null) {
+							$('#formH-plannedDuration-2').data('kendoDateTimePicker').value(new Date(override.plannedDuration.to));
+						}
+
+						$('#formH-signed-1').data('kendoCheckBox').value(override.permitValidity.signedLPI);
+						$('#formH-signed-2').data('kendoCheckBox').value(override.permitValidity.signedPH);
+
+						if (override.permitValidity.from != null) {
+							$('#formH-validity-1').data('kendoDateTimePicker').value(new Date(override.permitValidity.from));
+						}
+
+						if (override.permitValidity.to != null) {
+							$('#formH-validity-2').data('kendoDateTimePicker').value(new Date(override.permitValidity.to));
+						}
+					}
+				} catch (e) {}
+			});
+
+			$('#dlgFormH').on('hidden.bs.modal', (e) => {
+				$('#formH-1').data('kendoTextBox').value(null);
+				$('#formH-2').data('kendoTextBox').value(null);
+				$('#formH-3').data('kendoTextBox').value(null);
+				$('#formH-4').data('kendoTextBox').value(null);
+				$('#formH-5').data('kendoTextArea').value(null);
+				$('#formH-6').data('kendoTextArea').value(null);
+				$('#formH-plannedDuration-1').data('kendoDateTimePicker').value(null);
+				$('#formH-plannedDuration-2').data('kendoDateTimePicker').value(null);
+				$('#formH-signed-1').data('kendoCheckBox').value(null);
+				$('#formH-signed-2').data('kendoCheckBox').value(null);
+				$('#formH-validity-1').data('kendoDateTimePicker').value(null);
+				$('#formH-validity-2').data('kendoDateTimePicker').value(null);
+			});
+
+			$('#btnSaveFormH').click(() => {
+				const formH = {
+					name: 'override',
+					general: {
+						1: $('#formH-1').data('kendoTextBox').value(),
+						2: $('#formH-2').data('kendoTextBox').value(),
+						3: $('#formH-3').data('kendoTextBox').value(),
+						4: $('#formH-4').data('kendoTextBox').value(),
+						5: $('#formH-5').data('kendoTextArea').value(),
+						6: $('#formH-6').data('kendoTextArea').value(),
+					},
+					plannedDuration: {
+						from: $('#formH-plannedDuration-1').data('kendoDateTimePicker').value(),
+						to: $('#formH-plannedDuration-2').data('kendoDateTimePicker').value(),
+					},
+					permitValidity: {
+						from: $('#formH-validity-1').data('kendoDateTimePicker').value(),
+						to: $('#formH-validity-2').data('kendoDateTimePicker').value(),
+						signedLPI: $('#formH-signed-1').data('kendoCheckBox').value(),
+						dateSignedLPI: $('#formH-validity-1').data('kendoDateTimePicker').value() != null && $('#formH-validity-1').data('kendoDateTimePicker').value() != null ? new Date() : null,
+						signedPH: $('#formH-signed-2').data('kendoCheckBox').value(),
+						dateSignedPH: $('#formH-validity-2').data('kendoDateTimePicker').value() != null && $('#formH-validity-2').data('kendoDateTimePicker').value() != null ? new Date() : null,
+					},
+				};
+
+				var i = -1;
+
+				_permitInfo.general.certificates.forEach((value, index) => {
+					if (value.name == 'override') {
+						i = index;
+					}
+				});
+
+				if (i > -1) {
+					_permitInfo.general.certificates[i] = formH;
+				} else {
+					_permitInfo.general.certificates.push(formH);
+				}
+
+				if (currentPermitStatus == 'Approved') {
+					PermitModule.permitInfo(_permitInfo);
+					PermitModule.updateCertificate();
+				}
+
+			});
+
+			/********************************************************************************************************/
+
+
+			$('.suspend-clear').click(() => {
+				var dtm = $('#suspendDate').data('kendoDatePicker');
+				dtm.value(null);
+
+				$('#suspendAutoResume').data('kendoCheckBox').check(false);
+			});
+
+
+			$('.btn-suspend').click(() => {
+				var btnLabel = $('.btn-suspend span').html();
+				var proceedOk = false;
+				var suspendDate;
+
+				var formData = new FormData();
+
+				if (btnLabel == 'Suspend') {
+					var datePicker = $('#suspendDate').data('kendoDatePicker');
+					var autoResume = $('#suspendAutoResume').data('kendoCheckBox');
+
+					if (datePicker.value() == null) {
+						alert('Please enter a valid date.');
+					} else {
+						suspendDate = moment(datePicker.value());
+
+						const selectedDate = {
+							day: parseInt(suspendDate.format('DD')),
+							month: parseInt(suspendDate.format('MM')),
+							year: parseInt(suspendDate.format('YYYY')),
+						};
+
+						//formData.append('SuspendDateDD', suspendDate.format('DD/MM/YYYY'));
+						formData.append('SuspendDate', JSON.stringify(selectedDate));
+						formData.append('SuspendAutoResume', suspendPermit.autoResume);
+						formData.append('SuspendState', 'suspend');
+
+						proceedOk = true;
+					}
+				} else {
+					proceedOk = true;
+					formData.append('SuspendState', 'cancel');
+				}
+
+				if (proceedOk) {
+					$('.loading').show();
+
+					var ajaxPost = $.ajax({
+						url: '/@Model.CompanyId/permits/@Model.PermitId.ToString().ToLower()/suspend',
+						method: 'POST',
+						data: formData,
+						contentType: false,
+						processData: false,
+						cache: false,
+						beforeSend: (xhr) => {
+							xhr.setRequestHeader('RequestVerificationToken', $('input:hidden[name="__RequestVerificationToken"]').val());
+						},
+					});
+
+					ajaxPost.done((response, status) => {
+						if (response.status == 'OK') {
+							document.location.href = '/@Model.CompanyId/permits';
+						}
+						
+						$('.loading').hide();
+					});
+
+					ajaxPost.fail((response, status) => {
+						$('.loading').hide();
+						//console.log(response);
+					});
+
+					ajaxPost.always(() => {
+					});
+				}
+
+			});
+
+		});
+
+
+		$(window).on('resize', () => {
+			try {
+				if (tbl1FormB != null) {
+					tbl1FormB.responsive.recalc();
+					tbl1FormB.responsive.rebuild();
+				}
+
+				if (tbl2FormB != null) {
+					tbl2FormB.responsive.recalc();
+					tbl2FormB.responsive.rebuild();
+				}
+			} catch (e) { }
+		});
+
+
+		const removeRow = (rowId, table, data) => {
+			var i = -1;
+
+			data.findIndex((elem, idx) => {
+				if (elem.id == rowId) {
+					i = idx;
+				}
+			});
+
+			if (i > -1) {
+				data.splice(i, 1);
+
+				table.clear().draw();
+				table.data = data;
+				table.rows.add(data).draw();
+			}
+		};
+
+
+		const removeO2 = (e) => {
+			var elem = $('#tblAtmos tbody tr#' + e);
+			elem.remove();
+
+			atmosReadings.map((v, i) => {
+				if (v.id == e) {
+					atmosReadings.splice(i, 1);
+				}
+			});
+
+			if (atmosReadings.length == 0) {
+				tblAtmos.draw();
+			}
+		};
+
+
+		const onChangeCertificate = (e) => {
+			const elemData = $(e.sender.element).data('certname');
+			const data = elemData.split('|');
+			const switchState = e.sender.value();
+
+			const elem = e.sender.element[0];
+			const elemId = elem.id;
+
+			let elemIndex = -1;
+
+			_permitInfo.general.certificates.forEach((item, index) => {
+				if (item.name == data[0]) {
+					elemIndex = index
+				}
+			});
+
+			if (!switchState) {
+				if (elemIndex > -1) {
+					_permitInfo.general.certificates.splice(elemIndex, 1);
+				}
+
+				if (data[0] == 'hotwork') {
+					lelReadings = [];
+					atmosReadings = [];
+
+					if (tblLEL != null) {
+						tblLEL.clear().draw();
+						tblLEL.data = lelReadings;
+						tblLEL.rows.add(lelReadings).draw();
+					}
+
+					if (tblAtmos != null) {
+						tblAtmos.clear().draw();
+						tblAtmos.data = atmosReadings;
+						tblAtmos.rows.add(atmosReadings).draw();
+					}
+				}
+
+				if (data[0] == 'confinedspace') {
+					formBGasReadings = [];
+					formBEntryRecords = [];
+
+					if (tbl1FormB != null) {
+						tbl1FormB.clear().draw();
+						tbl1FormB.data = formBGasReadings;
+						tbl1FormB.rows.add(formBGasReadings).draw();
+					}
+
+					if (tbl2FormB != null) {
+						tbl2FormB.clear().draw();
+						tbl2FormB.data = formBEntryRecords;
+						tbl2FormB.rows.add(formBEntryRecords).draw();
+					}
+				}
+
+				if (data[0] == 'isolation') {
+					formEAuthIndividuals = [];
+					formEIsolationPointIds = [];
+
+					if (tbl1FormE != null) {
+						tbl1FormE.clear().draw();
+						tbl1FormE.data = formEAuthIndividuals;
+						tbl1FormE.rows.add(formEAuthIndividuals).draw();
+					}
+
+					if (tbl2FormE != null) {
+						tbl2FormE.clear().draw();
+						tbl2FormE.data = formEIsolationPointIds;
+						tbl2FormE.rows.add(formEIsolationPointIds).draw();
+					}
+				}
+
+			}
+
+			if (selectedCerts.length == 0) {
+				$('ul.selected-certs').empty();
+			}
+
+			if (switchState) {
+				constructItem(data);
+			} else {
+				removeCert(data[0]);
+			}
+		};
+
+
+		const onChangeActivities = (e) => {
+			const elem = e.sender.element[0];
+			const elemId = elem.id;
+
+			let elemIndex = -1;
+
+			_permitInfo.operation.activities.forEach((item, index) => {
+				if (item.id == elemId) {
+					elemIndex = index
+				}
+			});
+
+			if (e.sender.value()) {
+				if (elemIndex == -1) {
+					let elemValue = null;
+
+					if ($(elem).data('hasvalue')) {
+						if (elemId == 'chkOpInfo19') {
+							elemValue = $('#tbOpInfo19').data('kendoTextBox').value();
+						}
+					}
+
+					_permitInfo.operation.activities.push({
+						id: elemId,
+						hasValue: $(elem).data('hasvalue'),
+						value: elemValue,
+					});
+				}
+			} else {
+				if (elemIndex > -1) {
+					_permitInfo.operation.activities.splice(elemIndex, 1);
+				}
+			}
+		};
+
+
+		const onChangeWhereActivity = (e) => {
+			const elem = e.sender.element[0];
+			const elemId = elem.id;
+
+			let elemIndex = -1;
+
+			_permitInfo.operation.activityLocations.forEach((item, index) => {
+				if (item == elemId) {
+					elemIndex = index
+				}
+			});
+
+			if (e.sender.value()) {
+				if (elemIndex == -1) {
+					_permitInfo.operation.activityLocations.push(elemId);
+				}
+			} else {
+				if (elemIndex > -1) {
+					_permitInfo.operation.activityLocations.splice(elemIndex, 1);
+				}
+			}
+		};
+
+
+		const onChangeToolUsed = (e) => {
+			const elem = e.sender.element[0];
+			const elemId = elem.id;
+
+			let elemIndex = -1;
+
+			_permitInfo.operation.activityTools.forEach((item, index) => {
+				if (item == elemId) {
+					elemIndex = index
+				}
+			});
+
+			if (e.sender.value()) {
+				if (elemIndex == -1) {
+					_permitInfo.operation.activityTools.push(elemId);
+				}
+			} else {
+				if (elemIndex > -1) {
+					_permitInfo.operation.activityTools.splice(elemIndex, 1);
+				}
+			}
+		};
+
+
+		const onChangeProductUsed = (e) => {
+			const elem = e.sender.element[0];
+			const elemId = elem.id;
+
+			let elemIndex = -1;
+
+			_permitInfo.operation.activityProducts.forEach((item, index) => {
+				if (item.id == elemId) {
+					elemIndex = index
+				}
+			});
+
+			if (e.sender.value()) {
+				if (elemIndex == -1) {
+					let elemValue = null;
+
+					if ($(elem).data('hasvalue')) {
+						//elemValue = $('.' + elemId).val();
+						elemValue = $($(elem).data('textbox')).data('kendoTextBox').value();
+					}
+
+					_permitInfo.operation.activityProducts.push({
+						id: elemId,
+						hasValue: $(elem).data('hasvalue'),
+						value: elemValue,
+					});
+				}
+			} else {
+				if (elemIndex > -1) {
+					_permitInfo.operation.activityProducts.splice(elemIndex, 1);
+				}
+			}
+		};
+
+
+		const onChangeWithdrawn = (e) => {
+			const switchState = e.sender.value();
+			const tbReason = $('#tbWithdrawnReason').data('kendoTextBox');
+
+			tbReason.enable(switchState);
+			tbReason.focus();
+		};
+
+
+		const onChangeWithdrawnFormA = (e) => {
+			const switchState = e.sender.value();
+			const tbReason = $('#tbWithdrawnReason').data('kendoTextBox');
+
+			tbReason.enable(switchState);
+			tbReason.focus();
+
+			hotWorkDataIsDirty = true;
+		};
+
+
+		const onChangeWithdrawnFormB = (e) => {
+			const switchState = e.sender.value();
+			const tbReason = $('#tbxFormB-Withdrawn-Reason').data('kendoTextBox');
+
+			tbReason.enable(switchState);
+			tbReason.focus();
+		};
+
+
+		const onChangeWithdrawnFormC = (e) => {
+			const switchState = e.sender.value();
+			const tbReason = $('#tbxFormC-Withdrawn-Reason').data('kendoTextBox');
+
+			tbReason.enable(switchState);
+			tbReason.focus();
+		};
+
+
+		const onChangeWithdrawnFormD = (e) => {
+			const switchState = e.sender.value();
+			const tbReason = $('#tbxFormD-Withdrawn-Reason').data('kendoTextBox');
+
+			tbReason.enable(switchState);
+			tbReason.focus();
+		};
+
+
+		const onChangeWithdrawnFormG = (e) => {
+			const switchState = e.sender.value();
+			const tbReason = $('#formG-withdrawnReason').data('kendoTextBox');
+
+			tbReason.enable(switchState);
+			tbReason.focus();
+		};
+
+
+		const onChangeFormEEnergyType = (e) => {
+			const swt = e.sender.value();
+			const tbx = $('#tbxFormE-EnergyType6').data('kendoTextBox');
+
+			tbx.enable(swt);
+			tbx.focus();
+		};
+
+
+		const onChangeFormEIsolationMethod = (e) => {
+			const swt = e.sender.value();
+			const tbx = $('#tbxFormE-IsolationMethod5').data('kendoTextBox');
+
+			tbx.enable(swt);
+			tbx.focus();
+		};
+
+
+		const onChangeFormETbl1 = (e) => {
+			var date = $('#ddpFormE-AuthPerson-Date').data('kendoDatePicker');
+			var name = $('#tbxFormE-AuthPerson-Name').data('kendoTextBox');
+			var company = $('#tbxFormE-AuthPerson-Company').data('kendoTextBox');
+
+			if (date.value() != null && name.value() != null && company.value() != null) {
+				$('#dlgFormE-AuthPersons button.btn-primary').removeClass('disabled').prop('disabled', null);
+			} else {
+				$('#dlgFormE-AuthPersons button.btn-primary').addClass('disabled').prop('disabled', 'disabled');
+			}
+		};
+
+
+		const onChangeFormEIsolationPointID = (e) => {
+			var isolationPoint = $('#tbxFormE-IsolationPoint-ID').data('kendoTextBox');
+			var tagInstalled = $('#swtFormE-IsolationPoint-TagInstalled').data('kendoSwitch');
+			var lockInstalled = $('#swtFormE-IsolationPoint-LockInstalled').data('kendoSwitch');
+			var blindInstalled = $('#swtFormE-IsolationPoint-BlindInstalled').data('kendoSwitch');
+			var normalOperatePos = $('#tbxFormE-IsolationPoint-NormalOperatePosition').data('kendoTextBox');
+			var dateInstalled = $('#ddpFormE-IsolationPoint-DateInstalled').data('kendoDatePicker');
+			var dateRemoved = $('#ddpFormE-IsolationPoint-DateRemoved').data('kendoDatePicker');
+
+			if (isolationPoint.value() != null && normalOperatePos.value() != null) {
+				$('#dlgFormE-IsolationPointID button.btn-primary').removeClass('disabled').prop('disabled', null);
+			} else {
+				$('#dlgFormE-IsolationPointID button.btn-primary').addClass('disabled').prop('disabled', 'disabled');
+			}
+		};
+
+
+		const constructItem = (data) => {
+			let html = '';
+			let imgName = data[0].toString().toLowerCase();
+
+			if (data[0].toString().toLowerCase() == 'method') {
+				imgName = 'methodstatement';
+			}
+
+			if (data[0].toString().toLowerCase() == 'lifthoist') {
+				imgName = 'liftinghoisting';
+			}
+
+			html += '<li id="item-' + data[0] + '" class="list-group-item d-flex flex-row justify-content-between align-items-center fade show">';
+			html += '			<div class="d-flex flex-row align-items-center justify-content-between">';
+			//html += '				<div class="avatar avatar-xs">';
+			//html += '					<span class="avatar-title rounded-circle bg-info">' + data[1] + '</span>';
+			//html += '				</div>';
+			html += '            <img title="(' + data[1] + ') ' + data[2] + '" src="/img/icons/certs/' + imgName + '.png" style="width:24px;height:24px" />';
+			html += '				<h4 class="ms-3 mb-0">' + data[2] + '</h4>';
+			html += '			</div>';
+			html += '			<div class="ms-5">';
+			html += '				<a href="#dlgForm' + data[1] + '" class="no-loading" data-bs-toggle="modal" data-bs-target="#dlgForm' + data[1] + '"><i class="fa-sharp fa-solid fa-pen-to-square"></i></a>';
+			//html += '				<a href="javascript:;" class="no-loading mx-3" onclick="removeCert(\'' + data[0] + '\')"><i class="fa-solid fa-trash-can"></i></a>';
+			html += '			</div>';
+			html += '</li>';
+
+			let tmpCertData = {
+				name: data[0]
+			};
+
+			selectedCerts.push(tmpCertData);
+
+			$('.selected-certs').append(html);
+
+			_permitInfo.general.certificates = selectedCerts;
+		};
+
+
+		const removeCert = (item) => {
+			const elem = $('ul.selected-certs li#item-' + item);
+
+			if (elem.length > 0) {
+				elem.remove();
+
+				const n = selectedCerts.indexOf(item);
+
+				if (n > -1) {
+					selectedCerts.splice(n, 1);
+				}
+
+				if (selectedCerts.length == 0) {
+					$('ul.selected-certs').append('<li class="list-group-item fade show"><span>No associated certificate attached</span></li>');
+				}
+			}
+		};
+
+
+		const entryRecordsOnChange = () => {
+			const workerName = $("#tbxFormB-Entry-WorkerName").data("kendoTextBox");
+			const workerSignature = $("#tbxFormB-Entry-WorkerSignature").data("kendoTextBox");
+			const entryReason = $("#txtFormB-Entry-Reason").data("kendoTextArea");
+			const timeEntry = $("#tpkFormB-Entry-TimeEntry").data("kendoTimePicker");
+			const timeExit = $("#tpkFormB-Entry-TimeExit").data("kendoTimePicker");
+
+			if (workerName.value() != null && workerSignature.value() != null && entryReason.value() != null && timeEntry.value() != null && timeExit.value() != null) {
+				$('#dlgFormB-Entry .btn-primary').removeClass('disabled').prop('disabled', null);
+			} else {
+				$('#dlgFormB-Entry .btn-primary').addClass('disabled').prop('disabled', 'disabled');
+			}
+		};
+
+
+		const onIgnitionSourceCheckBoxChange = (e) => {
+			$('#tbFormAIgnitionSource5').data('kendoTextBox').enable(e.sender.value());
+
+			if (e.sender.value()) {
+				$('#tbFormAIgnitionSource5').data('kendoTextBox').focus();
+			}
+
+			hotWorkDataIsDirty = true;
+		};
+
+
+		const onStartDateChange = (e) => {
+			var dtm = new Date(e.sender.value());
+			var endDate;
+			var n = 0;
+
+			while (n < 6) {
+				endDate = new Date(dtm.setDate(dtm.getDate() + 1));
+
+				//if (endDate.getDay() != 0 && endDate.getDay() != 6) {
+				//	n++;
+				//}
+
+				n++;
+			}
+
+			$('#endDateTime').data('kendoDatePicker').min(e.sender.value());
+			$('#endDateTime').data('kendoDatePicker').max(endDate);
+
+			//$('#endDateTime').data('kendoDatePicker').min(e.sender.value());
+		};
+
+
+		const onChangeSites = () => {
+			var checkedNodes = [];
+			var dropDownTree = $('#ddtLocation').data('kendoDropDownTree');
+
+			checkedNodeIds(dropDownTree.dataSource.view(), checkedNodes);
+		};
+
+
+		const checkedNodeIds = (nodes, checkedNodes) => {
+			for (var i = 0; i < nodes.length; i++) {
+				if (nodes[i].checked) {
+					checkedNodes.push(nodes[i].id);
+				}
+
+				if (nodes[i].hasChildren) {
+					checkedNodeIds(nodes[i].children.view(), checkedNodes);
+				}
+			}
+		};
+
+
+		const onMarkAsClosedChange = (e) => {
+			const switchState = e.sender.value();
+
+			if (switchState) {
+				$('.close-notes').css('display', 'block');
+			} else {
+				var notes = $('#txtNotes').data('kendoTextArea');
+				notes.value('');
+
+				$('.close-notes').css('display', 'none');
+			}
+		};
+
+
+		const onSuspendChange = (e) => {
+			const switchState = e.sender.value();
+			var dtm = $('#suspendDate').data('kendoDatePicker');
+			var chk = $('#suspendAutoResume').data('kendoCheckBox');
+			var btn = $('.btn-suspend');
+
+			dtm.enable(switchState);
+			chk.enable(switchState)
+
+			if (switchState) {
+				$('.btn-suspend').attr('disabled', null);
+			} else {
+				dtm.value(null);
+				$('.btn-suspend').attr('disabled', 'disabled');
+			}
+		};
+
+
+		const onAutoResumeChange = (e) => {
+			const isChecked = e.sender.value();
+			suspendPermit.autoResume = isChecked;
+		};
+
+
+		const onUploadSelect = (e) => {
+			PermitModule.fileUploadOnSelect(e);
+		};
+
+
+		const onUploadClear = (e) => {
+			PermitModule.fileUploadOnClear(e);
+		};
+
+
+		const onUploadCancel = (e) => {
+			PermitModule.fileUploadOnCancel(e);
+		};
+
+
+		const onUploadRemove = (e) => {
+			PermitModule.fileUploadOnRemove(e);
+		};
+
+
+		const onUploadSuccess = (e) => {
+			//console.log(e);
+		};
+
+
+		const onUploadError = (e) => {
+			//console.log('OnError');
+			//console.log(e);
+		};
+
+
+		const removeFile = (id) => {
+			let formData = new FormData();
+			formData.append('FileId', id);
+
+			//$('.attachment-list-loading').css('display', 'grid');
+
+			const xhr = $.ajax({
+				type: 'POST',
+				url: '/@Model.CompanyId/permits/attachments/remove',
+				data: formData,
+				contentType: false,
+				processData: false,
+				cache: false,
+			});
+
+			xhr.done((response) => {
+				tblFiles.ajax.reload();
+			});
+
+			xhr.always(() => {
+				//$('.attachment-list-loading').css('display', 'none');
+			});
+		};
+
+
+		const hotWorkOnChange = (e) => {
+			hotWorkDataIsDirty = true;
+		};
+
+	</script>
+}

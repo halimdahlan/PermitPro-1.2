@@ -1,0 +1,41 @@
+﻿@media (min-width: 768px) {
+	.column-md-avatar {
+		width: 300px !important;
+	}
+
+	.k-input {
+		width: 300px;
+	}
+}
+
+.column-avatar {
+	width: 100%;
+}
+
+.form-control.k-input, .k-picker, .k-button {
+	font-family: 'Cerebri Sans';
+	font-size: 15px;
+}
+
+.k-input {
+}
+
+.no-image {
+	font-size: 2.5em;
+}
+
+.avatar-image {
+	cursor: pointer;
+	border-radius: 50px;
+	width: 100px;
+	height: 100px;
+	background-repeat: no-repeat;
+	background-size: contain;
+}
+
+.remove-image {
+	position: absolute;
+	right: 5px;
+	top: 80px;
+	cursor: pointer;
+}

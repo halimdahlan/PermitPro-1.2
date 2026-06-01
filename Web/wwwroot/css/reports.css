@@ -1,0 +1,114 @@
+﻿.view-report {
+
+}
+
+.label-width {
+	width: 110px;
+}
+
+.k-readonly {
+	color: gray;
+}
+
+.selected-value {
+	display: inline-block;
+	vertical-align: middle;
+	width: 24px;
+	height: 24px;
+	background-size: 100%;
+	margin-right: 5px;
+	border-radius: 50%;
+}
+
+#categories-list .k-list-item-text {
+	line-height: 1em;
+	min-width: 300px;
+}
+
+/* Material Theme padding adjustment*/
+.k-material #categories-list .k-list-item-text,
+.k-material #categories-list .k-list-item-text.k-hover,
+.k-materialblack #categories-list .k-list-item-text,
+.k-materialblack #categories-list .k-list-item-text.k-hover {
+	padding-left: 5px;
+	border-left: 0;
+}
+
+#categories-list .k-list-item-text > span {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	vertical-align: middle;
+	display: table-cell;
+	vertical-align: central;
+	margin: 10px 10px 10px 5px;
+}
+
+	#categories-list .k-list-item-text > span:first-child {
+		-moz-box-shadow: inset 0 0 30px rgba(0,0,0,.3);
+		-webkit-box-shadow: inset 0 0 30px rgba(0,0,0,.3);
+		box-shadow: inset 0 0 30px rgba(0,0,0,.3);
+		margin: 10px;
+		width: 50px;
+		height: 50px;
+		border-radius: 50%;
+		background-size: 100%;
+		background-repeat: no-repeat;
+	}
+
+#categories-list h3 {
+	font-size: 1.2em;
+	font-weight: normal;
+	margin: 0 0 1px 0;
+	padding: 0;
+}
+
+#categories-list p {
+	margin: 0;
+	padding: 0;
+	font-size: .8em;
+}
+
+.k-picker.k-dropdownlist {
+	width: 140px;
+}
+
+.k-picker, .k-input {
+	font-family: 'Cerebri Sans', sans-serif;
+	font-size: 14px;
+}
+
+.k-picker-solid {
+	background-color: #fff;
+}
+
+	.k-picker-solid:focus {
+		background-color: #fff;
+		box-shadow: none;
+	}
+
+	.k-picker-solid:hover {
+		background-color: unset !important;
+	}
+
+	.k-input-solid:focus, .k-input-solid:focus-within {
+		border-color: none;
+		box-shadow: none;
+	}
+
+.k-readonly {
+	color: unset !important;
+}
+
+.k-button, #gridResult {
+	font-family: 'Cerebri Sans', sans-serif;
+	font-size: 14px;
+}
+
+.k-column-title {
+	font-weight: 600;
+}
+
+.k-toolbar .k-input, .k-toolbar .k-picker {
+	width: 15em !important;
+}

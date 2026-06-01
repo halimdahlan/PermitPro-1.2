@@ -1,0 +1,74 @@
+﻿@using Kendo.Mvc.UI
+
+@model EditPermitViewModel
+
+<h2 class="accordion-header">
+	<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse7" aria-expanded="false" aria-controls="collapse7">
+		<h3 class="mb-0">Notes</h3>
+	</button>
+</h2>
+<div id="collapse7" class="accordion-collapse collapse" data-bs-parent="#accordionPermit">
+	<div class="accordion-body">
+		<h4>Area Classification</h4>
+		<div class="mb-3">Area are classified into 5 zones:</div>
+		<div>
+			<table>
+				<tbody>
+					<tr>
+						<td style="width: 20px; vertical-align: top;">1.</td>
+						<td style="width: 80px; vertical-align: top;"><strong>Zone 0</strong></td>
+						<td style="width: 30px; text-align: center; vertical-align: top;">-</td>
+						<td>
+							In which a Flammable Atmosphere is continuosly present or present
+							for long periods i.e. present for more than about 1000 hours per year.
+						</td>
+					</tr>
+					<tr>
+						<td style="vertical-align: top;">2.</td>
+						<td style="vertical-align: top;"><strong>Zone 1</strong></td>
+						<td style="text-align: center; vertical-align: top;">-</td>
+						<td>
+							In which a Flammable Atmosphere is likely to occur i.e. present for about 10 to 1000 hours per year.
+						</td>
+					</tr>
+					<tr>
+						<td style="vertical-align: top;">3.</td>
+						<td style="vertical-align: top;"><strong>Zone 2</strong></td>
+						<td style="text-align: center; vertical-align: top;">-</td>
+						<td>
+							In which Flammable Atmosphere is not likely to occur and if it occurs, will only exist for a short time i.e.
+							present for less than about 10 hours per year.
+						</td>
+					</tr>
+					<tr>
+						<td style="vertical-align: top;">4.</td>
+						<td style="vertical-align: top;"><strong>Radioactive</strong></td>
+						<td style="text-align: center; vertical-align: top;">-</td>
+						<td>
+							Within X-ray barricade area.
+						</td>
+					</tr>
+					<tr>
+						<td style="vertical-align: top;">5.</td>
+						<td style="vertical-align: top;"><strong>Unclassified</strong></td>
+						<td style="text-align: center; vertical-align: top;">-</td>
+						<td>
+							Area not classified in either of the above.
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<hr />
+		<h4>Action on hearing of Terminal siren</h4>
+		<div>
+			Immediately stop all sources of ignitions (eg. Vehicles, welding, chipping and diesel engines),
+			leave your work site on foot and assemble at the nearest assembly point.
+		</div>
+		<hr />
+		<h4>All Clear</h4>
+		<div>
+			To be announce by Control Room Operator. When all clear, return to your work site.
+		</div>
+	</div>
+</div>

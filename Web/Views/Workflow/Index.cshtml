@@ -1,0 +1,289 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+	ViewData["Title"] = "Settings / Workflow";
+	ViewData["SubTitle"] = "Summary";
+
+	var companyId = ViewContext.RouteData.Values["company"] as string;
+}
+
+@model WorkflowViewModel
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+	<div class="d-flex flex-row align-items-center">
+		<div class="me-3">View by</div>
+		<button type="button" class="btn btn-sm btn-dark rounded-pill me-2 btn-filter">ALL</button>
+		<button type="button" class="btn btn-sm btn-secondary rounded-pill me-2 btn-filter">ACTIVE</button>
+		<button type="button" class="btn btn-sm btn-secondary rounded-pill me-2 btn-filter">INACTIVE</button>
+		<!--
+		<span class="badge rounded-pill text-bg-secondary me-2 active">ALL</span>
+		<span class="badge rounded-pill text-bg-secondary me-2">ACTIVE</span>
+		<span class="badge rounded-pill text-bg-secondary me-2">INACTIVE</span>
+		-->
+	</div>
+	<div>
+		<a href="#dlgNew" class="btn btn-primary no-loading" data-bs-toggle="modal" data-bs-target="#dlgNew">
+			<span class="px-2"><i class="fa-sharp fa-solid fa-plus me-2"></i> New workflow</span>
+		</a>
+	</div>
+</div>
+
+<div class="mt-5">
+	@Html.AntiForgeryToken()
+	@(Html.Kendo()
+		.Grid<WorkflowGridViewModel>()
+		.Name("grid")
+		.ToolBar(tb => tb.Search())
+		.NoRecords()
+		.Pageable()
+		.Sortable()
+		.DataSource(ds => ds
+		.Custom()
+		.Schema(s => s
+		.Model(m =>
+		{
+			m.Id(i => i.Id);
+		})
+		)
+		.Transport(t =>
+		{
+			t.Read(r => r.Url($"/{companyId}/workflow/grid").Type(HttpVerbs.Get));
+		})
+		.PageSize(20)
+		)
+		.Columns(c =>
+		{
+			c.Bound(f => f.Name).ClientTemplate(
+			$"<a href=\"/{companyId}/workflow/edit/#=Id#\" class=\"text-info\">#=Name#</a>");
+
+			c.Bound(f => f.Description);
+
+			c.Bound(f => f.IsActive).Sortable(false).ClientTemplate(
+			"# if (IsActive) { #" +
+			"    <i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-success\"></i>" +
+			"# } else { #" +
+			"    <i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-warning\"></i>" +
+			"# } #").HeaderHtmlAttributes(new { @class = "grid-header text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(120);
+
+			c.Bound(f => f.HasCertificates).Sortable(false).ClientTemplate(
+			"# if (HasCertificates) { #" +
+			"    <i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-success\"></i>" +
+			"# } else { #" +
+			"    &nbsp;" +
+			"# } #").HeaderHtmlAttributes(new { @class = "grid-header text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(200);
+
+			c.Bound(f => f.CreatedWhen).Format("{0:dd MMM, yyyy}").Width(150);
+			c.Bound(f => f.ActionIcons).Sortable(false).Encoded(false).HeaderHtmlAttributes(new { @class = "grid-header text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(110);
+		})
+		)
+</div>
+
+<!--
+<div class="d-flex flex-row mt-5 justify-content-start align-items-center">
+	<div class="flex-grow-1">
+		<table id="tbl" class="table table-striped display pt-5 mb-3">
+			<thead>
+				<tr>
+					<th>WORKFLOW NAME</th>
+					<th>DESCRIPTION</th>
+					<th data-class-name="text-center" style="width: 73px;">IS ACTIVE?</th>
+					<th data-class-name="text-center" style="width: 180px;">PTW WITH CERTIFICATE?</th>
+					<th style="width: 100px;">DATE CREATED</th>
+					<th style="width: 78px;" data-orderable="false">&nbsp;</th>
+				</tr>
+			</thead>
+		</table>
+	</div>
+</div>
+-->
+<!-- Modal -->
+<div class="modal fade" id="dlgNew" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="dlgNewLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<form id="frmNew" method="post" class="needs-validation" onsubmit="return false" novalidate>
+				<div class="modal-header">
+					<h1 class="modal-title" id="dlgNewLabel">New workflow</h1>
+					<a href="#" class="no-loading text-dark" data-bs-dismiss="modal" aria-label="Close"><i class="fa-sharp fa-solid fa-xmark fa-xl"></i></a>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<label for="workflowName" class="form-label">Name</label>
+						<input id="workflowName" type="text" class="form-control" required />
+						<div class="ms-2 invalid-feedback">Enter a workflow name</div>
+					</div>
+					<div class="form-group">
+						<label for="workflowDescription" class="form-label">Description</label>
+						<textarea id="workflowDescription" rows="2" class="form-control"></textarea>
+					</div>
+					<div class="form-group mb-3">
+						<label class="form-label me-2" for="workflowActive">Is active?</label>
+						@(Html.Kendo().Switch()
+												.Name("workflowActive")
+												.Size(ComponentSize.Small)
+												.Messages(x => x.Checked("YES").Unchecked("NO")))
+					</div>
+					<div class="form-group mb-3">
+						<label class="form-label me-2" for="workflowActive">For PTW with certificate?</label>
+						@(Html.Kendo().Switch()
+												.Name("workflowCertificate")
+												.Size(ComponentSize.Small)
+												.Messages(x => x.Checked("YES").Unchecked("NO")))
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary btn-save"><span class="mx-3">Save changes</span></button>
+				</div>
+				<input type="hidden" id="companyId" value="@companyId" />
+			</form>
+		</div>
+	</div>
+</div>
+
+@section CustomCss {
+	<!-- DataTables -->
+	<link rel="stylesheet" href="~/lib/DataTables/datatables.min.css" />
+	<script src="~/lib/DataTables/datatables.min.js"></script>
+
+	<link rel="stylesheet" href="~/css/workflow.css" />
+}
+
+@section Scripts {
+	<script>
+		var validator = null;
+		var tbl = null;
+
+		var currentFilter = null;
+		var btnFilters = null;
+
+		$(document).ready(() => {
+
+			btnFilters = $('.btn-filter');
+			currentFilter = btnFilters[0];
+
+			var grid = $("#grid").data("kendoGrid");
+
+			grid.dataSource.transport.options.read.beforeSend = (req) => {
+				req.setRequestHeader('RequestVerificationToken', $('input:hidden[name="__RequestVerificationToken"]').val());
+			};
+
+
+			$('.btn-filter').click((e) => {
+				var btn = $(e.currentTarget);
+
+				if (btn[0] != currentFilter) {
+					$(currentFilter).removeClass('btn-dark').addClass('btn-secondary');
+					$(e.currentTarget).removeClass('btn-secondary').addClass('btn-dark');
+
+					if ($(e.currentTarget).text() == 'ALL') {
+						grid.dataSource.filter(null);
+					} else {
+						var state = $(e.currentTarget).text() == 'ACTIVE';
+						grid.dataSource.filter({ field: 'IsActive', operator: 'eq', value: state });
+					}
+				}
+
+				currentFilter = btn[0];
+			});
+
+
+			/**
+			 * Button event handlers
+			 */
+			$('.btn-save').click(() => {
+				const frm = $('#frmNew')[0];
+				$('#frmNew').removeClass('needs-validation').addClass('was-validated');
+
+				if (frm.checkValidity()) {
+					const workflowName = $('#workflowName').val();
+					const workflowDescription = $('#workflowDescription').val();
+					const workflowActive = $('#workflowActive').data('kendoSwitch').value();
+					const workflowCertificate = $('#workflowCertificate').data('kendoSwitch').value();
+					const companyId = $('#companyId').val();
+
+					const postData = {
+						name: workflowName,
+						description: workflowDescription,
+						isActive: workflowActive,
+						hasCertificate: workflowCertificate,
+						companyId,
+					};
+
+					var formData = new FormData();
+					formData.append('Name', workflowName);
+					formData.append('Description', workflowDescription);
+					formData.append('IsActive', workflowActive);
+					formData.append('HasCertificate', workflowCertificate);
+					formData.append('CompanyId', companyId);
+
+					$('.loading').show();
+
+					const xhr = $.ajax({
+						method: 'POST',
+						url: '/@companyId/workflow/workflows',
+						data: formData,
+						contentType: false,
+						processData: false,
+						cache: false,
+						beforeSend: (xhr) => {
+							xhr.setRequestHeader('RequestVerificationToken', $('input:hidden[name="__RequestVerificationToken"]').val());
+						},
+					});
+
+					xhr.done((response, status) => {
+						if (!response.hasError) {
+							$('#dlgNew').modal('hide');
+							document.location.href = '/@companyId/workflow/edit/' + response.workflowId;
+							//tbl.ajax.reload();
+						}
+					});
+
+					xhr.fail((response, status) => {
+					});
+
+					xhr.always(() => {
+						$('.loading').hide();
+					});
+
+				}
+			});
+
+
+			/**
+			 * Modal event handlers
+			 */
+			$('#dlgNew').on('shown.bs.modal', (e) => {
+				$('#frmNew').removeClass('was-validated').addClass('needs-validation');
+				$('#workflowName').val(null);
+				$('#workflowDescription').val(null);
+				$('#workflowActive').data('kendoSwitch').value(false);
+				$('#workflowCertificate').data('kendoSwitch').value(false);
+			});
+
+		});
+
+
+		const deleteWorkflow = (e) => {
+			$('.loading').show();
+
+			var xhr = $.ajax({
+				method: 'DELETE',
+				url: '/@companyId/workflow/workflows/' + e,
+			});
+
+			xhr.done((response, status) => {
+				if (!response.hasError) {
+					//tbl.ajax.reload();
+				}
+			});
+
+			xhr.fail((response, status) => {
+			});
+
+			xhr.always(() => {
+				$('.loading').hide();
+			});
+		};
+
+	</script>
+}

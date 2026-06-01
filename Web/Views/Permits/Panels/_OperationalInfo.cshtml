@@ -1,0 +1,350 @@
+﻿@using Kendo.Mvc.UI
+
+@model EditPermitViewModel
+
+<h2 class="accordion-header">
+	<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+		<h3 class="mb-0">Operational Information</h3>
+	</button>
+</h2>
+<div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionPermit">
+	<div class="accordion-body" style="position: relative;">
+		@if (Model.PermitStatus != PermitPro.Core.Enums.PermitStatusEnum.Draft)
+		{
+			<div class="edit-disable"></div>
+		}
+		<div class="mb-4">
+			<div class="mb-3">What are the activities?</div>
+			<div class="d-flex flex-column flex-md-row justify-content-evently">
+				<div class="w-33">
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo1")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "what-activities", data_hasvalue = "false" })
+								.Label("  Excavation"))
+					</div>
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo2")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "what-activities", data_hasvalue = "false" })
+								.Label("  Entering Confined Space"))
+					</div>
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo3")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "what-activities", data_hasvalue = "false" })
+								.Label("  Assemble"))
+					</div>
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo4")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "what-activities", data_hasvalue = "false" })
+								.Label("  Disassemble"))
+					</div>
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo5")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "what-activities", data_hasvalue = "false" })
+								.Label("  Prefabrication"))
+					</div>
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo6")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "what-activities", data_hasvalue = "false" })
+								.Label("  Opening Confined Space"))
+					</div>
+				</div>
+				<div class="w-33">
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo7")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "what-activities", data_hasvalue = "false" })
+								.Label("  Welding"))
+					</div>
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo8")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "what-activities", data_hasvalue = "false" })
+								.Label("  Working at Height"))
+					</div>
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo9")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "what-activities", data_hasvalue = "false" })
+								.Label("  Cutting"))
+					</div>
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo10")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "what-activities", data_hasvalue = "false" })
+								.Label("  Drilling/Grinding"))
+					</div>
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo11")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "what-activities", data_hasvalue = "false" })
+								.Label("  High-Pressure Jetting"))
+					</div>
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo12")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "what-activities", data_hasvalue = "false" })
+								.Label("  Grit Blasting"))
+					</div>
+				</div>
+				<div class="w-33">
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo13")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "what-activities", data_hasvalue = "false" })
+								.Label("  X-Ray/Radiography"))
+					</div>
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo14")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "what-activities", data_hasvalue = "false" })
+								.Label("  Lifting/Crane Activities"))
+					</div>
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo15")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "what-activities", data_hasvalue = "false" })
+								.Label("  Calibration"))
+					</div>
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo16")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "what-activities", data_hasvalue = "false" })
+								.Label("  Electrical Activities"))
+					</div>
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo17")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "what-activities", data_hasvalue = "false" })
+								.Label("  Nitrogen Pressure Test"))
+					</div>
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo18")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "what-activities", data_hasvalue = "false" })
+								.Label("  Hydrostatic Test"))
+					</div>
+				</div>
+			</div>
+			<div>
+				<div>
+					@(Html.Kendo().CheckBox()
+							.Name("chkOpInfo19")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium)
+							.HtmlAttributes(new { @class = "what-activities", data_hasvalue = "true", data_textbox = "tbOpInfo19" })
+							.Label("  Other (please specify)"))
+				</div>
+				<div class="ps-4 mt-2">
+					@(Html.Kendo().TextBox()
+							.Name("tbOpInfo19")
+							.Size(ComponentSize.Medium)
+							.Rounded(Rounded.Large)
+							.FillMode(FillMode.Outline)
+							.HtmlAttributes(new { @class = "chkOpInfo19" }))
+				</div>
+			</div>
+		</div>
+		<hr />
+		<div>
+			<div class="mb-3">Where are the activities?</div>
+			<div class="d-flex flex-column flex-md-row justify-content-evenly">
+				<div class="w-33">
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo20")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "where-activities" })
+								.Label("  Zone 0"))
+					</div>
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo21")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "where-activities" })
+								.Label("  Unclassified"))
+					</div>
+				</div>
+				<div class="w-33">
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo22")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "where-activities" })
+								.Label("  Zone 1"))
+					</div>
+				</div>
+				<div class="w-33">
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo23")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "where-activities" })
+								.Label("  Zone 2"))
+					</div>
+				</div>
+			</div>
+		</div>
+		<hr />
+		<div>
+			<div class="mb-3">With what?</div>
+			<div class="d-flex flex-column flex-md-row justify-content-around">
+				<div class="w-33">
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo24")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "where-activities" })
+								.Label("  Explosion Proof/Intrisically Safe"))
+					</div>
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo25")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "where-activities" })
+								.Label("  Spark-free Tools"))
+					</div>
+				</div>
+				<div class="w-33">
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo26")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "where-activities" })
+								.Label("  Lifting Equipment/Crane"))
+					</div>
+				</div>
+				<div class="w-33">
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo27")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "where-activities" })
+								.Label("  Scaffold"))
+					</div>
+				</div>
+			</div>
+			<div>
+				<div>
+					@(Html.Kendo().CheckBox()
+							.Name("chkOpInfo27a")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium)
+							.HtmlAttributes(new { @class = "where-activities", data_hasvalue = "true", data_textbox = "#tbOpInfo27a" })
+							.Label("  Other (please specify)"))
+				</div>
+				<div class="ps-4 mt-2">
+					@(Html.Kendo().TextBox()
+							.Size(ComponentSize.Medium)
+							.Rounded(Rounded.Large)
+							.FillMode(FillMode.Outline)
+							.HtmlAttributes(new { @class = "chkOpInfo27a" })
+							.Name("tbOpInfo27a"))
+				</div>
+			</div>
+		</div>
+		<hr />
+		<div class="mb-4">
+			<div class="mb-3">Product involved - specify product contained in system</div>
+			<div class="d-flex flex-md-row flex-column justify-content-evenly">
+				<div class="w-33">
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo28")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "where-activities", data_hasvalue = "false" })
+								.Label("  Class 1"))
+					</div>
+				</div>
+				<div class="w-33">
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo29")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "where-activities", data_hasvalue = "false" })
+								.Label("  Class 2"))
+					</div>
+				</div>
+				<div class="w-33">
+					<div>
+						@(Html.Kendo().CheckBox()
+								.Name("chkOpInfo30")
+								.Size(ComponentSize.Large)
+								.Rounded(BasicRounded.Medium)
+								.HtmlAttributes(new { @class = "where-activities", data_hasvalue = "false" })
+								.Label("  Class 3"))
+					</div>
+				</div>
+			</div>
+			<div>
+				<div>
+					@(Html.Kendo().CheckBox()
+							.Name("chkOpInfo31")
+							.Size(ComponentSize.Large)
+							.Rounded(BasicRounded.Medium)
+							.HtmlAttributes(new { @class = "where-activities", data_hasvalue = "true", data_textbox = "#tbOpInfo32" })
+							.Label("  Other (please specify)"))
+				</div>
+				<div class="ps-4 mt-2">
+					@(Html.Kendo().TextBox()
+							.Size(ComponentSize.Medium)
+							.Rounded(Rounded.Large)
+							.FillMode(FillMode.Outline)
+							.HtmlAttributes(new { @class = "chkOpInfo31" })
+							.Name("tbOpInfo31"))
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

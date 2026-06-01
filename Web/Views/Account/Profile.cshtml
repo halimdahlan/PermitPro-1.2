@@ -1,0 +1,454 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+	ViewData["Title"] = "Settings / User / Profile";
+	ViewData["SubTitle"] = "User profile";
+
+	var companyId = ViewContext.RouteData.Values["company"] as string;
+}
+
+@model ProfileViewModel
+
+<div class="d-flex flex-column flex-md-row">
+	<div class="me-0 me-md-3 column-avatar column-md-avatar d-flex flex-column align-items-center">
+		<div class="mb-3" style="position:absolute;">
+			<div class="text-center avatar-image d-flex justify-content-end align-items-end" 
+				style="background-image: url('/img/profile/@Model.ProfileImageUrl')">
+			</div>
+
+			@if (Model.HasProfileImage)
+			{
+				<div class="text-dark remove-image">
+					<i class="fa-solid fa-trash-can-xmark fa-xl"></i>
+				</div>
+			}
+			else
+			{
+				<div class="text-dark remove-image" style="display:none">
+					<i class="fa-solid fa-trash-can-xmark fa-xl"></i>
+				</div>
+			}
+
+		</div>
+		<div style="margin-top: 110px;">
+			<span class="fs-2 fw-bold text-info profile-name">@Model.FirstName @Model.LastName</span>
+		</div>
+		<div>
+			<span class="fs-4 text-dark profile-designation">@Model.Designation</span>
+		</div>
+		<div class="mb-4">
+			<span class="fs-5 text-secondary profile-email">@Model.Email</span>
+		</div>
+
+	</div>
+	<div class="ms-0 ms-md-3">
+		<div id="profile-form" class="mb-5">
+			<div class="mb-3 d-flex flex-column flex-md-row">
+				<div class="me-0 me-md-3 mb-3 mb-md-0">
+					<label class="form-label" for="first-name">First name</label>
+					<div>
+						@(Html.Kendo().TextBox()
+							.Name("first-name")
+							.Placeholder("")
+							.Value(Model.FirstName)
+							.HtmlAttributes(new { @class = "form-control", required = "required", validationmessage = "Enter your first name" })
+						)
+					</div>
+				</div>
+				<div class="ms-0 ms-md-3">
+					<label class="form-label" for="last-name">Last name</label>
+					<div>
+						@(Html.Kendo().TextBox()
+							.Name("last-name")
+							.Placeholder("")
+							.Value(Model.LastName)
+							.HtmlAttributes(new { @class = "form-control", required = "required", validationmessage = "Enter your last name" })
+						)
+					</div>
+				</div>
+			</div>
+
+			<div class="mb-3 d-flex flex-column flex-md-row">
+				<div class="me-0 me-md-3 mb-3 mb-md-0">
+					<label class="form-label" for="email">Email</label>
+					<div>
+						@(Html.Kendo().TextBox()
+							.Name("email")
+							.Placeholder("")
+							.Value(Model.Email)
+							.HtmlAttributes(new { type = "email", @class = "form-control", required = "required", validationmessage = "Enter your email address", data_email_msg = "Email format is not valid" })
+						)
+					</div>
+				</div>
+				<div class="ms-0 ms-md-3">
+					<label class="form-label" for="designation">Designation</label>
+					<div>
+						@(Html.Kendo().TextBox()
+							.Name("designation")
+							.Placeholder("")
+							.Value(Model.Designation)
+							.HtmlAttributes(new { @class = "form-control" })
+						)
+					</div>
+				</div>
+			</div>
+
+			<div class="mb-4">
+				<button id="btn-save" type="button" class="btn btn-sm btn-primary"><span class="mx-4">Update</span></button>
+				<div>
+					<div id="validation-summary"></div>
+				</div>
+			</div>
+
+		</div>
+
+		<div id="password-form" class="mb-5">
+			<h3 class="mb-0">Security settings</h3>
+			<hr />
+			<div class="mb-4">
+				Please provide your current password, if you wish to change your password.
+			</div>
+			<div class="mb-3">
+				<label class="form-label" for="current-password">Current password</label>
+				<div>
+					@(Html.Kendo().TextBox()
+						.Name("current-password")
+						.HtmlAttributes(new { @class = "form-control", name = "current", required = "required", type = "password", data_elem = "current" })
+					)
+				</div>
+			</div>
+			<div class="mb-3">
+				<label class="form-label" for="new-password">New password</label>
+				<div>
+					@(Html.Kendo().TextBox()
+						.Name("new-password")
+						.HtmlAttributes(new { @class = "form-control", name = "new", required = "required", type = "password", data_elem = "new" })
+					)
+				</div>
+			</div>
+			<div class="mb-3">
+				<label class="form-label" for="confirm-password">Confirm password</label>
+				<div>
+					@(Html.Kendo().TextBox()
+						.Name("confirm-password")
+						.HtmlAttributes(new { @class = "form-control", name = "confirm", required = "required", type = "password", data_elem = "confirm" })
+					)
+				</div>
+			</div>
+
+			<div>
+				<button id="btn-change-password" type="button" class="btn btn-sm btn-primary"><span class="mx-3">Change password</span></button>
+				<div>
+					<div id="validation-summary"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div>
+		@Html.AntiForgeryToken()
+		<input type="hidden" asp-for="UserId" />
+	</div>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="modalUpload" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalUploadLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h3 class="modal-title" id="modalUploadLabel">Upload profile image</h3>
+				<a href="#" class="no-loading text-dark" data-bs-dismiss="modal" aria-label="Close"><i class="fa-sharp fa-regular fa-xmark fa-xl"></i></a>
+			</div>
+			<div class="modal-body">
+				<div>
+					@(Html.Kendo().Upload()
+						.Name("upload-avatar")
+						.Multiple(false)
+						.Async(a => a
+							.Save("UploadFile", "Account")
+							.SaveField("files")
+						)
+						.Validation(validation =>
+						{
+							validation.MaxFileSize(100000);
+							validation.AllowedExtensions(new string[] { ".jpg", ".gif", ".png", ".jpeg" });
+						})
+						.Events(ev => {
+							ev.Success("onUploadSuccess");
+						})
+					)
+				</div>
+				<div>
+					You can only upload <strong>GIF</strong>, <strong>JPG</strong>, <strong>PNG</strong> files.
+				</div>
+				<div>
+					Maximum allowed file size is <strong>100KB</strong>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary" data-bs-dismiss="modal"><span class="mx-3">Close</span></button>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="modalMessage" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalMessageLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header bg-warning">
+				<h3 class="modal-title" id="modalMessageLabel">System Message</h3>
+				<a href="#" class="no-loading text-dark" data-bs-dismiss="modal" aria-label="Close"><i class="fa-sharp fa-regular fa-xmark fa-xl"></i></a>
+			</div>
+			<div class="modal-body">
+				<div class="fs-4">For security purpose, we strongly recommend you to log out every time you changed your password.</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><span class="mx-3">Close</span></button>
+				<button type="button" class="btn btn-primary btn-modal-logout" data-bs-dismiss="modal"><span class="mx-3">Logout now</span></button>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="modalError" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalErrorLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header bg-danger">
+				<h3 class="modal-title text-white" id="modalErrorLabel">Change Password</h3>
+				<a href="#" class="no-loading text-white" data-bs-dismiss="modal" aria-label="Close"><i class="fa-sharp fa-regular fa-xmark fa-xl"></i></a>
+			</div>
+			<div class="modal-body">
+				<div class="fs-4 error-message"></div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-danger text-white" data-bs-dismiss="modal"><span class="mx-3">Close</span></button>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+@section CustomCss {
+	<link href="~/css/profile.css" rel="stylesheet" />
+}
+
+@section Scripts {
+	<script>
+		$(document).ready(() => {
+			var validatorProfile = $('#profile-form').kendoValidator().data('kendoValidator');
+			var validatorPassword = $('#password-form').kendoValidator({
+				rules: {
+					custom: customFunction,
+					compare: (input) => {
+						if (input.is('[name="confirm"]')) {
+							var newPwd = $('#new-password').data('kendoTextBox');
+
+							return input.val() === newPwd.value();
+						}
+
+						return true;
+					},
+				},
+				messages: {
+					required: (input) => {
+						return 'Enter your ' + input.attr('name') + ' password';
+					},
+					custom: customMessage,
+					compare: 'Confirm password is different from new password',
+				},
+			}).data('kendoValidator');
+
+
+			$('#btn-save').click(() => {
+				if (validatorProfile.validate()) {
+					var formData = new FormData();
+
+					var firstName = $('#first-name').data('kendoTextBox');
+					var lastName = $('#last-name').data('kendoTextBox');
+					var email = $('#email').data('kendoTextBox');
+					var designation = $('#designation').data('kendoTextBox');
+
+					formData.append('FirstName', firstName.value());
+					formData.append('LastName', lastName.value());
+					formData.append('Email', email.value());
+					formData.append('Designation', designation.value());
+					formData.append('UserId', $('#UserId').val());
+
+					$('.loading').show();
+
+					const ajaxPost = $.ajax({
+						method: 'PUT',
+						url: '/@companyId/account/profile',
+						data: formData,
+						contentType: false,
+						processData: false,
+						cache: false,
+						beforeSend: (xhr) => {
+							xhr.setRequestHeader('RequestVerificationToken', $('input:hidden[name="__RequestVerificationToken"]').val());
+						},
+					});
+
+					ajaxPost.done((response, status) => {
+						if (status == 'success') {
+							$('.profile-name').html(firstName.value() + ' ' + lastName.value());
+							$('.profile-designation').html(designation.value());
+							$('.profile-email').html(email.value());
+						}
+					});
+
+					ajaxPost.fail((response, status) => {
+						alert('Unable to process your request at the moment. Please try again later.');
+					});
+
+					ajaxPost.always(() => {
+						$('.loading').hide();
+					});
+
+				}
+			});
+
+
+			$('#btn-change-password').click(() => {
+				if (validatorPassword.validate()) {
+					var formData = new FormData();
+					var currentPassword = $('#current-password').data('kendoTextBox');
+					var newPassword = $('#new-password').data('kendoTextBox');
+					var confirmPassword = $('#confirm-password').data('kendoTextBox');
+
+					var regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[-._#$@@!%&*])[A-Za-z\d-._#$@@!%&*?]{12,20}$/g;
+					var passwordOk = regex.test(newPassword);
+
+					if (!passwordOk) {
+						alert('Your password must contain:\n\n- min 1 uppercase\n- min 1 lowercase\n- min 1 special character: -._@@+#$!%&*\n- min 1 number\n- min 12 characters');
+					} else {
+						formData.append('Current', currentPassword.value());
+						formData.append('New', newPassword.value());
+						formData.append('UserId', $('#UserId').val());
+
+						$('.loading').show();
+
+						const ajaxPost = $.ajax({
+							method: 'PUT',
+							url: '/@companyId/account/changepassword',
+							data: formData,
+							contentType: false,
+							processData: false,
+							cache: false,
+							beforeSend: (xhr) => {
+								xhr.setRequestHeader('RequestVerificationToken', $('input:hidden[name="__RequestVerificationToken"]').val());
+							},
+						});
+
+						ajaxPost.done((response, status) => {
+							if (status == 'success') {
+								currentPassword.value(null);
+								newPassword.value(null);
+								confirmPassword.value(null);
+
+								$('#modalMessage').modal('show');
+							}
+						});
+
+						ajaxPost.fail((response, status) => {
+							var errorMessage = response.responseJSON.message + '<br><br>- ';
+							errorMessage += response.responseJSON.errors.map(e => e.description).join('<br>- ');
+
+							$('.error-message').html(errorMessage);
+
+							$('#modalError').modal('show');
+						});
+
+						ajaxPost.always(() => {
+							$('.loading').hide();
+						});
+					}
+
+				}
+			});
+
+
+			$('.avatar-image').click(() => {
+				$('#modalUpload').modal('show');
+			});
+
+
+			$('.btn-modal-logout').click(() => {
+				$('#modalMessage').modal('hide');
+				document.location.href = '/account/logout';
+			});
+
+
+			$('.remove-image').click(() => {
+				$('.loading').show();
+
+				const ajaxPost = $.ajax({
+					url: '/@companyId/account/removeimage',
+					method: 'PUT',
+					contentType: false,
+					processData: false,
+					cache: false,
+				});
+
+				ajaxPost.done((response, status) => {
+					if (response.fileRemoved) {
+						$('.remove-image').hide();
+						$('.avatar-image').css('background-image', 'url("/img/profile/no-image.png")');
+					}
+				});
+
+				ajaxPost.fail((response, status) => {
+				});
+
+				ajaxPost.always(() => {
+					$('.loading').hide();
+				});
+
+			});
+
+
+			$('#modalUpload').on('hidden.bs.modal', (e) => {
+				var upload = $('#upload-avatar').data('kendoUpload');
+				upload.clearAllFiles();
+			});
+
+		});
+
+
+		const customFunction = (input) => {
+			var inputOk = true;
+
+			if (input.is('[name="new"]') || input.is('[name="confirm"]')) {
+				inputOk = regexOk(input.val());
+			}
+
+			return inputOk;
+		};
+
+
+		const customMessage = (input) => {
+			return 'Input must meet the password complexity of:<br>- min. length 12 characters<br>- min. 1 lower case<br>- min. 1 upper case<br>- min. 1 number<br>- min. 1 special character (#$@@!%&*)';
+		};
+
+
+		const regexOk = (string) => {
+			var regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[#$@@!%&*])[A-Za-z\d#$@@!%&*?]{12,20}$/gm;
+			return regex.test(string);
+		};
+
+
+		const onUploadSuccess = (e) => {
+			var uploadedFile = e.files[0];
+			var imgPath = '/img/profile/' + e.response.fileName;
+
+			$('.remove-image').show();
+			$('.avatar-image').css('background-image', 'url("' + imgPath + '")');
+			$('.nav-profile-image').prop('src', imgPath).attr('src', imgPath);
+		};
+
+	</script>
+}

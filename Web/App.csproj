@@ -1,0 +1,101 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<AssemblyName>PermitPro.$(MSBuildProjectName)</AssemblyName>
+		<RootNamespace>PermitPro.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+		<PackageScribanIncludeSource>true</PackageScribanIncludeSource>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Views\Locations\**" />
+	  <Compile Remove="wwwroot\lib\threejs\**" />
+	  <Content Remove="Views\Locations\**" />
+	  <Content Remove="wwwroot\lib\threejs\**" />
+	  <EmbeddedResource Remove="Views\Locations\**" />
+	  <EmbeddedResource Remove="wwwroot\lib\threejs\**" />
+	  <None Remove="Views\Locations\**" />
+	  <None Remove="wwwroot\lib\threejs\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Controllers\LocationsController.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Remove="demo.pdf" />
+		<None Remove="hello_world.pdf" />
+		<None Remove="permit-html.pdf" />
+		<None Remove="permit.pdf" />
+		<None Remove="wikipedia.pdf" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Hangfire.AspNetCore" Version="1.8.14" />
+		<PackageReference Include="Hangfire.SqlServer" Version="1.8.14" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.8" />
+		<PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.0.8" />
+		<PackageReference Include="Microsoft.CodeAnalysis" Version="5.0.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.0.0" />
+		<PackageReference Include="PuppeteerSharp" Version="18.0.3" />
+		<PackageReference Include="Scriban.Signed" Version="5.10.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Core\Core.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="wwwroot\attachments\" />
+		<Folder Include="wwwroot\img\profile\" />
+		<Folder Include="wwwroot\lib\FileSaver\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Include="Kendo.Core.Export">
+	    <HintPath>..\Telerik\Kendo.Core.Export.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Kendo.Mvc">
+	    <HintPath>..\Telerik\Kendo.Mvc.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Telerik.Documents.Core">
+	    <HintPath>..\Telerik\Telerik.Documents.Core.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Telerik.Documents.DrawingML">
+	    <HintPath>..\Telerik\Telerik.Documents.DrawingML.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Telerik.Documents.Fixed">
+	    <HintPath>..\Telerik\Telerik.Documents.Fixed.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Telerik.Documents.Flow">
+	    <HintPath>..\Telerik\Telerik.Documents.Flow.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Telerik.Documents.Flow.FormatProviders.Pdf">
+	    <HintPath>..\Telerik\Telerik.Documents.Flow.FormatProviders.Pdf.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Telerik.Documents.ImageUtils">
+	    <HintPath>..\Telerik\Telerik.Documents.ImageUtils.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Telerik.Documents.SpreadsheetStreaming">
+	    <HintPath>..\Telerik\Telerik.Documents.SpreadsheetStreaming.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Telerik.FontIcons">
+	    <HintPath>..\Telerik\Telerik.FontIcons.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Telerik.SvgIcons">
+	    <HintPath>..\Telerik\Telerik.SvgIcons.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Telerik.Zip">
+	    <HintPath>..\Telerik\Telerik.Zip.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
+
+	<ProjectExtensions>
+		<VisualStudio>
+			<UserProperties UseCdnSupport="False" />
+		</VisualStudio>
+	</ProjectExtensions>
+
+</Project>

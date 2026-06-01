@@ -1,0 +1,94 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using PermitPro.Core.Data
+@using PermitPro.Core.Services
+
+@inject SignInManager<UserInfo> _signInManager
+@inject UserManager<UserInfo> _userManager
+@inject ApplicationDbContext _dbContext
+@inject ISystemConfigurationService _systemConfigurationService
+
+@{
+	var currentRoute = ViewContext.RouteData.Values["controller"] as string;
+	var companyId = ViewContext.RouteData.Values["company"] as string;
+	var currentUser = await _userManager.GetUserAsync(User);
+
+	var navDashboard = currentRoute?.ToLower() == "dashboard" ? "active" : "";
+	var navSitemap = currentRoute?.ToLower() == "sitemap" ? "active" : "";
+	var navPermits = currentRoute?.ToLower() == "permits" ? "active" : "";
+	var navContractors = currentRoute?.ToLower() == "contractors" ? "active" : "";
+	var navReports = currentRoute?.ToLower() == "reports" ? "active" : "";
+	var navUsers = currentRoute?.ToLower() == "users" ? "active" : "";
+	var navSites = currentRoute?.ToLower() == "sites" ? "active" : "";
+	var navWorkflow = currentRoute?.ToLower() == "workflow" ? "active" : "";
+	var navNotifications = currentRoute?.ToLower() == "notifications" ? "active" : "";
+	var navSettings = "";
+	var showPanel1 = "";
+	var showPanel2 = "";
+
+	if (companyId == Guid.Empty.ToString())
+	{
+		var company = _dbContext.Companies.FirstOrDefault(x => x.IsActive == true);
+		companyId = company?.Id.ToString();
+	}
+
+	if (currentRoute?.ToLower() == "sites" || currentRoute?.ToLower() == "users" || currentRoute?.ToLower() == "workflow")
+	{
+		navSettings = "active-light";
+		showPanel1 = "show";
+	}
+	else
+	{
+		navSettings = "collapsed";
+	}
+
+	if (currentRoute?.ToLower() == "sitemap")
+	{
+		navDashboard = "active-light";
+		showPanel2 = "show";
+	}
+	else
+	{
+		navDashboard = "collapsed";
+	}
+}
+
+@if (_systemConfigurationService.AuthorizedMenus != null)
+{
+	<ul class="navbar-nav">
+		@foreach (var menu in _systemConfigurationService.AuthorizedMenus)
+		{
+			var navSelected = currentRoute!.ToLower() == menu.ControllerName!.ToLower() ? " active" : "";
+			var menuId = $"mnu{menu.MenuOrder}";
+
+			<li class="nav-item">
+				@if (menu.HasChildren)
+				{
+					<a class="nav-link no-loading @(menu.ControllerName == "Dashboard" ? navDashboard : navSettings)" href="#@menuId" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="@menuId">
+						<i class="@menu.IconName fa-xl fa-fw me-3"></i> @menu.Name
+					</a>
+					<div class="collapse @(menu.ControllerName == "Dashboard" ? showPanel2 : showPanel1)" id="@menuId">
+						<ul class="nav nav-sm flex-column">
+							@foreach (var subMenu in menu.Children!)
+							{
+								var subNavSelected = subMenu.ControllerName!.ToLower() == currentRoute!.ToLower() ? " active" : "";
+
+								<li class="nav-item">
+									<a href="/@companyId/@subMenu.ControllerName!.ToLower()" class="nav-link @subNavSelected">
+										<i class="@subMenu.IconName fa-xl fa-fw me-3"></i> @subMenu.Name
+									</a>
+								</li>
+							}
+						</ul>
+					</div>
+				}
+				else
+				{
+					<a class="nav-link @navSelected" href="/@companyId/@menu.ControllerName!.ToLower()">
+						<i class="@menu.IconName fa-xl fa-fw me-3"></i> @menu.Name
+					</a>
+				}
+			</li>
+		}
+	</ul>
+}

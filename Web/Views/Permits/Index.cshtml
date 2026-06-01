@@ -1,0 +1,194 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+	ViewData["Title"] = "Permits";
+	ViewData["SubTitle"] = "Summary";
+
+	var companyId = ViewContext.RouteData.Values["company"] as string;
+}
+
+@model PermitViewModel
+
+<div class="d-flex flex-row">
+	<div class="flex-grow-1 d-flex flex-row align-items-center">
+		<label class="me-3">Filter by</label>
+		<div>
+			@(Html.Kendo().DropDownList()
+				.Name("ddlFilter")
+				.Size(ComponentSize.Medium)
+				.Rounded(Rounded.Medium)
+				.FillMode(FillMode.Outline)
+				.DataTextField("text")
+				.DataValueField("value")
+				.Value("")
+				.HtmlAttributes(new { style = "width: 150px" })
+				.DataSource(ds => {
+					ds.Read(read => read.Action("GetPermitStatusAll", "Permits").Type(HttpVerbs.Post));
+				})
+				.Events(e => e.Change("onFilterChange"))
+			)
+		</div>
+		<div class="ms-3">
+			<a href="javascript:;" class="no-loading lnk-clear-filter">Clear</a> <span class="px-2">|</span> <a href="javascript:;" class="no-loading lnk-reload-grid">Reload grid</a>
+		</div>
+	</div>
+	<div>
+		<a asp-controller="permits" asp-action="new" class="btn btn-primary"><span class="px-2"><i class="fa-sharp fa-solid fa-plus me-2"></i> New permit</span></a>
+	</div>
+</div>
+
+<div class="mt-5">
+	@(
+		Html.Kendo().Grid<PermitListViewModel>()
+			.Name("grid")
+			.ToolBar(tb => tb.Search())
+			.NoRecords(true)
+			.Columns(c =>
+			{
+				c.Bound(p => p.PermitNumber).ClientTemplate($"<a href=\"/{Model.CompanyId}/permits/edit/#= Id #\" class=\"text-info\">#= PermitNumber #</a>").Width(130);
+				c.Bound(p => p.Description);
+				c.Bound(p => p.Location).Width(200);
+
+				c.Bound(p => p.StartDate)
+					.ClientTemplate(
+						"# if (StartDate != null) { #" + 
+						"    #= kendo.toString(StartDate, 'dd MMM, yyyy') #" + 
+						"# } else { #" +
+						"    &mdash;" + 
+						"# } #"
+					)
+					.Width(130);
+
+				c.Bound(p => p.EndDate)
+					.ClientTemplate(
+						"# if (EndDate != null) { #" + 
+						"    #= kendo.toString(EndDate, 'dd MMM, yyyy') #" + 
+						"# } else { #" +
+						"    &mdash;" + 
+						"# } #"
+					)
+					.Width(130);
+
+				c.Bound(p => p.Certificates).Encoded(false).HeaderHtmlAttributes(new { @class = "text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(130);
+				c.Bound(p => p.StatusBadge).Encoded(false).HeaderHtmlAttributes(new { @class = "text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(120);
+				c.Bound(p => p.DateSubmitted).Visible(false).Format("{0:dd MMM, yyyy}").Width(170);
+				c.Bound(p => p.SubmittedBy).ClientTemplate("<div>#= SubmittedBy #</div><div class=\"fs-6 text-secondary\">on #= kendo.toString(DateSubmitted, 'dd MMM, yyyy') #</div>").Width(150);
+
+				c.Template(
+					$"<a href=\"/{Model.CompanyId}/permits/edit/#=Id#\" class=\"no-loading text-secondary me-3\"><i class=\"fa-solid fa-money-check-pen fa-lg\"></i></a>" +
+					"<a href=\"javascript:;\" onclick=\"deletePermit('#=Id#')\" class=\"no-loading text-danger\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>"
+				).Title("ACTION").HeaderHtmlAttributes(new { @class = "text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(100);
+			})
+			.Pageable()
+			.Sortable()
+			.DataSource(ds => ds
+				.Custom()
+				.Schema(s => s
+					.Model(m =>
+					{
+						m.Id(i => i.Id);
+					})
+				)
+				.Transport(t =>
+				{
+					t.Read(r => r.Action("GetGridData", "Permits", new RouteValueDictionary { {"company", Model.CompanyId}, {"filter", Model.GridFilter} }).Type(HttpVerbs.Get));
+				})
+				.PageSize(10)
+			)
+		)
+	<div>
+		@Html.AntiForgeryToken()
+	</div>
+</div>
+
+@section CustomCss {
+	<!-- DataTables -->
+	<link href="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-1.13.7/b-2.4.2/b-colvis-2.4.2/b-html5-2.4.2/b-print-2.4.2/date-1.5.1/fc-4.3.0/fh-3.4.0/r-2.5.0/sp-2.2.0/sl-1.7.0/datatables.min.css" rel="stylesheet">
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+	<script src="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-1.13.7/b-2.4.2/b-colvis-2.4.2/b-html5-2.4.2/b-print-2.4.2/date-1.5.1/fc-4.3.0/fh-3.4.0/r-2.5.0/sp-2.2.0/sl-1.7.0/datatables.min.js"></script>
+
+	<link rel="stylesheet" href="~/css/permits.css" />
+}
+
+@section Scripts {
+	<script>
+		var tbl = null;
+		var companyId = '@companyId';
+		var btnFilters = $('.btn-filter');
+		var currentFilter = btnFilters[0];
+		var grid = null;
+		var gridFilter = '@Model.GridFilter';
+		var gridFilterField = '@Model.GridFilterField';
+
+		$(document).ready(() => {
+
+			grid = $("#grid").data("kendoGrid");
+
+			grid.dataSource.transport.options.read.beforeSend = (req) => {
+				req.setRequestHeader('RequestVerificationToken', $('input:hidden[name="__RequestVerificationToken"]').val());
+			};
+
+			if (gridFilter != '' && gridFilterField != '') {
+				var fld = 'Status';
+
+				if (gridFilterField == 'Status') {
+					var ddlFilter = $('#ddlFilter').data('kendoDropDownList');
+					ddlFilter.value(gridFilter);
+				} else {
+					fld = 'Location';
+				}
+
+				grid.dataSource.filter({ field: fld, operator: 'eq', value: gridFilter });
+			}
+
+
+			$('.lnk-clear-filter').click(() => {
+				var ddlFilter = $('#ddlFilter').data('kendoDropDownList');
+				ddlFilter.value('');
+				grid.dataSource.filter({});
+			});
+
+
+			$('.lnk-reload-grid').click(() => {
+				grid.dataSource.read();
+			});
+			
+		});
+
+
+		const deletePermit = (e) => {
+			$('.loading').show();
+
+			const xhr = $.ajax({
+				url: '/' + companyId + '/permits/' + e,
+				method: 'DELETE',
+			});
+
+			xhr.done((response, status) => {
+				if (response.data == 'OK') {
+					grid.dataSource.read();
+				}
+			});
+
+			xhr.fail((response, status) => {
+				alert(response.message);
+			});
+
+			xhr.always(() => {
+				$('.loading').hide();
+			});
+		};
+
+
+		const onFilterChange = (e) => {
+			if (e.sender.value() == '') {
+				grid.dataSource.filter(null);
+			} else {
+				grid.dataSource.filter({ field: 'Status', operator: 'eq', value: e.sender.value() });
+			}
+		};
+
+	</script>
+}
