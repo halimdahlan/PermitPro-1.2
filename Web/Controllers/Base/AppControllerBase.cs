@@ -2,6 +2,7 @@
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 using PermitPro.Core.Data;
 using PermitPro.Core.Entities;
@@ -52,12 +53,22 @@ namespace PermitPro.App.Controllers.Base
 				}
 				else
 				{
-					if (controllerName.ToLower() != "landing" && !_systemConfigService.HasAccess(controllerName))
-					{
-						_httpContextAccessor!.HttpContext!.Response.Redirect($"/{_companyId}/restricted/accessdenied");
-					}
+					//if (controllerName.ToLower() != "landing" && !_systemConfigService.HasAccess(controllerName))
+					//{
+					//	_httpContextAccessor!.HttpContext!.Response.Redirect($"/{_companyId}/restricted/accessdenied");
+					//}
 				}
 			}
+		}
+
+		// Makes CompanyID available in every view as @ViewData["CompanyId"] (Guid)
+		// and @ViewData["CompanyIdStr"] (string) for use in href/URL helpers.
+		// Called by MVC after construction, so ViewData is writable here.
+		public override void OnActionExecuting(ActionExecutingContext context)
+		{
+			ViewData["CompanyId"] = CompanyID;
+			ViewData["CompanyIdStr"] = CompanyID.ToString();
+			base.OnActionExecuting(context);
 		}
 	}
 }

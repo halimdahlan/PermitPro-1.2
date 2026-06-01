@@ -1,0 +1,143 @@
+@using PermitPro.App.Controllers
+@{
+	Layout = "_Layout";
+	ViewData["Title"] = "Recycle Bin";
+	ViewData["SubTitle"] = "Summary";
+
+	var permits = (List<DeletedItem>)ViewBag.Permits;
+	var sites = (List<DeletedItem>)ViewBag.Sites;
+	var workflows = (List<DeletedItem>)ViewBag.Workflows;
+	var workflowSteps = (List<DeletedItem>)ViewBag.WorkflowSteps;
+	var users = (List<DeletedItem>)ViewBag.Users;
+	var companies = (List<DeletedItem>)ViewBag.Companies;
+	var isSuperUser = (bool)ViewBag.IsSuperUser;
+}
+
+<div class="">
+
+	@if (TempData["RecycleBinMessage"] != null)
+	{
+		<div class="alert alert-success alert-dismissible fade show" role="alert">
+			<i class="fa-solid fa-circle-check me-2"></i> @TempData["RecycleBinMessage"]
+			<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+		</div>
+	}
+
+	<!-- Tab navigation -->
+	<ul class="nav nav-tabs mb-3" id="recycleTabs" role="tablist">
+		<li class="nav-item" role="presentation">
+			<button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-permits" type="button" role="tab">
+				Permits <span class="badge bg-danger ms-1">@permits.Count</span>
+			</button>
+		</li>
+		<li class="nav-item" role="presentation">
+			<button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-sites" type="button" role="tab">
+				Sites <span class="badge bg-secondary ms-1">@sites.Count</span>
+			</button>
+		</li>
+		<li class="nav-item" role="presentation">
+			<button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-workflows" type="button" role="tab">
+				Workflows <span class="badge bg-secondary ms-1">@workflows.Count</span>
+			</button>
+		</li>
+		<li class="nav-item" role="presentation">
+			<button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-workflowsteps" type="button" role="tab">
+				Workflow Steps <span class="badge bg-secondary ms-1">@workflowSteps.Count</span>
+			</button>
+		</li>
+		<li class="nav-item" role="presentation">
+			<button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-users" type="button" role="tab">
+				Users <span class="badge bg-secondary ms-1">@users.Count</span>
+			</button>
+		</li>
+		@if (isSuperUser)
+		{
+			<li class="nav-item" role="presentation">
+				<button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-companies" type="button" role="tab">
+					Companies <span class="badge bg-secondary ms-1">@companies.Count</span>
+				</button>
+			</li>
+		}
+	</ul>
+
+	<div class="tab-content" id="recycleTabContent">
+
+		<!-- Permits -->
+		<div class="tab-pane fade show active" id="tab-permits" role="tabpanel">
+			@await Html.PartialAsync("_RecycleBinTable", new ViewDataDictionary(ViewData)
+				{
+					 { "Items", permits },
+					 { "Columns", new[] { "Permit No", "Site", "Company" } },
+	
+				})
+		</div>
+
+		<!-- Sites -->
+		<div class="tab-pane fade" id="tab-sites" role="tabpanel">
+			@await Html.PartialAsync("_RecycleBinTable", new ViewDataDictionary(ViewData)
+				{
+					 { "Items", sites },
+					 { "Columns", new[] { "Name", "Description", "Company" } },
+	
+				})
+		</div>
+
+		<!-- Workflows -->
+		<div class="tab-pane fade" id="tab-workflows" role="tabpanel">
+			@await Html.PartialAsync("_RecycleBinTable", new ViewDataDictionary(ViewData)
+				{
+					 { "Items", workflows },
+					 { "Columns", new[] { "Name", "Description", "Company" } },
+	
+				})
+		</div>
+
+		<!-- Workflow Steps -->
+		<div class="tab-pane fade" id="tab-workflowsteps" role="tabpanel">
+			@await Html.PartialAsync("_RecycleBinTable", new ViewDataDictionary(ViewData)
+				{
+					 { "Items", workflowSteps },
+					 { "Columns", new[] { "Name", "Workflow", "Company" } },
+	
+				})
+		</div>
+
+		<!-- Users -->
+		<div class="tab-pane fade" id="tab-users" role="tabpanel">
+			@await Html.PartialAsync("_RecycleBinTable", new ViewDataDictionary(ViewData)
+				{
+					 { "Items", users },
+					 { "Columns", new[] { "Name", "Email", "Company" } },
+	
+				})
+		</div>
+
+		<!-- Companies (Super User only) -->
+		@if (isSuperUser)
+		{
+			<div class="tab-pane fade" id="tab-companies" role="tabpanel">
+				@await Html.PartialAsync("_RecycleBinTable", new ViewDataDictionary(ViewData)
+					 {
+						  { "Items", companies },
+						  { "Columns", new[] { "Name", "Description", "" } },
+					 })
+			</div>
+		}
+
+	</div>
+</div>
+
+@section Scripts {
+	<script>
+		// Persist active tab across restores via hash
+		const tabHash = location.hash || '#tab-permits';
+		const trigger = document.querySelector(`[data-bs-target="${tabHash}"]`);
+		if (trigger) new bootstrap.Tab(trigger).show();
+
+		document.querySelectorAll('[data-bs-toggle="tab"]').forEach(btn => {
+			 btn.addEventListener('shown.bs.tab', e => {
+				  history.replaceState(null, '', e.target.dataset.bsTarget);
+			 });
+		});
+	</script>
+}

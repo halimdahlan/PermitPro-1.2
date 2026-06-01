@@ -1,0 +1,65 @@
+@using PermitPro.App.Controllers
+@{
+	var items = ViewData["Items"] as List<DeletedItem> ?? new();
+	var columns = ViewData["Columns"] as string[] ?? [];
+	var companyId = ViewData["CompanyIdStr"] as string;
+	var entityType = items.FirstOrDefault()?.EntityType ?? string.Empty;
+}
+
+@if (!items.Any())
+{
+	<div class="text-center text-secondary py-5">
+		<i class="fa-solid fa-inbox fa-2xl mb-3 d-block"></i>
+		No deleted records in this category.
+	</div>
+}
+else
+{
+	<div class="table-responsive">
+		<table class="table table-hover align-middle">
+			<thead class="table-light">
+				<tr>
+					<th>@(columns.Length > 0 ? columns[0] : "Name")</th>
+					<th>@(columns.Length > 1 ? columns[1] : "Detail")</th>
+					<th>@(columns.Length > 2 ? columns[2] : "Company")</th>
+					<th>Deleted by</th>
+					<th>Deleted on</th>
+					<th class="text-end">Action</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var item in items)
+				{
+					<tr>
+						<td><strong>@item.DisplayName</strong></td>
+						<td class="text-secondary">@item.Detail</td>
+						<td>@item.CompanyName</td>
+						<td>@(string.IsNullOrEmpty(item.DeletedByName) ? "—" : item.DeletedByName)</td>
+						<td>
+							@if (item.DeletedWhen.HasValue)
+							{
+								<span title="@item.DeletedWhen.Value.ToString("f")">
+									@item.DeletedWhen.Value.ToString("dd MMM yyyy HH:mm")
+								</span>
+							}
+							else
+							{
+								<span class="text-secondary">—</span>
+							}
+						</td>
+						<td class="text-end">
+							<form method="post"
+									action="/@companyId/recyclebin/restore/@item.EntityType/@item.Id"
+									onsubmit="return confirm('Restore this @item.EntityType?')">
+								@Html.AntiForgeryToken()
+								<button type="submit" class="btn btn-sm btn-outline-success">
+									<i class="fa-solid fa-rotate-left me-1"></i> Restore
+								</button>
+							</form>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}

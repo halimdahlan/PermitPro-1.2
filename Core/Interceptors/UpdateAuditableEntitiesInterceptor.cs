@@ -22,34 +22,11 @@ public sealed class UpdateAuditableEntitiesInterceptor : SaveChangesInterceptor
 
 	public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
 	{
-		DbContext dbContext = eventData.Context;
-
-		if (dbContext is null)
-		{
+		if (eventData.Context is null)
 			return base.SavingChanges(eventData, result);
-		}
 
-		var entries = dbContext.ChangeTracker.Entries<IAuditableEntity>();
-
-		foreach (var entry in entries)
-		{
-			if (entry.State == EntityState.Added)
-			{
-				if (entry.Property(e => e.Id).CurrentValue == Guid.Empty)
-				{
-					entry.Property(e => e.Id).CurrentValue = Guid.NewGuid();
-				}
-
-				entry.Property(e => e.CreatedWhen).CurrentValue = DateTime.UtcNow.ToUniversalTime();
-				entry.Property(e => e.CreatedBy).CurrentValue = Guid.Parse(_contextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
-			}
-
-			if (entry.State == EntityState.Modified)
-			{
-				entry.Property(e => e.UpdatedWhen).CurrentValue = DateTime.UtcNow.ToUniversalTime();
-				entry.Property(e => e.UpdatedBy).CurrentValue = Guid.Parse(_contextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
-			}
-		}
+		ConvertDeletedToSoftDelete(eventData.Context);
+		ApplyAuditFields(eventData.Context);
 
 		return base.SavingChanges(eventData, result);
 	}
@@ -57,35 +34,68 @@ public sealed class UpdateAuditableEntitiesInterceptor : SaveChangesInterceptor
 
 	public override ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
 	{
-		DbContext dbContext = eventData.Context;
-
-		if (dbContext is null)
-		{
+		if (eventData.Context is null)
 			return base.SavingChangesAsync(eventData, result, cancellationToken);
+
+		ConvertDeletedToSoftDelete(eventData.Context);
+		ApplyAuditFields(eventData.Context);
+
+		return base.SavingChangesAsync(eventData, result, cancellationToken);
+	}
+
+
+	// Intercepts Remove() / RemoveRange() for ISoftDeletable entities and converts
+	// the physical DELETE into a soft-delete UPDATE.  Cascade to child entities still
+	// requires an explicit SoftDeleteAsync call — only entities already tracked as
+	// Deleted are handled here.
+	private void ConvertDeletedToSoftDelete(DbContext dbContext)
+	{
+		var userId = GetCurrentUserId();
+		var now = DateTime.UtcNow;
+
+		foreach (var entry in dbContext.ChangeTracker.Entries<ISoftDeletable>()
+			.Where(e => e.State == EntityState.Deleted))
+		{
+			entry.State = EntityState.Modified;
+			entry.Entity.IsDeleted = true;
+			entry.Entity.DeletedWhen = now;
+			entry.Entity.DeletedBy = userId;
 		}
+	}
 
-		var entries = dbContext.ChangeTracker.Entries<IAuditableEntity>();
 
-		foreach (var entry in entries)
+	private void ApplyAuditFields(DbContext dbContext)
+	{
+		var userId = GetCurrentUserId();
+		var now = DateTime.UtcNow.ToUniversalTime();
+
+		foreach (var entry in dbContext.ChangeTracker.Entries<IAuditableEntity>())
 		{
 			if (entry.State == EntityState.Added)
 			{
 				if (entry.Property(e => e.Id).CurrentValue == Guid.Empty)
-				{
 					entry.Property(e => e.Id).CurrentValue = Guid.NewGuid();
-				}
 
-				entry.Property(e => e.CreatedWhen).CurrentValue = DateTime.UtcNow.ToUniversalTime();
-				entry.Property(e => e.CreatedBy).CurrentValue = Guid.Parse(_contextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
+				entry.Property(e => e.CreatedWhen).CurrentValue = now;
+
+				if (userId.HasValue)
+					entry.Property(e => e.CreatedBy).CurrentValue = userId.Value;
 			}
 
 			if (entry.State == EntityState.Modified)
 			{
-				entry.Property(e => e.UpdatedWhen).CurrentValue = DateTime.UtcNow.ToUniversalTime();
-				entry.Property(e => e.UpdatedBy).CurrentValue = Guid.Parse(_contextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
+				entry.Property(e => e.UpdatedWhen).CurrentValue = now;
+
+				if (userId.HasValue)
+					entry.Property(e => e.UpdatedBy).CurrentValue = userId.Value;
 			}
 		}
+	}
 
-		return base.SavingChangesAsync(eventData, result, cancellationToken);
+
+	private Guid? GetCurrentUserId()
+	{
+		var idStr = _contextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+		return Guid.TryParse(idStr, out var id) ? id : null;
 	}
 }

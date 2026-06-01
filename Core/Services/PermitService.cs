@@ -494,7 +494,8 @@ public class PermitService : IPermitService
 		_dbContext.WorkflowHistories.RemoveRange(wfh);
 
 		// Delete the permit
-		_dbContext.Permits.Remove(entity);
+		//_dbContext.Permits.Remove(entity);
+		await _dbContext.SoftDeleteAsync(entity, Guid.Parse(_currentUserService.GetCurrentUser().Id));
 
 		// Delete file attachments
 		var folderName = Path.Combine(_webHostEnvironment.WebRootPath, "attachments", "permits", permitId.ToString().ToLower());

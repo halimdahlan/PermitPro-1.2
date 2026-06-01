@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
+
 using MimeKit;
 
 using PermitPro.Core.Data;
@@ -39,6 +42,7 @@ public class AccountController : Controller
 	private readonly IWebHostEnvironment _webHostEnvironment;
 	private readonly EmailSettings _emailSettings;
 	private readonly ILogService _logService;
+	private readonly JwtSettings _jwtSettings;
 
 
 	public AccountController(
@@ -53,7 +57,8 @@ public class AccountController : Controller
 		, IWebHostEnvironment webHostEnvironment
 		, ISystemConfigurationService systemConfigurationService
 		, EmailSettings emailSettings
-		, ILogService logService)
+		, ILogService logService
+		, JwtSettings jwtSettings)
 	{
 		_userManager = userManager;
 		_userStore = userStore;
@@ -67,6 +72,7 @@ public class AccountController : Controller
 		_webHostEnvironment = webHostEnvironment;
 		_emailSettings = emailSettings;
 		_logService = logService;
+		_jwtSettings = jwtSettings;
 
 		Guid company = Guid.Empty;
 		var routeValue = _httpContextAccessor!.HttpContext!.GetRouteValue("company");
@@ -88,6 +94,18 @@ public class AccountController : Controller
 	[HttpGet("account/login")]
 	public IActionResult Login()
 	{
+		// Already authenticated — skip the login form and go straight to the user's dashboard.
+		if (User.Identity?.IsAuthenticated == true)
+		{
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			var currentUser = _context.Users
+				.Include(e => e.UserCompany)
+				.FirstOrDefault(e => e.Id == userId);
+
+			if (currentUser?.UserCompany != null)
+				return LocalRedirect($"/{currentUser.UserCompany.Id}/landing");
+		}
+
 		var companies = _context.Companies
 			.Where(x => x.IsActive == true)
 			.Select(x => new
@@ -125,6 +143,86 @@ public class AccountController : Controller
 		return LocalRedirect("/account/login");
 	}
 
+
+	#endregion
+
+
+	#region "Token (JWT)"
+
+	/// <summary>
+	/// Issues a signed JWT for API/mobile clients.
+	/// POST /api/auth/token
+	/// Body: { "email": "...", "password": "...", "companyId": "..." }
+	/// </summary>
+	[HttpPost("api/auth/token")]
+	[AllowAnonymous]
+	public async Task<IActionResult> GetToken([FromBody] TokenRequest request)
+	{
+		var user = _context.Users
+			.Include(e => e.UserCompany)
+			.Include(e => e.UserRoles).ThenInclude(e => e.Role)
+			.FirstOrDefault(e => e.Email == request.Email);
+
+		if (user == null)
+			return Unauthorized(new { message = "Invalid credentials" });
+
+		if (!user.IsActive)
+			return Unauthorized(new { message = "Account is inactive" });
+
+		var isSuperUser = user.UserRoles.Any(e => e.Role.NormalizedName == "SUPERUSER");
+
+		if (!isSuperUser && request.CompanyId != null)
+		{
+			if (user.UserCompany?.Id.ToString() != request.CompanyId)
+				return Unauthorized(new { message = "Invalid company" });
+		}
+
+		var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
+
+		if (!result.Succeeded)
+		{
+			if (result.IsLockedOut)
+				return Unauthorized(new { message = "Account is locked. Please try again in 10 minutes." });
+
+			return Unauthorized(new { message = "Invalid credentials" });
+		}
+
+		var roles = user.UserRoles.Select(r => r.Role!.Name!).ToList();
+
+		var claims = new List<Claim>
+		{
+			new(ClaimTypes.NameIdentifier, user.Id),
+			new(ClaimTypes.Email, user.Email!),
+			new(ClaimTypes.Name, user.UserName!),
+			new("company", user.UserCompany?.Id.ToString() ?? string.Empty),
+		};
+		claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
+
+		var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
+		var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+		var expires = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiresInMinutes);
+
+		var token = new JwtSecurityToken(
+			issuer: _jwtSettings.Issuer,
+			audience: _jwtSettings.Audience,
+			claims: claims,
+			expires: expires,
+			signingCredentials: creds);
+
+		await _logService.LogMessageAsync(Core.Enums.LogTypeEnum.Information, "TOKEN", $"JWT issued for user ({user.UserName}).", user);
+
+		return Ok(new
+		{
+			token = new JwtSecurityTokenHandler().WriteToken(token),
+			expires,
+			companyId = user.UserCompany?.Id
+		});
+	}
+
+	#endregion
+
+
+	#region "GET"
 
 	[HttpGet("account/forgot")]
 	public IActionResult ForgotPassword()

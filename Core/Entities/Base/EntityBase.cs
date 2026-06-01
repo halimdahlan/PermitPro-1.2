@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PermitPro.Core.Entities.Base;
 
-public class EntityBase : IAuditableEntity
+public class EntityBase : IAuditableEntity, ISoftDeletable
 {
 	[Key]
 	public Guid Id { get; set; }
@@ -17,4 +17,9 @@ public class EntityBase : IAuditableEntity
 
 	public Guid? UpdatedBy { get; set; }
 
+	public bool IsDeleted { get; set; }
+
+	public DateTime? DeletedWhen { get; set; }
+
+	public Guid? DeletedBy { get; set; }
 }

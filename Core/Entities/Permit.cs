@@ -2,10 +2,11 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using PermitPro.Core.Entities.Base;
 using PermitPro.Core.Enums;
+using PermitPro.Core.Interfaces;
 
 namespace PermitPro.Core.Entities;
 
-public class Permit
+public class Permit : ISoftDeletable
 {
 	[Key]
 	public Guid Id { get; set; }
@@ -17,6 +18,12 @@ public class Permit
 	public Guid? CreatedBy { get; set; }
 
 	public Guid? UpdatedBy { get; set; }
+
+	public bool IsDeleted { get; set; }
+
+	public DateTime? DeletedWhen { get; set; }
+
+	public Guid? DeletedBy { get; set; }
 
 	public required string PermitNo { get; set; }
 

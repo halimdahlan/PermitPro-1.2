@@ -1,8 +1,11 @@
 ﻿using PermitPro.Core.Entities;
+using PermitPro.Core.Interfaces;
 
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+
+using System.Reflection;
 
 namespace PermitPro.Core.Data;
 
@@ -184,5 +187,163 @@ public class ApplicationDbContext
 
         builder.Entity<Contact>();
 
+        // UserRole is the required dependent end of UserInfo; it must share the same IsDeleted
+        // filter so that Identity role queries automatically exclude soft-deleted users.
+        builder.Entity<UserRole>().HasQueryFilter(ur => !ur.User!.IsDeleted);
+
+        // Apply HasQueryFilter(!IsDeleted) to every entity that implements ISoftDeletable.
+        // Uses a static generic helper so EF can build the expression tree correctly.
+        foreach (var entityType in builder.Model.GetEntityTypes())
+        {
+            if (typeof(ISoftDeletable).IsAssignableFrom(entityType.ClrType))
+            {
+                var method = typeof(ApplicationDbContext)
+                    .GetMethod(nameof(ApplySoftDeleteFilter), BindingFlags.Static | BindingFlags.NonPublic)!
+                    .MakeGenericMethod(entityType.ClrType);
+                method.Invoke(null, [builder]);
+            }
+        }
+    }
+
+    private static void ApplySoftDeleteFilter<T>(ModelBuilder builder) where T : class, ISoftDeletable
+    {
+        builder.Entity<T>().HasQueryFilter(e => !e.IsDeleted);
+    }
+
+
+    // -------------------------------------------------------------------------
+    // Soft-delete with cascade
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// Soft-deletes an entity and cascades to its owned children, then saves.
+    /// </summary>
+    public async Task SoftDeleteAsync(ISoftDeletable entity, Guid deletedBy)
+    {
+        var now = DateTime.UtcNow;
+        MarkDeleted(entity, now, deletedBy);
+        await CascadeSoftDeleteAsync(entity, now, deletedBy);
+        await SaveChangesAsync();
+    }
+
+    private static void MarkDeleted(ISoftDeletable entity, DateTime when, Guid by)
+    {
+        entity.IsDeleted = true;
+        entity.DeletedWhen = when;
+        entity.DeletedBy = by;
+    }
+
+    private async Task CascadeSoftDeleteAsync(ISoftDeletable entity, DateTime when, Guid by)
+    {
+        switch (entity)
+        {
+            case Company company:
+                await Entry(company).Collection(c => c.CompanySites).LoadAsync();
+                await Entry(company).Collection(c => c.CompanyWorkflows).LoadAsync();
+                await Entry(company).Collection(c => c.CompanyAddresses).LoadAsync();
+                await Entry(company).Collection(c => c.CompanyPermits).LoadAsync();
+                foreach (var s in company.CompanySites) { MarkDeleted(s, when, by); await CascadeSoftDeleteAsync(s, when, by); }
+                foreach (var w in company.CompanyWorkflows) { MarkDeleted(w, when, by); await CascadeSoftDeleteAsync(w, when, by); }
+                foreach (var a in company.CompanyAddresses) MarkDeleted(a, when, by);
+                foreach (var p in company.CompanyPermits) { MarkDeleted(p, when, by); await CascadeSoftDeleteAsync(p, when, by); }
+                break;
+
+            case Site site:
+                await Entry(site).Collection(s => s.Permits).LoadAsync();
+                foreach (var p in site.Permits) { MarkDeleted(p, when, by); await CascadeSoftDeleteAsync(p, when, by); }
+                break;
+
+            case Permit permit:
+                await Entry(permit).Collection(p => p.Attachments).LoadAsync();
+                await Entry(permit).Collection(p => p.WorkflowHistories).LoadAsync();
+                foreach (var a in permit.Attachments) MarkDeleted(a, when, by);
+                foreach (var h in permit.WorkflowHistories) MarkDeleted(h, when, by);
+                break;
+
+            case Workflow workflow:
+                await Entry(workflow).Collection(w => w.WorkflowSteps).LoadAsync();
+                await Entry(workflow).Collection(w => w.WorkflowHistories).LoadAsync();
+                foreach (var s in workflow.WorkflowSteps) MarkDeleted(s, when, by);
+                foreach (var h in workflow.WorkflowHistories) MarkDeleted(h, when, by);
+                break;
+
+            case UserInfo user:
+                await Entry(user).Collection(u => u.UserNotifications).LoadAsync();
+                foreach (var n in user.UserNotifications) MarkDeleted(n, when, by);
+                break;
+        }
+    }
+
+
+    // -------------------------------------------------------------------------
+    // Restore with cascade
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// Restores a soft-deleted entity. Cascade children that were deleted
+    /// within 10 seconds of the parent (i.e. as part of the same cascade)
+    /// are also restored automatically.
+    /// </summary>
+    public async Task RestoreAsync(ISoftDeletable entity)
+    {
+        var deletedAt = entity.DeletedWhen;
+        MarkRestored(entity);
+        await CascadeRestoreAsync(entity, deletedAt);
+        await SaveChangesAsync();
+    }
+
+    private static void MarkRestored(ISoftDeletable entity)
+    {
+        entity.IsDeleted = false;
+        entity.DeletedWhen = null;
+        entity.DeletedBy = null;
+    }
+
+    // Returns true when a child's DeletedWhen is within 10 s of the parent cascade timestamp.
+    private static bool WasCascadeDeleted(ISoftDeletable child, DateTime? parentDeletedAt)
+        => child.IsDeleted &&
+           child.DeletedWhen.HasValue &&
+           parentDeletedAt.HasValue &&
+           Math.Abs((child.DeletedWhen.Value - parentDeletedAt.Value).TotalSeconds) <= 10;
+
+    private async Task CascadeRestoreAsync(ISoftDeletable entity, DateTime? deletedAt)
+    {
+        switch (entity)
+        {
+            case Company company:
+                var cSites = await Sites.IgnoreQueryFilters().Where(s => s.SiteCompany!.Id == company.Id).ToListAsync();
+                var cWorkflows = await Workflows.IgnoreQueryFilters().Where(w => w.WorkflowCompany.Id == company.Id).ToListAsync();
+                var cAddresses = await Addresses.IgnoreQueryFilters().Where(a => a.AddressCompany!.Id == company.Id).ToListAsync();
+                var cPermits = await Permits.IgnoreQueryFilters().Where(p => p.Company!.Id == company.Id).ToListAsync();
+                foreach (var s in cSites.Where(x => WasCascadeDeleted(x, deletedAt))) { MarkRestored(s); await CascadeRestoreAsync(s, deletedAt); }
+                foreach (var w in cWorkflows.Where(x => WasCascadeDeleted(x, deletedAt))) { MarkRestored(w); await CascadeRestoreAsync(w, deletedAt); }
+                foreach (var a in cAddresses.Where(x => WasCascadeDeleted(x, deletedAt))) MarkRestored(a);
+                foreach (var p in cPermits.Where(x => WasCascadeDeleted(x, deletedAt))) { MarkRestored(p); await CascadeRestoreAsync(p, deletedAt); }
+                break;
+
+            case Site site:
+                var sPermits = await Permits.IgnoreQueryFilters().Where(p => p.Site!.Id == site.Id).ToListAsync();
+                foreach (var p in sPermits.Where(x => WasCascadeDeleted(x, deletedAt))) { MarkRestored(p); await CascadeRestoreAsync(p, deletedAt); }
+                break;
+
+            case Permit permit:
+                var pAttachments = await Attachments.IgnoreQueryFilters().Where(a => a.Permit!.Id == permit.Id).ToListAsync();
+                var pHistories = await WorkflowHistories.IgnoreQueryFilters().Where(h => h.Permit!.Id == permit.Id).ToListAsync();
+                foreach (var a in pAttachments.Where(x => WasCascadeDeleted(x, deletedAt))) MarkRestored(a);
+                foreach (var h in pHistories.Where(x => WasCascadeDeleted(x, deletedAt))) MarkRestored(h);
+                break;
+
+            case Workflow workflow:
+                var wSteps = await WorkflowSteps.IgnoreQueryFilters().Where(s => s.WorkflowStepWorkflow!.Id == workflow.Id).ToListAsync();
+                var wHistories = await WorkflowHistories.IgnoreQueryFilters().Where(h => h.HistoryWorkflow!.Id == workflow.Id).ToListAsync();
+                foreach (var s in wSteps.Where(x => WasCascadeDeleted(x, deletedAt))) MarkRestored(s);
+                foreach (var h in wHistories.Where(x => WasCascadeDeleted(x, deletedAt))) MarkRestored(h);
+                break;
+
+            case UserInfo user:
+                var uNotifs = await Notifications.IgnoreQueryFilters().Where(n => n.NotificationUser!.Id == user.Id).ToListAsync();
+                foreach (var n in uNotifs.Where(x => WasCascadeDeleted(x, deletedAt))) MarkRestored(n);
+                break;
+        }
     }
 }

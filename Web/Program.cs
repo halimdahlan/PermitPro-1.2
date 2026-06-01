@@ -2,14 +2,18 @@
 
 using Hangfire;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 using PermitPro.Core.Data;
 using PermitPro.Core.Entities;
 using PermitPro.Core.Extensions;
 using PermitPro.Core.Helpers;
 using PermitPro.Core.Interceptors;
+
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 var appConfig = builder.Configuration;
@@ -20,6 +24,7 @@ var connectionString = appConfig.GetConnectionString(builder.Environment.Environ
 var hangfireConnectionString = Environment.GetEnvironmentVariable("HANGFIRE_DB_CONNECTION");
 var emailSettings = appConfig.GetSection("EmailSettings").Get<EmailSettings>();
 var ptwSettings = appConfig.GetSection("PTWSettings").Get<PTWSettings>();
+var jwtSettings = appConfig.GetSection("JwtSettings").Get<JwtSettings>();
 
 builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
 {
@@ -43,6 +48,25 @@ builder.Services.AddIdentity<UserInfo, Role>(options =>
 	.AddDefaultTokenProviders();
 	//.AddTokenProvider<CustomEmailConfirmationTokenProvider<SiteUser>>("CustomEmailConfirmation")
 	//.AddDefaultUI();
+
+// JWT Bearer is an additional scheme alongside the default Identity cookie scheme.
+// Use [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)] on
+// API endpoints that should be authenticated via Bearer token.
+builder.Services.AddAuthentication()
+	.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+	{
+		options.TokenValidationParameters = new TokenValidationParameters
+		{
+			ValidateIssuer = true,
+			ValidateAudience = true,
+			ValidateLifetime = true,
+			ValidateIssuerSigningKey = true,
+			ValidIssuer = jwtSettings.Issuer,
+			ValidAudience = jwtSettings.Audience,
+			IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
+			ClockSkew = TimeSpan.Zero
+		};
+	});
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
@@ -73,11 +97,26 @@ builder.Services.ConfigureApplicationCookie(options =>
 	// Cookie settings
 	options.Cookie.HttpOnly = true;
 	options.Cookie.SameSite = SameSiteMode.Strict;
+
+	// Default session lifetime (RememberMe unchecked): 3 hours of inactivity.
+	// When RememberMe IS checked, OnSigningIn overrides this to 30 days below.
 	options.ExpireTimeSpan = TimeSpan.FromHours(3);
+	options.SlidingExpiration = true;
 
 	options.LoginPath = "/account/login";
 	options.AccessDeniedPath = "/account/accessdenied";
-	options.SlidingExpiration = true;
+
+	// Extend persistent-cookie lifetime when the user checks "Remember me".
+	// Without this override, isPersistent:true would still expire after 3 hours,
+	// defeating the purpose of the feature.
+	options.Events.OnSigningIn = context =>
+	{
+		if (context.Properties.IsPersistent)
+		{
+			context.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddDays(30);
+		}
+		return Task.CompletedTask;
+	};
 });
 
 builder.Services.AddSession(options =>
@@ -98,6 +137,7 @@ builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
 
 builder.Services.AddSingleton(emailSettings!);
 builder.Services.AddSingleton(ptwSettings!);
+builder.Services.AddSingleton(jwtSettings!);
 
 
 // Add PermitPro custom services
@@ -157,9 +197,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
-	 name: "default",
-	 pattern: "{company}/{controller}/{action}",
-	 defaults: new { company = Guid.Empty, controller = "landing", action = "index" });
+	name: "default",
+	pattern: "{company}/{controller}/{action}/{id?}",
+	defaults: new { company = Guid.Empty, controller = "landing", action = "index" });
 
 app.MapRazorPages();
 

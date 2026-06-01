@@ -9,11 +9,14 @@ namespace PermitPro.Core.Services;
 public class UserService : IUserService
 {
 	private readonly ApplicationDbContext _dbContext;
+	private readonly ICurrentUserService _currentUserService;
 
-
-	public UserService(ApplicationDbContext dbContext)
+	public UserService(
+		ApplicationDbContext dbContext
+		, ICurrentUserService currentUserService)
 	{
 		_dbContext = dbContext;
+		_currentUserService = currentUserService;
 	}
 
 
@@ -45,7 +48,8 @@ public class UserService : IUserService
 
 	public async Task DeleteAsync(UserInfo entity)
 	{
-		_dbContext.Users.Remove(entity);
+		//_dbContext.Users.Remove(entity);
+		await _dbContext.SoftDeleteAsync(entity, Guid.Parse(_currentUserService.GetCurrentUser().Id));
 		await _dbContext.SaveChangesAsync();
 	}
 

@@ -21,6 +21,7 @@ public class WorkflowController : AppControllerBase
 {
 	private readonly ApplicationDbContext _dbContext;
 	private readonly UserManager<UserInfo> _userManager;
+	private readonly ICurrentUserService _currentUserService;
 
 	public WorkflowController(
 		ApplicationDbContext dbContext
@@ -28,10 +29,12 @@ public class WorkflowController : AppControllerBase
 		, SignInManager<UserInfo> signInManager
 		, ISystemConfigurationService systemConfigurationService
 		, UserManager<UserInfo> userManager
+		, ICurrentUserService currentUserService
 		) : base(dbContext, httpContextAccessor, signInManager, systemConfigurationService)
 	{
 		_userManager = userManager;
 		_dbContext = dbContext;
+		_currentUserService = currentUserService;
 	}
 
 	#region "Views"
@@ -520,7 +523,8 @@ public class WorkflowController : AppControllerBase
 		{
 			var workflow = _dbContext.Workflows.SingleOrDefault(e => e.Id == id);
 
-			_dbContext.Workflows.Remove(workflow);
+			//_dbContext.Workflows.Remove(workflow);
+			await _dbContext.SoftDeleteAsync(workflow, Guid.Parse(""));
 			await _dbContext.SaveChangesAsync();
 
 			return Ok(new

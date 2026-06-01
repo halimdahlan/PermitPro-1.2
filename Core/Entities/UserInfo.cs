@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using PermitPro.Core.Data;
+using PermitPro.Core.Interfaces;
 
 namespace PermitPro.Core.Entities;
 
-public class UserInfo : IdentityUser
+public class UserInfo : IdentityUser, ISoftDeletable
 {
 	public string? FirstName { get; set; }
 
@@ -18,6 +19,10 @@ public class UserInfo : IdentityUser
 	public string? ProfileImage { get; set; }
 
 	public bool IsDeleted { get; set; }
+
+	public DateTime? DeletedWhen { get; set; }
+
+	public Guid? DeletedBy { get; set; }
 
 	public DateTime CreatedWhen { get; set; }
 
