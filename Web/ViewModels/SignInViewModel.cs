@@ -5,11 +5,12 @@ namespace PermitPro.App.ViewModels;
 public class SignInViewModel
 {
 	[Required(ErrorMessage = "This field is required")]
-	[DataType(DataType.EmailAddress)]
+	[EmailAddress(ErrorMessage = "Enter a valid email address")]
 	[Display(Name = "Email address")]
 	public required string Email { get; set; }
 
 	[Required(ErrorMessage = "This field is required")]
+	[MinLength(6, ErrorMessage = "Password must be at least 6 characters")]
 	[DataType(DataType.Password)]
 	[Display(Name = "Password")]
 	public required string Password { get; set; }

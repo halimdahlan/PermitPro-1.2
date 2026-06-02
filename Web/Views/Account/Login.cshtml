@@ -20,7 +20,7 @@
 		<h5 class="login-heading">Welcome back</h5>
 		<p class="login-sub">Sign in to continue to your dashboard</p>
 
-		<form method="post" asp-controller="account" asp-action="login">
+		<form id="loginForm" method="post" asp-controller="account" asp-action="login">
 
 			@* Validation summary *@
 			@if (!ViewData.ModelState.IsValid)
@@ -37,7 +37,7 @@
 					<span class="input-group-text">
 						<i class="fa-solid fa-building"></i>
 					</span>
-					<select class="form-control form-select" style="border-left:none;" required
+					<select class="form-control form-select" style="border-left:none;"
 					        asp-for="CompanyId"
 					        asp-items="@(new SelectList(ViewBag.CompanyList, "Id", "Name"))">
 						<option value="">Select your company…</option>
@@ -82,7 +82,7 @@
 			<div class="mb-4 d-flex align-items-center">
 				<input class="form-check-input me-2" asp-for="RememberMe" style="accent-color:#2c7be5;width:16px;height:16px;" />
 				<label class="form-check-label" asp-for="RememberMe">
-					@Html.DisplayNameFor(m => m.RememberMe) for 30 days
+					@Html.DisplayNameFor(m => m.RememberMe)
 				</label>
 			</div>
 
@@ -124,5 +124,12 @@
 				icon.className = 'fa-regular fa-eye';
 			}
 		}
+
+		$(document).ready(function () {
+			$('#loginForm').on('submit', function () {
+				//$('.loading').show();
+				//$('#btnSubmit').prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin me-2"></i> Signing In...');
+			});
+		});
 	</script>
 }
