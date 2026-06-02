@@ -1,14 +1,96 @@
-﻿@media (min-width: 768px) {
-	.donut-chart-md {
-		width: 750px !important;
-	}
+/* ── Stat cards — exact match to mock admin.css ─────────── */
+.stat-card {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 22px 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.05);
+    border: 1px solid #e2e8f0;
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow .2s, transform .2s;
+    height: 100%;
 }
 
-.donut-chart {
-	width: 100%;
+.stat-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,.09), 0 2px 6px rgba(0,0,0,.06);
+    transform: translateY(-2px);
 }
 
-.summary-info-card-total {
-	font-size: 2.2rem;
+.stat-card .icon-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    margin-bottom: 14px;
 }
 
+.stat-card .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.stat-card .stat-label {
+    font-size: .75rem;
+    font-weight: 500;
+    color: #6b7c93;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.stat-card .stat-change {
+    font-size: .72rem;
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+.stat-card .stat-bg-icon {
+    position: absolute;
+    right: -10px;
+    bottom: -10px;
+    font-size: 5rem;
+    opacity: .05;
+}
+
+/* ── Colour variants — exact match to mock ──────────────── */
+.stat-blue   .icon-wrap  { background: #e8f0fb; color: #2c7be5; }
+.stat-blue   .stat-value { color: #2c7be5; }
+
+.stat-yellow .icon-wrap  { background: #fff8e1; color: #f0a500; }
+.stat-yellow .stat-value { color: #f0a500; }
+
+.stat-green  .icon-wrap  { background: #e6f8f1; color: #00b894; }
+.stat-green  .stat-value { color: #00b894; }
+
+.stat-gray   .icon-wrap  { background: #f0f4f8; color: #6b7c93; }
+.stat-gray   .stat-value { color: #6b7c93; }
+
+.stat-red    .icon-wrap  { background: #fdeaea; color: #e74c3c; }
+.stat-red    .stat-value { color: #e74c3c; }
+
+/* ── Cards ───────────────────────────────────────────────── */
+.card {
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+}
+.card-header {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--border);
+    background: transparent;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
+    display: flex; align-items: center; justify-content: space-between;
+}
+.card-header .card-title {
+    font-size: .875rem; font-weight: 600; color: var(--text); margin: 0;
+}
+.card-header .card-subtitle {
+    font-size: .72rem; color: var(--muted); margin-top: 2px;
+}
+.card-body { padding: 20px; }

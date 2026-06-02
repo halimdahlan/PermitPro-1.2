@@ -32,7 +32,7 @@
 	<script nonce="3xecut3" src="~/lib/moment.js/moment-with-locales.min.js"></script>
 
 	<link rel="stylesheet" href="~/css/site.css" />
-	<link rel="stylesheet" href="~/fonts/roboto.css" />
+	<link rel="stylesheet" href="~/fonts/poppins.css" />
 
 	<!-- Bootstrap -->
 	
@@ -137,22 +137,22 @@
 
 	<!-- MAIN CONTENT -->
 	<div class="main-content">
-		<!-- HEADER -->
-		<div class="header">
-			<div class="container-fluid">
 
-				<div class="row justify-content-end">
-					<div class="col">
-						<partial name="_LoginPartial" />
-					</div>
-				</div>
-
+		<!-- TOPBAR -->
+		<header class="app-topbar">
+			<div class="app-topbar-left">
 				<partial name="_HeaderTitle" />
-
-				@RenderBody()
-
 			</div>
-		</div> <!-- / .header -->
+			<div class="app-topbar-right">
+				<partial name="_LoginPartial" />
+			</div>
+		</header>
+
+		<!-- PAGE BODY -->
+		<div class="app-page-body">
+			@RenderBody()
+		</div>
+
 	</div><!-- / .main-content -->
 
 	<!-- JAVASCRIPT -->

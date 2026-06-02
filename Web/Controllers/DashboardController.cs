@@ -44,56 +44,78 @@ public class DashboardController : AppControllerBase
 
 	public IActionResult Index(Guid company)
 	{
-		var allPermits = _dbContext.Permits
+		var permits = _dbContext.Permits
 			.AsNoTracking()
 			.Include(e => e.Site)
+			.Include(e => e.Company)
 			.Where(e => e.Company.Id == company && e.Site != null)
-			.Count();
+			.ToList();
 
-		var data = _dbContext.Permits
-			.AsNoTracking()
-			.Include(e => e.Site)
-			.Where(e => e.Company.Id == company && e.Site != null)
-			.GroupBy(e => e.PermitStatus)
-			.Select(e => new {
-				Status = e.Key.ToString().ToUpper(),
-				Count = e.Count(),
-			}).ToList();
+		var allCount = permits.Count();
 
-		var activePermits = _dbContext.Permits
-			.AsNoTracking()
-			.Include(e => e.Site)
+		var activePermits = permits
 			.Where(e =>
-				e.Company.Id == company && e.Site != null &&
 				e.PermitStatus != PermitStatusEnum.KIV &&
 				e.PermitStatus != PermitStatusEnum.Closed &&
 				e.PermitStatus != PermitStatusEnum.Suspended &&
 				e.PermitStatus != PermitStatusEnum.Draft)
 			.Count();
 
-		var pendingPermits = _dbContext.Permits
-			.AsNoTracking()
-			.Include(e => e.Site)
-			.Where(e => e.Company.Id == company && e.Site != null && e.PermitStatus == PermitStatusEnum.Pending)
-			.Count();
+		var pendingPermits = permits.Where(e => e.PermitStatus == PermitStatusEnum.Pending).Count();
+		var approvedPermits = permits.Where(e => e.PermitStatus == PermitStatusEnum.Approved).Count();
+		var rejectedPermits = permits.Where(e => e.PermitStatus == PermitStatusEnum.Rejected).Count();
+		var closedPermits = permits.Where(e => e.PermitStatus == PermitStatusEnum.Closed).Count();
 
-		var approvedPermits = _dbContext.Permits
-			.AsNoTracking()
-			.Include(e => e.Site)
-			.Where(e => e.Company.Id == company && e.Site != null && e.PermitStatus == PermitStatusEnum.Approved)
-			.Count();
+		// Status breakdown for chart
+		var statusBreakdown = permits
+			.GroupBy(e => e.PermitStatus)
+			.Select(g => new DashboardChartData
+			{
+				Status = g.Key.ToString().ToUpper(),
+				Count = g.Count(),
+				Percentage = (decimal)(allCount > 0 ? Math.Round((decimal)g.Count() / allCount * 100, 1) : 0),
+				Color = GeneralHelper.GetCategoryColor(g.Key)
+			})
+			.ToList();
 
-		var rejectedPermits = _dbContext.Permits
-			.AsNoTracking()
-			.Include(e => e.Site)
-			.Where(e => e.Company.Id == company && e.Site != null && e.PermitStatus == PermitStatusEnum.Rejected)
-			.Count();
+		// Location breakdown for chart
+		var locationBreakdown = permits
+			.GroupBy(e => e.Site.Name)
+			.OrderByDescending(g => g.Count())
+			.Select(g => new DashboardLocationData
+			{
+				SiteName = g.Key,
+				Count = g.Count(),
+				Percentage = (decimal)(allCount > 0 ? Math.Round((decimal)g.Count() / allCount * 100, 1) : 0)
+			})
+			.Take(7)
+			.ToList();
 
-		var closedPermits = _dbContext.Permits
-			.AsNoTracking()
-			.Include(e => e.Site)
-			.Where(e => e.Company.Id == company && e.Site != null && e.PermitStatus == PermitStatusEnum.Closed)
-			.Count();
+		// Recent permits (last 5)
+		var recentPermits = permits
+			.OrderByDescending(e => e.CreatedWhen)
+			.Take(5)
+			.Select(e => new DashboardRecentPermit
+			{
+				Id = e.Id,
+				PermitNumber = e.PermitNo ?? "—",
+				PermitType = e.PermitForm ?? "Standard",
+				SiteName = e.Site?.Name ?? "—",
+				RequestedByName = e.PermitHolderName ?? "—",
+				Status = e.PermitStatus,
+				CreatedWhen = e.CreatedWhen
+			})
+			.ToList();
+
+		// Recent activity (simple mock)
+		var recentActivity = new List<DashboardActivityItem>
+		{
+			new() { IconClass = "fa-solid fa-check", IconBackground = "#e8f0fb", Title = "Permit Approved", Description = "PTW-2026-0841 approved by Lead Permit Issuer", TimeAgo = "2 mins ago" },
+			new() { IconClass = "fa-solid fa-clock", IconBackground = "#fff8e1", Title = "Permit Submitted", Description = "New confined space permit submitted", TimeAgo = "18 mins ago" },
+			new() { IconClass = "fa-solid fa-xmark", IconBackground = "#fdeaea", Title = "Permit Rejected", Description = "PTW-2026-0837 rejected — incomplete docs", TimeAgo = "1 hour ago" },
+			new() { IconClass = "fa-solid fa-user-plus", IconBackground = "#f0e8ff", Title = "User Added", Description = "New user Faizal Zin added as Permit Issuer", TimeAgo = "3 hours ago" },
+			new() { IconClass = "fa-solid fa-rotate", IconBackground = "#e6f8f1", Title = "Permit Resumed", Description = "PTW-2026-0838 auto-resumed after suspension", TimeAgo = "Yesterday" }
+		};
 
 		return View(new DashboardViewModel
 		{
@@ -103,6 +125,10 @@ public class DashboardController : AppControllerBase
 			TotalPending = pendingPermits,
 			TotalRejected = rejectedPermits,
 			CompanyId = company,
+			StatusBreakdown = statusBreakdown,
+			LocationBreakdown = locationBreakdown,
+			RecentPermits = recentPermits,
+			RecentActivity = recentActivity
 		});
 	}
 

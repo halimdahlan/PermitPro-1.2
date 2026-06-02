@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Identity
 @using PermitPro.Core.Entities
 @using PermitPro.Core.Interfaces
 @using PermitPro.Core.Services
@@ -8,60 +8,85 @@
 @inject ICurrentUserService _currentUserService
 
 @{
-	var user = _currentUserService.GetCurrentUser();
-	var companyId = ViewContext.RouteData.Values["company"] as string;
-	var profileImage = string.Empty;
+    var user        = _currentUserService.GetCurrentUser();
+    var companyId   = ViewContext.RouteData.Values["company"] as string;
+    var profileImage = user?.ProfileImage ?? string.Empty;
 
-	if (user != null)
-	{
-		profileImage = !string.IsNullOrEmpty(user.ProfileImage) ? user.ProfileImage : "";
-	}
+    // Initials for avatar fallback
+    var initials = user != null
+        ? $"{user.FirstName?.FirstOrDefault()}{user.LastName?.FirstOrDefault()}".ToUpper()
+        : "?";
+
+    // Display the highest-priority role
+    var displayRole = User.IsInRole("Super User")        ? "Super User"
+                    : User.IsInRole("Portal Admin")      ? "Portal Admin"
+                    : User.IsInRole("Lead Permit Issuer")? "Lead Permit Issuer"
+                    : User.IsInRole("Permit Issuer")     ? "Permit Issuer"
+                    : User.IsInRole("Worker")            ? "Worker"
+                    : User.IsInRole("Contractor")        ? "Contractor"
+                    : "User";
 }
 
-<ul class="nav justify-content-end align-items-center mt-3">
-	@if (_signInManager.IsSignedIn(User))
-	{
-		<li class="nav-item mx-4">
-			<a asp-controller="notifications" asp-action="index" class="position-relative">
-				<i class="fa-sharp fa-solid fa-envelope-open-text fa-xl text-secondary"></i>
-				<!--
-				<span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
-					<span class="visually-hidden">New alerts</span>
-				</span>
-				-->
-			</a>
-		</li>
-		<li class="nav-item">
-			<div class="dropdown">
-				<a href="#" class="no-loading" data-bs-toggle="dropdown">
-					@if (profileImage == "")
-					{
-						<i class="fa-sharp fa-solid fa-circle-user fa-xl text-secondary"></i>
-					}
-					else
-					{
-						<img class="nav-profile-image" src="~/img/profile/@profileImage" />
-					}
-				</a>
-				<ul class="dropdown-menu">
-					<li class="dropdown-item">
-						<a href="/@companyId/account/profile" class="no-loading">
-							<div>@user?.FirstName @user?.LastName</div>
-							<small>@user?.Email</small>
-						</a>
-					</li>
-					<li><hr class="dropdown-divider"></li>
-					<li>
-						<a href="~/account/logout" class="dropdown-item">Logout</a>
-					</li>
-				</ul>
-			</div>
-		</li>
-	}
-	else
-	{
-		<li class="nav-item">
-			<a class="nav-link" asp-page="/Account/Login">Login</a>
-		</li>
-	}
-</ul>
+@if (_signInManager.IsSignedIn(User))
+{
+    <!-- Notifications -->
+    <a asp-controller="notifications" asp-action="index"
+       class="topbar-icon-btn no-loading" title="Notifications">
+        <i class="fa-solid fa-bell fa-sm"></i>
+    </a>
+
+    <div class="topbar-vdivider"></div>
+
+    <!-- User dropdown -->
+    <div class="dropdown">
+        <div class="topbar-user-pill no-loading"
+             data-bs-toggle="dropdown" aria-expanded="false">
+            @if (!string.IsNullOrEmpty(profileImage))
+            {
+                <img src="~/img/profile/@profileImage"
+                     class="topbar-user-avatar"
+                     style="object-fit:cover;"
+                     alt="@user?.FirstName" />
+            }
+            else
+            {
+                <div class="topbar-user-avatar">@initials</div>
+            }
+            <div class="d-none d-md-block">
+                <div class="topbar-user-name">@user?.FirstName @user?.LastName</div>
+                <div class="topbar-user-role">@displayRole</div>
+            </div>
+            <i class="fa-solid fa-chevron-down ms-1 d-none d-md-block"
+               style="font-size:.6rem;color:#a0aec0;"></i>
+        </div>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm"
+            style="min-width:220px;border-radius:10px;border-color:#e2e8f0;">
+            <li class="px-3 pt-2 pb-1">
+                <div style="font-size:.8rem;font-weight:600;color:#1a2b4a;">
+                    @user?.FirstName @user?.LastName
+                </div>
+                <div style="font-size:.72rem;color:#6b7c93;">@user?.Email</div>
+            </li>
+            <li><hr class="dropdown-divider my-1"></li>
+            <li>
+                <a href="/@companyId/account/profile"
+                   class="dropdown-item no-loading d-flex align-items-center gap-2"
+                   style="font-size:.82rem;">
+                    <i class="fa-solid fa-user fa-fw" style="color:#6b7c93;"></i> Profile
+                </a>
+            </li>
+            <li><hr class="dropdown-divider my-1"></li>
+            <li>
+                <a href="~/account/logout"
+                   class="dropdown-item d-flex align-items-center gap-2"
+                   style="font-size:.82rem;color:#e74c3c;">
+                    <i class="fa-solid fa-right-from-bracket fa-fw"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+}
+else
+{
+    <a class="btn btn-sm btn-primary" asp-page="/Account/Login">Sign In</a>
+}

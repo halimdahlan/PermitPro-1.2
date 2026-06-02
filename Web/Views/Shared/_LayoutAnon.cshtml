@@ -1,4 +1,4 @@
-﻿@{
+@{
 	var currentRoute = ViewContext.RouteData.Values["controller"] as string;
 	var action = ViewContext.RouteData.Values["action"] as string;
 }
@@ -26,7 +26,7 @@
 	<link rel="stylesheet" href="~/themes/dashkit/css/theme.bundle.css" />
 
 	<link rel="stylesheet" href="~/css/site.css" />
-	<link rel="stylesheet" href="~/fonts/roboto.css" />
+	<link rel="stylesheet" href="~/fonts/poppins.css" />
 
 	<script src="~/lib/jquery/jquery.min.js"></script>
 
@@ -35,25 +35,18 @@
 
 	@await RenderSectionAsync("CustomCss", required: false)
 </head>
-<body style="min-height:unset;">
+<body>
 	<div class="loading">
 		<div class="loading-icon">
-			<div class="fa-3x">
-				<i class="fa-duotone fa-loader fa-spin" style="font-size:3rem !important;"></i>
-			</div>
+			<i class="fa-solid fa-spinner fa-spin fa-2xl"></i>
 		</div>
 	</div>
-	<div class="container" style="">
-		@RenderBody()
-	</div>
+
+	@RenderBody()
 
 	<!-- JAVASCRIPT -->
-	<!-- Vendor JS -->
 	<script src="~/themes/dashkit/js/vendor.bundle.js"></script>
-
-	<!-- Theme JS -->
 	<script src="~/themes/dashkit/js/theme.bundle.js"></script>
-
 	<script src="~/js/loader.js"></script>
 
 	@await RenderSectionAsync("Scripts", required: false)
