@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PermitPro — Permits</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../Web/wwwroot/lib/fontawesome/css/all.min.css" rel="stylesheet">
+    <link href="css/admin.css" rel="stylesheet">
+</head>
+<body>
+<div class="admin-wrapper">
+
+    <!-- Sidebar (shared) -->
+    <aside class="sidebar">
+        <a href="dashboard.html" class="sidebar-brand">
+            <div style="width:44px;height:44px;background:linear-gradient(135deg,#2c7be5,#5a9cf5);border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;">
+                <i class="fa-solid fa-helmet-safety" style="color:#fff;font-size:1.1rem;"></i>
+            </div>
+            <div class="brand-name">PermitPro</div>
+        </a>
+        <nav class="sidebar-nav">
+            <div class="sidebar-section-label">Main</div>
+            <a href="dashboard.html" class="nav-link-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+            <div class="nav-sub">
+                <a href="dashboard.html" class="nav-link-item"><i class="fa-solid fa-gauge"></i> General</a>
+                <a href="#" class="nav-link-item"><i class="fa-solid fa-map"></i> Sitemap</a>
+            </div>
+            <a href="permits.html" class="nav-link-item active"><i class="fa-solid fa-address-card"></i> Permits</a>
+            <a href="#" class="nav-link-item"><i class="fa-solid fa-helmet-safety"></i> Contractors</a>
+            <a href="#" class="nav-link-item"><i class="fa-solid fa-file-invoice"></i> Reports</a>
+            <a href="#" class="nav-link-item">
+                <i class="fa-solid fa-envelope"></i> Notifications
+                <span class="badge ms-auto" style="background:rgba(231,76,60,.2);color:#e74c3c;font-size:.65rem;padding:2px 7px;border-radius:10px;">5</span>
+            </a>
+            <div class="sidebar-section-label mt-2">Settings</div>
+            <a href="#" class="nav-link-item"><i class="fa-solid fa-sliders"></i> Settings</a>
+            <div class="nav-sub">
+                <a href="#" class="nav-link-item"><i class="fa-solid fa-location-dot"></i> Locations</a>
+                <a href="users.html" class="nav-link-item"><i class="fa-solid fa-users"></i> Users</a>
+                <a href="#" class="nav-link-item"><i class="fa-solid fa-sitemap"></i> Workflows</a>
+            </div>
+            <a href="recycle-bin.html" class="nav-link-item"><i class="fa-solid fa-trash-can"></i> Recycle Bin</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar">HD</div>
+                <div>
+                    <div class="user-name">Halim Dahlan</div>
+                    <div class="user-role">Portal Admin</div>
+                </div>
+                <i class="fa-solid fa-ellipsis-vertical ms-auto" style="color:#7a93b4;font-size:.75rem;"></i>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main content -->
+    <div class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1 class="page-title">Permits</h1>
+                <nav class="breadcrumb">
+                    <span>Home</span>
+                    <span class="mx-1" style="color:#cbd5e0;">/</span>
+                    <span style="color:#2c7be5;">Permits</span>
+                </nav>
+            </div>
+            <div class="topbar-right">
+                <a href="#" class="topbar-btn"><i class="fa-solid fa-magnifying-glass fa-sm"></i></a>
+                <a href="#" class="topbar-btn"><i class="fa-solid fa-bell fa-sm"></i><span class="badge-dot"></span></a>
+                <div class="topbar-divider"></div>
+                <div class="topbar-user">
+                    <div class="user-avatar">HD</div>
+                    <div>
+                        <div class="user-name">Halim Dahlan</div>
+                        <div class="user-role">Portal Admin</div>
+                    </div>
+                    <i class="fa-solid fa-chevron-down ms-2" style="font-size:.65rem;color:#a0aec0;"></i>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-body">
+
+            <!-- Toolbar -->
+            <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+                <div>
+                    <h4 class="mb-0">All Permits</h4>
+                    <p class="text-muted mb-0" style="font-size:.78rem;">1,004 permits total</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-light btn-sm"><i class="fa-solid fa-file-export me-1"></i> Export</button>
+                    <button class="btn btn-primary btn-sm"><i class="fa-solid fa-plus me-1"></i> New Permit</button>
+                </div>
+            </div>
+
+            <!-- Filter bar -->
+            <div class="card mb-3">
+                <div class="card-body py-3">
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <!-- Search -->
+                        <div class="search-wrap" style="min-width:240px;flex:1;max-width:320px;">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" class="form-control form-control-sm" placeholder="Search permit number, holder…">
+                        </div>
+
+                        <!-- Status chips -->
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button class="filter-chip active">All</button>
+                            <button class="filter-chip">Active</button>
+                            <button class="filter-chip">Pending</button>
+                            <button class="filter-chip">Approved</button>
+                            <button class="filter-chip">Suspended</button>
+                            <button class="filter-chip">Closed</button>
+                            <button class="filter-chip">Rejected</button>
+                        </div>
+
+                        <div class="ms-auto d-flex gap-2">
+                            <select class="form-select form-select-sm" style="width:auto;">
+                                <option>All Types</option>
+                                <option>Hot Work</option>
+                                <option>Confined Space</option>
+                                <option>Excavation</option>
+                                <option>Isolation</option>
+                                <option>Radiation</option>
+                                <option>Method Statement</option>
+                                <option>Lifting &amp; Hoisting</option>
+                            </select>
+                            <select class="form-select form-select-sm" style="width:auto;">
+                                <option>All Sites</option>
+                                <option>Platform Alpha</option>
+                                <option>Refinery Block B</option>
+                                <option>Control Room C</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table card -->
+            <div class="card">
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" class="form-check-input" style="accent-color:#2c7be5;"></th>
+                                <th>Permit No. <i class="fa-solid fa-sort fa-xs ms-1" style="color:#cbd5e0;"></i></th>
+                                <th>Type</th>
+                                <th>Site / Location</th>
+                                <th>Permit Holder</th>
+                                <th>Requested</th>
+                                <th>Valid Until</th>
+                                <th>Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Row template repeated for mock data -->
+                            <tr>
+                                <td><input type="checkbox" class="form-check-input" style="accent-color:#2c7be5;"></td>
+                                <td><a href="#" style="color:#2c7be5;font-weight:600;text-decoration:none;font-size:.825rem;">PTW-2026-0841</a></td>
+                                <td><span class="badge-pill" style="background:#fff0e6;color:#e07b39;">Hot Work</span></td>
+                                <td><span class="fw-500">Platform Alpha</span><br><span style="font-size:.7rem;color:#a0aec0;">Zone A-3</span></td>
+                                <td><div class="d-flex align-items-center gap-2"><div class="avatar-sm" style="background:#2c7be5;font-size:.65rem;">AM</div><div><span class="fw-500">Ahmad Musa</span><br><span style="font-size:.7rem;color:#a0aec0;">Petronas Carigali</span></div></div></td>
+                                <td style="color:#6b7c93;font-size:.78rem;">02 Jun 2026<br>09:15 AM</td>
+                                <td style="color:#6b7c93;font-size:.78rem;">03 Jun 2026<br>06:00 PM</td>
+                                <td><span class="badge-pill approved"><span class="dot"></span>Approved</span></td>
+                                <td class="text-end">
+                                    <div class="d-flex gap-1 justify-content-end">
+                                        <button class="btn btn-icon btn-light" title="View"><i class="fa-solid fa-eye fa-sm" style="color:#2c7be5;"></i></button>
+                                        <button class="btn btn-icon btn-light" title="Edit"><i class="fa-solid fa-pen fa-sm" style="color:#6b7c93;"></i></button>
+                                        <button class="btn btn-icon btn-light" title="Delete"><i class="fa-solid fa-trash fa-sm" style="color:#e74c3c;"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="form-check-input" style="accent-color:#2c7be5;"></td>
+                                <td><a href="#" style="color:#2c7be5;font-weight:600;text-decoration:none;font-size:.825rem;">PTW-2026-0840</a></td>
+                                <td><span class="badge-pill" style="background:#fdeaea;color:#e74c3c;">Confined Space</span></td>
+                                <td><span class="fw-500">Refinery Block B</span><br><span style="font-size:.7rem;color:#a0aec0;">Tank Farm T-7</span></td>
+                                <td><div class="d-flex align-items-center gap-2"><div class="avatar-sm" style="background:#8b5cf6;font-size:.65rem;">SL</div><div><span class="fw-500">Siti Lailah</span><br><span style="font-size:.7rem;color:#a0aec0;">Petronas Carigali</span></div></div></td>
+                                <td style="color:#6b7c93;font-size:.78rem;">02 Jun 2026<br>08:30 AM</td>
+                                <td style="color:#6b7c93;font-size:.78rem;">02 Jun 2026<br>05:00 PM</td>
+                                <td><span class="badge-pill pending"><span class="dot"></span>Pending</span></td>
+                                <td class="text-end">
+                                    <div class="d-flex gap-1 justify-content-end">
+                                        <button class="btn btn-icon btn-light" title="View"><i class="fa-solid fa-eye fa-sm" style="color:#2c7be5;"></i></button>
+                                        <button class="btn btn-icon btn-light" title="Edit"><i class="fa-solid fa-pen fa-sm" style="color:#6b7c93;"></i></button>
+                                        <button class="btn btn-icon btn-light" title="Delete"><i class="fa-solid fa-trash fa-sm" style="color:#e74c3c;"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="form-check-input" style="accent-color:#2c7be5;"></td>
+                                <td><a href="#" style="color:#2c7be5;font-weight:600;text-decoration:none;font-size:.825rem;">PTW-2026-0839</a></td>
+                                <td><span class="badge-pill" style="background:#e8f0fb;color:#2c7be5;">Excavation</span></td>
+                                <td><span class="fw-500">Control Room C</span><br><span style="font-size:.7rem;color:#a0aec0;">East Wing</span></td>
+                                <td><div class="d-flex align-items-center gap-2"><div class="avatar-sm" style="background:#00b894;font-size:.65rem;">RH</div><div><span class="fw-500">Reza Halim</span><br><span style="font-size:.7rem;color:#a0aec0;">ThinkVisor Sdn Bhd</span></div></div></td>
+                                <td style="color:#6b7c93;font-size:.78rem;">01 Jun 2026<br>02:00 PM</td>
+                                <td style="color:#6b7c93;font-size:.78rem;">05 Jun 2026<br>06:00 PM</td>
+                                <td><span class="badge-pill approved"><span class="dot"></span>Approved</span></td>
+                                <td class="text-end">
+                                    <div class="d-flex gap-1 justify-content-end">
+                                        <button class="btn btn-icon btn-light" title="View"><i class="fa-solid fa-eye fa-sm" style="color:#2c7be5;"></i></button>
+                                        <button class="btn btn-icon btn-light" title="Edit"><i class="fa-solid fa-pen fa-sm" style="color:#6b7c93;"></i></button>
+                                        <button class="btn btn-icon btn-light" title="Delete"><i class="fa-solid fa-trash fa-sm" style="color:#e74c3c;"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="form-check-input" style="accent-color:#2c7be5;"></td>
+                                <td><a href="#" style="color:#2c7be5;font-weight:600;text-decoration:none;font-size:.825rem;">PTW-2026-0838</a></td>
+                                <td><span class="badge-pill" style="background:#f0e8ff;color:#8b5cf6;">Isolation</span></td>
+                                <td><span class="fw-500">Offshore Rig Delta</span><br><span style="font-size:.7rem;color:#a0aec0;">Compressor Room</span></td>
+                                <td><div class="d-flex align-items-center gap-2"><div class="avatar-sm" style="background:#f0a500;font-size:.65rem;">KN</div><div><span class="fw-500">Kamarul Nizam</span><br><span style="font-size:.7rem;color:#a0aec0;">Shell Malaysia</span></div></div></td>
+                                <td style="color:#6b7c93;font-size:.78rem;">01 Jun 2026<br>10:45 AM</td>
+                                <td style="color:#6b7c93;font-size:.78rem;">08 Jun 2026<br>06:00 PM</td>
+                                <td><span class="badge-pill suspended"><span class="dot"></span>Suspended</span></td>
+                                <td class="text-end">
+                                    <div class="d-flex gap-1 justify-content-end">
+                                        <button class="btn btn-icon btn-light" title="View"><i class="fa-solid fa-eye fa-sm" style="color:#2c7be5;"></i></button>
+                                        <button class="btn btn-icon btn-light" title="Edit"><i class="fa-solid fa-pen fa-sm" style="color:#6b7c93;"></i></button>
+                                        <button class="btn btn-icon btn-light" title="Delete"><i class="fa-solid fa-trash fa-sm" style="color:#e74c3c;"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="form-check-input" style="accent-color:#2c7be5;"></td>
+                                <td><a href="#" style="color:#2c7be5;font-weight:600;text-decoration:none;font-size:.825rem;">PTW-2026-0837</a></td>
+                                <td><span class="badge-pill" style="background:#e6f8f1;color:#00b894;">Method Statement</span></td>
+                                <td><span class="fw-500">Jetty Terminal F</span><br><span style="font-size:.7rem;color:#a0aec0;">Berth 2</span></td>
+                                <td><div class="d-flex align-items-center gap-2"><div class="avatar-sm" style="background:#e74c3c;font-size:.65rem;">FZ</div><div><span class="fw-500">Faizal Zin</span><br><span style="font-size:.7rem;color:#a0aec0;">ThinkVisor Sdn Bhd</span></div></div></td>
+                                <td style="color:#6b7c93;font-size:.78rem;">31 May 2026<br>04:30 PM</td>
+                                <td style="color:#6b7c93;font-size:.78rem;">—</td>
+                                <td><span class="badge-pill rejected"><span class="dot"></span>Rejected</span></td>
+                                <td class="text-end">
+                                    <div class="d-flex gap-1 justify-content-end">
+                                        <button class="btn btn-icon btn-light" title="View"><i class="fa-solid fa-eye fa-sm" style="color:#2c7be5;"></i></button>
+                                        <button class="btn btn-icon btn-light" title="Edit"><i class="fa-solid fa-pen fa-sm" style="color:#6b7c93;"></i></button>
+                                        <button class="btn btn-icon btn-light" title="Delete"><i class="fa-solid fa-trash fa-sm" style="color:#e74c3c;"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="form-check-input" style="accent-color:#2c7be5;"></td>
+                                <td><a href="#" style="color:#2c7be5;font-weight:600;text-decoration:none;font-size:.825rem;">PTW-2026-0836</a></td>
+                                <td><span class="badge-pill" style="background:#fdeaea;color:#e74c3c;">Radiation</span></td>
+                                <td><span class="fw-500">Maintenance Bay E</span><br><span style="font-size:.7rem;color:#a0aec0;">NDT Lab</span></td>
+                                <td><div class="d-flex align-items-center gap-2"><div class="avatar-sm" style="background:#6b7c93;font-size:.65rem;">NA</div><div><span class="fw-500">Nur Aisha</span><br><span style="font-size:.7rem;color:#a0aec0;">Petronas Carigali</span></div></div></td>
+                                <td style="color:#6b7c93;font-size:.78rem;">31 May 2026<br>08:00 AM</td>
+                                <td style="color:#6b7c93;font-size:.78rem;">31 May 2026<br>05:00 PM</td>
+                                <td><span class="badge-pill closed"><span class="dot"></span>Closed</span></td>
+                                <td class="text-end">
+                                    <div class="d-flex gap-1 justify-content-end">
+                                        <button class="btn btn-icon btn-light" title="View"><i class="fa-solid fa-eye fa-sm" style="color:#2c7be5;"></i></button>
+                                        <button class="btn btn-icon btn-light" title="Edit"><i class="fa-solid fa-pen fa-sm" style="color:#6b7c93;"></i></button>
+                                        <button class="btn btn-icon btn-light" title="Delete"><i class="fa-solid fa-trash fa-sm" style="color:#e74c3c;"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="form-check-input" style="accent-color:#2c7be5;"></td>
+                                <td><a href="#" style="color:#2c7be5;font-weight:600;text-decoration:none;font-size:.825rem;">PTW-2026-0835</a></td>
+                                <td><span class="badge-pill" style="background:#fff0e6;color:#e07b39;">Lifting &amp; Hoisting</span></td>
+                                <td><span class="fw-500">Storage Tank Farm</span><br><span style="font-size:.7rem;color:#a0aec0;">Crane Bay 1</span></td>
+                                <td><div class="d-flex align-items-center gap-2"><div class="avatar-sm" style="background:#2c7be5;font-size:.65rem;">ZA</div><div><span class="fw-500">Zul Azri</span><br><span style="font-size:.7rem;color:#a0aec0;">Shell Malaysia</span></div></div></td>
+                                <td style="color:#6b7c93;font-size:.78rem;">30 May 2026<br>07:00 AM</td>
+                                <td style="color:#6b7c93;font-size:.78rem;">—</td>
+                                <td><span class="badge-pill draft"><span class="dot"></span>Draft</span></td>
+                                <td class="text-end">
+                                    <div class="d-flex gap-1 justify-content-end">
+                                        <button class="btn btn-icon btn-light" title="View"><i class="fa-solid fa-eye fa-sm" style="color:#2c7be5;"></i></button>
+                                        <button class="btn btn-icon btn-light" title="Edit"><i class="fa-solid fa-pen fa-sm" style="color:#6b7c93;"></i></button>
+                                        <button class="btn btn-icon btn-light" title="Delete"><i class="fa-solid fa-trash fa-sm" style="color:#e74c3c;"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination footer -->
+                <div class="d-flex align-items-center justify-content-between px-4 py-3" style="border-top:1px solid #f0f4f8;">
+                    <span style="font-size:.78rem;color:#6b7c93;">Showing <strong>1–7</strong> of <strong>1,004</strong> permits</span>
+                    <nav>
+                        <ul class="pagination mb-0">
+                            <li class="page-item disabled"><a class="page-link" href="#"><i class="fa-solid fa-chevron-left fa-xs"></i></a></li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item"><span class="page-link" style="pointer-events:none;color:#a0aec0;">…</span></li>
+                            <li class="page-item"><a class="page-link" href="#">144</a></li>
+                            <li class="page-item"><a class="page-link" href="#"><i class="fa-solid fa-chevron-right fa-xs"></i></a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Filter chip toggle
+document.querySelectorAll('.filter-chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        this.classList.add('active');
+    });
+});
+</script>
+</body>
+</html>
