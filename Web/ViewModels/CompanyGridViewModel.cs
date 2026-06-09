@@ -1,0 +1,25 @@
+#nullable disable
+
+using System.ComponentModel.DataAnnotations;
+
+namespace PermitPro.App.ViewModels;
+
+public class CompanyGridViewModel
+{
+	public Guid Id { get; set; }
+
+	[Display(Name = "NAME")]
+	public string Name { get; set; }
+
+	[Display(Name = "DESCRIPTION")]
+	public string Description { get; set; }
+
+	[Display(Name = "IS ACTIVE?")]
+	public bool IsActive { get; set; }
+
+	[Display(Name = "DATE CREATED")]
+	public DateTime CreatedWhen { get; set; }
+
+	[Display(Name = "ACTION")]
+	public string ActionIcons { get; set; }
+}

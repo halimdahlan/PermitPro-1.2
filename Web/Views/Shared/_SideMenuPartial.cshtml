@@ -99,5 +99,14 @@
 			</a>
 		</li>
 	}
+
+	@if (User.IsInRole("Super User"))
+	{
+		<li class="nav-item">
+			<a href="/@companyId/companies" class="nav-link @(currentRoute?.ToLower() == "company" ? "active" : "")">
+				<i class="fa-regular fa-building fa-xl fa-fw me-3"></i> Companies
+			</a>
+		</li>
+	}
 </ul>
 
