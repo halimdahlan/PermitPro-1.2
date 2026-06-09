@@ -1,5 +1,3 @@
-#nullable disable
-
 using Hangfire;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -61,7 +59,7 @@ builder.Services.AddAuthentication()
 			ValidateAudience = true,
 			ValidateLifetime = true,
 			ValidateIssuerSigningKey = true,
-			ValidIssuer = jwtSettings.Issuer,
+			ValidIssuer = jwtSettings!.Issuer,
 			ValidAudience = jwtSettings.Audience,
 			IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
 			ClockSkew = TimeSpan.Zero

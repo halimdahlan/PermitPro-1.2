@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using Newtonsoft.Json.Linq;
+
 using PermitPro.App.Controllers.Base;
 using PermitPro.App.Models.Charts;
 using PermitPro.App.ViewModels;
@@ -98,8 +100,8 @@ public class DashboardController : AppControllerBase
 			.Select(e => new DashboardRecentPermit
 			{
 				Id = e.Id,
-				PermitNumber = e.PermitNo ?? "—",
-				PermitType = e.PermitForm ?? "Standard",
+				PermitNumber = $"PTW{e.PermitNo}" ?? "—",
+				PermitDescription = GetDescriptionFromJson(e.PermitForm),
 				SiteName = e.Site?.Name ?? "—",
 				RequestedByName = e.PermitHolderName ?? "—",
 				Status = e.PermitStatus,
@@ -295,6 +297,18 @@ public class DashboardController : AppControllerBase
 
 
 	#region "Private static functions/methods"
+
+	private static string GetDescriptionFromJson(string json)
+	{
+		if (string.IsNullOrEmpty(json))
+			return string.Empty;
+
+		JObject jsonObj = JObject.Parse(json);
+		string value = jsonObj["general"]["description"]?.ToString() ?? string.Empty;
+
+		return value;
+	}
+
 	#endregion
 
 }

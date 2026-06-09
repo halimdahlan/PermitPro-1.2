@@ -198,8 +198,7 @@
 					<table class="table table-hover mb-0">
 						<thead>
 							<tr>
-								<th>Permit No.</th>
-								<th>Type</th>
+								<th>Permit #</th>
 								<th>Location</th>
 								<th>Requested By</th>
 								<th>Status</th>
@@ -211,24 +210,6 @@
 							{
 								<tr>
 									<td><a asp-controller="permits" asp-action="index" style="color:#2c7be5;font-weight:600;text-decoration:none;font-size:.825rem;">@permit.PermitNumber</a></td>
-									<td>
-										@if (permit.PermitType.Contains("Hot"))
-										{
-											<span class="badge-pill" style="background:#fff0e6;color:#e07b39;">@permit.PermitType</span>
-										}
-										else if (permit.PermitType.Contains("Confined"))
-										{
-											<span class="badge-pill" style="background:#fdeaea;color:#e74c3c;">@permit.PermitType</span>
-										}
-										else if (permit.PermitType.Contains("Excavation"))
-										{
-											<span class="badge-pill" style="background:#e8f0fb;color:#2c7be5;">@permit.PermitType</span>
-										}
-										else
-										{
-											<span class="badge-pill" style="background:#e6f8f1;color:#00b894;">@permit.PermitType</span>
-										}
-									</td>
 									<td><span style="font-weight:500;">@permit.SiteName</span></td>
 									<td>
 										<div class="d-flex align-items-center gap-2">

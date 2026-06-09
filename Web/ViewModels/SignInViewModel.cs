@@ -6,6 +6,7 @@ public class SignInViewModel
 {
 	[Required(ErrorMessage = "This field is required")]
 	[EmailAddress(ErrorMessage = "Enter a valid email address")]
+	[DataType(DataType.EmailAddress)]
 	[Display(Name = "Email address")]
 	public required string Email { get; set; }
 

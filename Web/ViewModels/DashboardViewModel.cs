@@ -36,7 +36,7 @@ namespace PermitPro.App.ViewModels
 	{
 		public Guid Id { get; set; }
 		public string PermitNumber { get; set; } = string.Empty;
-		public string PermitType { get; set; } = string.Empty;
+		public string PermitDescription { get; set; } = string.Empty;
 		public string SiteName { get; set; } = string.Empty;
 		public string RequestedByName { get; set; } = string.Empty;
 		public PermitStatusEnum Status { get; set; }
