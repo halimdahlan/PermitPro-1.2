@@ -1326,7 +1326,7 @@ public class DataController : ControllerBase
 			.Select(e => new
 			{
 				Category = e.Key.ToString().ToUpper(),
-				Value = string.Format("{0:N1}", ((float)e.Count() / (float)allPermits) * 100),
+				Value = allPermits > 0 ? string.Format("{0:N1}", ((float)e.Count() / (float)allPermits) * 100) : "0.0",
 				Count = e.Count(),
 				Color = GetCategoryColor(e.Key),
 			})

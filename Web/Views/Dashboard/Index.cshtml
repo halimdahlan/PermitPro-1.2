@@ -78,15 +78,36 @@
 </div>
 
 @* ── Date filter ─────────────────────────────────────────── *@
-<div class="card mb-4">
+<div class="card mb-4" style="border:none;box-shadow:0 1px 3px rgba(0,0,0,.06);">
 	<div class="card-body py-3">
 		<div class="d-flex align-items-center gap-3 flex-wrap">
-			<span style="font-size:.8rem;color:#4a5568;white-space:nowrap;font-weight:500;">Filter by date range</span>
-			<input type="date" class="form-control" style="max-width:160px;font-size:.8rem;">
-			<span style="color:#a0aec0;font-size:.8rem;">to</span>
-			<input type="date" class="form-control" style="max-width:160px;font-size:.8rem;">
-			<button class="btn btn-primary btn-sm">Apply</button>
-			<button class="btn btn-light btn-sm">Clear</button>
+			<span class="d-flex align-items-center gap-2" style="font-size:.78rem;color:#4a5568;white-space:nowrap;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">
+				<i class="fa-regular fa-calendar" style="color:#2c7be5;"></i> Date range
+			</span>
+			<div class="input-group" style="max-width:190px;">
+				<span class="input-group-text" style="font-size:.75rem;border-radius:6px 0 0 6px;background:#f1f5f9;border-color:#e2e8f0;">
+					<i class="fa-regular fa-calendar" style="color:#94a3b8;"></i>
+				</span>
+				<input type="date" id="dateFrom" class="form-control form-control-sm" required
+					style="font-size:.8rem;border-color:#e2e8f0;border-radius:0 6px 6px 0;padding:.35rem .6rem;" />
+			</div>
+			<span style="color:#cbd5e1;font-size:.85rem;">—</span>
+			<div class="input-group" style="max-width:190px;">
+				<span class="input-group-text" style="font-size:.75rem;border-radius:6px 0 0 6px;background:#f1f5f9;border-color:#e2e8f0;">
+					<i class="fa-regular fa-calendar" style="color:#94a3b8;"></i>
+				</span>
+				<input type="date" id="dateTo" class="form-control form-control-sm" required
+					style="font-size:.8rem;border-color:#e2e8f0;border-radius:0 6px 6px 0;padding:.35rem .6rem;" />
+			</div>
+			<button id="btnApply" class="btn btn-sm" style="background:#2c7be5;color:#fff;border:none;border-radius:6px;padding:.35rem 1rem;font-weight:600;font-size:.78rem;">
+				<i class="fa-solid fa-magnifying-glass me-1"></i> Apply
+			</button>
+			<button id="btnClear" class="btn btn-sm" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:6px;padding:.35rem 1rem;font-weight:500;font-size:.78rem;">
+				<i class="fa-solid fa-xmark me-1"></i> Clear
+			</button>
+			<span id="dateError" class="ms-1" style="display:none;font-size:.72rem;color:#e63757;">
+				<i class="fa-solid fa-circle-exclamation me-1"></i>Both dates are required
+			</span>
 		</div>
 	</div>
 </div>
@@ -103,34 +124,11 @@
 					<div class="card-subtitle">Distribution across all statuses</div>
 				</div>
 			</div>
-			<div class="card-body d-flex flex-column align-items-center justify-content-center" style="min-height:280px;">
+			<div class="card-body d-flex flex-column align-items-center justify-content-center" style="min-height:300px;">
 				@if (Model.StatusBreakdown.Any())
 				{
-					<!-- Donut chart visualization -->
-					<svg width="200" height="200" viewBox="0 0 42 42" style="transform:rotate(-90deg);">
-						<circle cx="21" cy="21" r="15.915" fill="none" stroke="#f0f4f8" stroke-width="6"/>
-						@{
-							decimal offset = 0;
-							foreach (var item in Model.StatusBreakdown.OrderByDescending(x => x.Percentage))
-							{
-								decimal dasharray = (item.Percentage / 100m) * 100m;
-								<circle cx="21" cy="21" r="15.915" fill="none" stroke="@item.Color" stroke-width="6" stroke-dasharray="@dasharray.ToString("F0") @(100 - dasharray).ToString("F0")" stroke-dashoffset="-@offset.ToString("F0")" />
-								offset += dasharray;
-							}
-						}
-					</svg>
-					<!-- Legend -->
-					<div class="row w-100 mt-3 g-2">
-						@foreach (var item in Model.StatusBreakdown.OrderByDescending(x => x.Percentage))
-						{
-							<div class="col-6">
-								<div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f8fafc;">
-									<span style="width:10px;height:10px;border-radius:3px;background:@item.Color;flex-shrink:0;"></span>
-									<span style="font-size:.72rem;font-weight:500;">@item.Status <strong>@item.Percentage%</strong></span>
-								</div>
-							</div>
-						}
-					</div>
+					<canvas id="statusDonutChart" style="max-width:220px;max-height:220px;"></canvas>
+					<div class="w-100 mt-3" id="statusLegend"></div>
 				}
 				else
 				{
@@ -150,27 +148,8 @@
 				</div>
 			</div>
 			<div class="card-body">
-				@if (Model.LocationBreakdown.Any())
-				{
-					<div style="display:flex;flex-direction:column;gap:10px;">
-						@foreach (var item in Model.LocationBreakdown)
-						{
-							<div>
-								<div class="d-flex justify-content-between mb-1" style="font-size:.75rem;font-weight:500;">
-									<span>@item.SiteName</span>
-									<span style="color:#2c7be5;">@item.Count</span>
-								</div>
-								<div style="height:8px;background:#f0f4f8;border-radius:4px;overflow:hidden;">
-									<div style="height:100%;width:@(item.Percentage)%;background:linear-gradient(90deg,#2c7be5,#5a9cf5);border-radius:4px;"></div>
-								</div>
-							</div>
-						}
-					</div>
-				}
-				else
-				{
-					<div style="text-align:center;color:#a0aec0;"><i class="fa-solid fa-chart-bar fa-2xl mb-3 d-block"></i>No location data</div>
-				}
+				<canvas id="locationBarChart" style="max-height:260px;"></canvas>
+				<div id="locationNoData" style="display:none;text-align:center;color:#a0aec0;"><i class="fa-solid fa-chart-bar fa-2xl mb-3 d-block"></i>No location data</div>
 			</div>
 		</div>
 	</div>
@@ -288,4 +267,237 @@
 
 @section CustomCss {
 	<link rel="stylesheet" href="~/css/dashboard.css" />
+}
+
+@section Scripts {
+	<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+	<script>
+		(function () {
+			var companyId = '@Model.CompanyId';
+			var donutChart, barChart;
+
+			/* ── helpers ─────────────────────────────── */
+			function apiPath(route) {
+				return '/' + companyId + route;
+			}
+
+			function buildParams() {
+				var from = document.getElementById('dateFrom').value;
+				var to   = document.getElementById('dateTo').value;
+				return (from && to) ? '?startDate=' + encodeURIComponent(from) + '&endDate=' + encodeURIComponent(to) : '';
+			}
+
+			/* ── donut chart ─────────────────────────── */
+			function renderDonut(data) {
+				if (!data || !data.length) {
+					if (donutChart) { donutChart.destroy(); donutChart = null; }
+					document.getElementById('statusLegend').innerHTML = '';
+					return;
+				}
+
+				// Normalize: API returns Category/Color, server model returns Status/Color
+				data = data.map(function (d) {
+					return {
+						Status:  d.Status || d.Category || 'Unknown',
+						Count:   d.Count || 0,
+						Color:   d.Color || d.color || '#94a3b8',
+						Percentage: d.Percentage || 0
+					};
+				});
+
+				data.sort(function (a, b) { return b.Count - a.Count; });
+
+				var labels = data.map(function (d) { return d.Status; });
+				var values = data.map(function (d) { return d.Count; });
+				var colors = data.map(function (d) { return d.Color; });
+				var total  = values.reduce(function (s, v) { return s + v; }, 0);
+
+				if (donutChart) donutChart.destroy();
+
+				var ctx = document.getElementById('statusDonutChart');
+				donutChart = new Chart(ctx, {
+					type: 'doughnut',
+					data: {
+						labels: labels,
+						datasets: [{
+							data: values,
+							backgroundColor: colors,
+							borderWidth: 0,
+							hoverOffset: 6
+						}]
+					},
+					options: {
+						responsive: true,
+						maintainAspectRatio: true,
+						cutout: '72%',
+						plugins: {
+							legend: { display: false },
+							tooltip: {
+								backgroundColor: '#1e293b',
+								titleFont: { size: 12, weight: '600' },
+								bodyFont: { size: 11 },
+								padding: 10,
+								cornerRadius: 6,
+								callbacks: {
+									label: function (ctx) {
+										var pct = total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
+										return ' ' + ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)';
+									}
+								}
+							}
+						}
+					},
+					plugins: [{
+						id: 'centerLabel',
+						beforeDraw: function (chart) {
+							var w = chart.width, h = chart.height;
+							var meta = chart.getDatasetMeta(0);
+							if (!meta.data.length) return;
+							var c = chart.ctx;
+							c.save();
+							c.font = '700 28px system-ui, sans-serif';
+							c.fillStyle = '#1e293b';
+							c.textBaseline = 'middle';
+							c.textAlign = 'center';
+							c.fillText(total, w / 2, h / 2 - 10);
+							c.font = '500 10px system-ui, sans-serif';
+							c.fillStyle = '#94a3b8';
+							c.fillText('PERMITS', w / 2, h / 2 + 12);
+							c.restore();
+						}
+					}]
+				});
+
+				// custom legend
+				var legendHtml = data.map(function (d) {
+					var pct = total > 0 ? ((d.Count / total) * 100).toFixed(1) : 0;
+					return '<div class="d-flex align-items-center justify-content-between mb-2">' +
+						'<div class="d-flex align-items-center gap-2">' +
+						'<span style="width:12px;height:12px;border-radius:50%;background:' + d.Color + ';flex-shrink:0;"></span>' +
+						'<span style="font-size:.8rem;font-weight:500;color:#334155;">' + d.Status + '</span>' +
+						'</div>' +
+						'<div class="d-flex align-items-center gap-3">' +
+						'<span style="font-size:.8rem;font-weight:700;color:#1e293b;">' + d.Count + '</span>' +
+						'<span style="font-size:.7rem;color:#94a3b8;min-width:40px;text-align:right;">' + pct + '%</span>' +
+						'</div></div>';
+				}).join('');
+				document.getElementById('statusLegend').innerHTML = legendHtml;
+			}
+
+			/* ── bar chart ───────────────────────────── */
+			function renderBar(data) {
+				var noDataEl = document.getElementById('locationNoData');
+				if (!data || !data.length) {
+					if (barChart) { barChart.destroy(); barChart = null; }
+					noDataEl.style.display = 'block';
+					return;
+				}
+				noDataEl.style.display = 'none';
+
+				// take top 7
+				data.sort(function (a, b) { return (b.TotalActive + b.TotalPending + b.TotalClosed) - (a.TotalActive + a.TotalPending + a.TotalClosed); });
+				data = data.slice(0, 7);
+
+				var labels     = data.map(function (d) { return d.Category; });
+				var activeData = data.map(function (d) { return d.TotalActive || 0; });
+				var pendingData= data.map(function (d) { return d.TotalPending || 0; });
+				var closedData = data.map(function (d) { return d.TotalClosed || 0; });
+
+				if (barChart) barChart.destroy();
+
+				var ctx = document.getElementById('locationBarChart');
+				barChart = new Chart(ctx, {
+					type: 'bar',
+					data: {
+						labels: labels,
+						datasets: [
+							{ label: 'Active',  data: activeData,  backgroundColor: '#00d97e', borderRadius: 3 },
+							{ label: 'Pending', data: pendingData, backgroundColor: '#f6c343', borderRadius: 3 },
+							{ label: 'Closed',  data: closedData,  backgroundColor: '#39afd1', borderRadius: 3 }
+						]
+					},
+					options: {
+						indexAxis: 'y',
+						responsive: true,
+						maintainAspectRatio: false,
+						scales: {
+							x: { stacked: true, beginAtZero: true, grid: { display: false } },
+							y: { stacked: true, grid: { display: false }, ticks: { font: { size: 11, weight: '500' } } }
+						},
+						plugins: {
+							legend: { position: 'top', align: 'end', labels: { boxWidth: 12, padding: 12, font: { size: 11 } } }
+						}
+					}
+				});
+			}
+
+			/* ── fetch both charts ───────────────────── */
+			function fetchCharts() {
+				var qs = buildParams();
+
+				fetch(apiPath('/dashboard/charts/donut/permit/status') + qs)
+					.then(function (r) { return r.json(); })
+					.then(renderDonut)
+					.catch(function () { /* silent */ });
+
+				fetch(apiPath('/dashboard/charts/bar/permit/location') + qs)
+					.then(function (r) { return r.json(); })
+					.then(renderBar)
+					.catch(function () { /* silent */ });
+			}
+
+			/* ── wire up buttons & date sync ─────────── */
+			var dateFrom = document.getElementById('dateFrom');
+			var dateTo   = document.getElementById('dateTo');
+			var errEl    = document.getElementById('dateError');
+
+			// When "from" date changes, set "to" date min to the same value
+			dateFrom.addEventListener('change', function () {
+				var val = dateFrom.value;
+				dateTo.min = val;
+				// If "to" is already set and now invalid, clear it
+				if (dateTo.value && val && dateTo.value < val) {
+					dateTo.value = '';
+				}
+				hideError();
+			});
+
+			dateTo.addEventListener('change', function () {
+				hideError();
+			});
+
+			function showError() { errEl.style.display = 'inline'; }
+			function hideError() { errEl.style.display = 'none'; }
+
+			// Apply: validate both dates are filled
+			document.getElementById('btnApply').addEventListener('click', function () {
+				if (!dateFrom.value || !dateTo.value) {
+					showError();
+					return;
+				}
+				hideError();
+				fetchCharts();
+			});
+
+			document.getElementById('btnClear').addEventListener('click', function () {
+				dateFrom.value = '';
+				dateTo.value = '';
+				dateTo.min = '';
+				hideError();
+				fetchCharts();
+			});
+
+			/* ── initial render from server-side model ─ */
+			var initialDonut = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.StatusBreakdown));
+			var initialBar   = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.LocationBreakdown));
+
+			// transform location data for bar chart
+			var barData = initialBar.map(function (d) {
+				return { Category: d.SiteName, TotalActive: d.Count, TotalPending: 0, TotalClosed: 0 };
+			});
+
+			renderDonut(initialDonut);
+			renderBar(barData);
+		})();
+	</script>
 }

@@ -150,8 +150,8 @@ public class DashboardController : AppControllerBase
 		var activePermits = _dbContext.Permits
 			.Where(e =>
 				e.Company.Id == company && (
-				e.PermitStatus != PermitStatusEnum.KIV ||
-				e.PermitStatus != PermitStatusEnum.Closed ||
+				e.PermitStatus != PermitStatusEnum.KIV &&
+				e.PermitStatus != PermitStatusEnum.Closed &&
 				e.PermitStatus != PermitStatusEnum.Suspended)
 			).Count();
 
@@ -173,9 +173,9 @@ public class DashboardController : AppControllerBase
 				e.PermitStatus == PermitStatusEnum.Closed
 			).Count();
 
-		float pendingPercentage = pendingPermits / allPermits;
-		float approvedPercentage = approvedPermits / allPermits;
-		float closedPercentage = closedPermits / allPermits;
+		float pendingPercentage = allPermits > 0 ? (float)pendingPermits / allPermits * 100f : 0f;
+		float approvedPercentage = allPermits > 0 ? (float)approvedPermits / allPermits * 100f : 0f;
+		float closedPercentage = allPermits > 0 ? (float)closedPermits / allPermits * 100f : 0f;
 
 		var data = new DonutChartModel[]
 		{
