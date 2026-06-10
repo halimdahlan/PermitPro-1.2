@@ -21,7 +21,7 @@
 		</button>
 	</div>
 	<div>
-		<a href="#dlgUser" class="btn btn-primary no-loading" data-bs-toggle="modal" data-bs-target="#dlgUser"><span class="px-2"><i class="fa-sharp fa-solid fa-plus me-2"></i> New contractor</span></a>
+		<a href="#dlgUser" class="btn btn-sm btn-primary no-loading" data-bs-toggle="modal" data-bs-target="#dlgUser"><span class="px-2"><i class="fa-sharp fa-solid fa-plus me-2"></i> New contractor</span></a>
 	</div>
 </div>
 
@@ -40,29 +40,29 @@
 			c.Bound(p => p.IsSecured).Encoded(false).HeaderHtmlAttributes(new { @class = "text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(140);
 
 			c.Bound(p => p.IsActive)
-			.ClientTemplate(
-				"# if (IsActive) { #" +
-				"    <i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-success\"></i>" +
-				"# } else { #" +
-				"    <i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-warning\"></i>" +
-				"# } #"
-				)
-				.HeaderHtmlAttributes(new { @class = "text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(130);
+				.ClientTemplate(
+					"# if (IsActive) { #" +
+					"    <i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-success\"></i>" +
+					"# } else { #" +
+					"    <i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-warning\"></i>" +
+					"# } #"
+					)
+					.HeaderHtmlAttributes(new { @class = "text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(130);
 
 			c.Bound(p => p.CreatedWhen).Format("{0:dd MMM, yyyy}").Width(150);
 			c.Bound(p => p.ActionIcons).Sortable(false).Exportable(false).Encoded(false).HeaderHtmlAttributes(new { @class = "text-center" }).Width(100);
 		})
 		.DataSource(ds => ds
-		.Custom()
-		.Transport(t =>
-		{
-			t.Read(r => r.Url($"/{Model.CompanyId}/contractors/grid").Type(HttpVerbs.Get));
-		})
-		.Schema(s => s
-		.Model(m =>
-		{
-			m.Id(i => i.Id);
-		})
+			.Custom()
+			.Transport(t =>
+			{
+				t.Read(r => r.Url($"/{Model.CompanyId}/contractors/grid").Type(HttpVerbs.Get));
+			})
+			.Schema(s => s
+			.Model(m =>
+			{
+				m.Id(i => i.Id);
+			})
 		)
 		.PageSize(20)
 		)
@@ -644,6 +644,35 @@
 				$('#dlgConfirm .btn-proceed').data('userId', '');
 			});
 
+
+			$('#btnDeleteItem').click(() => {
+				var id = $('#btnDeleteItem').data('itemId');
+
+				$('#dlgConfirmDeleteItem').modal('hide');
+				$('.loading').show();
+
+				var xhr = $.ajax({
+					method: 'DELETE',
+					url: `/@Model.CompanyId/users/${id}`,
+				});
+
+				xhr.done((response, status) => {
+					if (status == 'success') {
+						if (response.data == 'OK') {
+							grid.dataSource.read();
+						}
+						$('#dlgConfirmDeleteItem').modal('hide');
+					}
+				});
+
+				xhr.fail(() => {
+				});
+
+				xhr.always(() => {
+					$('.loading').hide();
+				});
+			});
+
 		});
 
 
@@ -656,8 +685,8 @@
 
 
 		const deleteUser = (id) => {
-			$('#dlgConfirm .btn-proceed').data('userId', id);
-			$('#dlgConfirm').modal('show');
+			$('#btnDeleteItem').data('itemId', id);
+			$('#dlgConfirmDeleteItem').modal('show');
 		};
 
 

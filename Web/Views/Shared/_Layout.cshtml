@@ -34,11 +34,10 @@
 	<link rel="stylesheet" href="~/css/site.css" />
 
 	<!-- Bootstrap -->
-	
-	<!--
-	<link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
 	<script src="https://cdn.jsdelivr.net/npm/@@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+	<!--
+	<link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
 	-->
 	
 	<!-- Kendo UI -->
@@ -153,6 +152,27 @@
 		</div>
 
 	</div><!-- / .main-content -->
+
+	<!-- Modal -->
+	<div class="modal fade" id="dlgConfirmDeleteItem" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header bg-warning">
+					<h2 class="modal-title" id="dlgConfirmDeleteItemLabel">Confirm Delete</h2>
+					<button type="button" class="btn btn-clear" data-bs-dismiss="modal" aria-label="Close">
+						<i class="fa-regular fa-close fa-2x"></i>
+					</button>
+				</div>
+				<div class="modal-body h3">
+					You are about to delete this item. Are you sure?
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+					<button id="btnDeleteItem" type="button" class="btn btn-outline-danger" data-company-id="" data-controller="" data-entity="" data-item-id="" data-bs-dismiss="modal">Yes, please proceed</button>
+				</div>
+			</div>
+		</div>
+	</div>
 
 	<!-- JAVASCRIPT -->
 	<!-- Vendor JS -->

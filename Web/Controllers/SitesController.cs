@@ -71,15 +71,57 @@ public class SitesController : AppControllerBase
 	}
 
 
-	public IActionResult Edit()
+	[HttpGet("{company}/sites/{parentId?}/edit/{id}")]
+	public async Task<IActionResult> Edit(Guid company, Guid? parentId, Guid id)
 	{
-		return View();
+		var site = await _dbContext.Sites.FirstOrDefaultAsync(e => e.Id == id);
+		if (site == null) return NotFound();
+
+		var model = SitesNewViewModel.FromSite(site);
+		model.CompanyId = company;
+		model.ParentId = parentId;
+
+		ViewBag.SiteId = id;
+		ViewBag.CompanyId = company;
+
+		return View("New", model);
 	}
 
 
-	public IActionResult New()
+	[HttpGet("{company}/sites/{parentId?}/new")]
+	public IActionResult New(Guid company, Guid? parentId = null)
 	{
-		return View();
+		ViewBag.SiteId = null;
+		ViewBag.CompanyId = company;
+		ViewBag.ParentId = parentId;
+
+		return View(new SitesNewViewModel());
+	}
+
+
+	[HttpPost("{company}/sites/{parentId?}/edit/{id}")]
+	public async Task<IActionResult> Edit(Guid company, Guid? parentId, Guid id, SitesNewViewModel model)
+	{
+		if (!ModelState.IsValid) return View("New", model);
+
+		var site = await _dbContext.Sites.FirstOrDefaultAsync(e => e.Id == id);
+		if (site == null) return NotFound();
+
+		site.Name = model.Name;
+		site.Description = model.Description;
+		site.ContactEmail = model.ContactEmail;
+		site.ContactName = model.ContactName;
+		site.Latitude = model.Latitude;
+		site.Longitude = model.Longitude;
+		site.IsActive = model.IsActive;
+		site.ShowInMap = model.ShowInMap;
+
+		_dbContext.Sites.Update(site);
+		await _dbContext.SaveChangesAsync();
+
+		TempData["SuccessMessage"] = "Site has been updated successfully.";
+
+		return RedirectToAction("Index", new { company = model.CompanyId, parentId = model.ParentId });
 	}
 
 
@@ -209,6 +251,38 @@ public class SitesController : AppControllerBase
 			.ToList();
 
 		return locations;
+	}
+
+
+	[HttpPost("{company}/sites/{parentId?}/new")]
+	[ValidateAntiForgeryToken]
+	public async Task<IActionResult> New(SitesNewViewModel model)
+	{
+		if (!ModelState.IsValid) return View(model);
+
+		var company = _dbContext.Companies.FirstOrDefault(e => e.Id == model.CompanyId);
+
+		Site site = new()
+		{
+			Name = model.Name,
+			Description = model.Description,
+			ContactEmail = model.ContactEmail,
+			ContactName = model.ContactName,
+			Latitude = model.Latitude,
+			Longitude = model.Longitude,
+			IsActive = model.IsActive,
+			ShowInMap = model.ShowInMap,
+			SiteType = SiteTypeEnum.Site,
+			ParentId = model.ParentId ?? Guid.Empty,
+			SiteCompany = company,
+		};
+
+		await _dbContext.Sites.AddAsync(site);
+		await _dbContext.SaveChangesAsync();
+
+		TempData["SuccessMessage"] = "Site has been created successfully.";
+
+		return RedirectToAction("Index", new { company = model.CompanyId, parentId = model.ParentId });
 	}
 
 

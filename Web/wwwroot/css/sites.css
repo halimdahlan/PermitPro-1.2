@@ -33,3 +33,6 @@
 	#grid .k-grid-norecords-template {
 		border: 0;
 	}
+
+	/* ── Map ─────────────────────────────────────────────────────────────────────── */
+.site-map { height: 300px; border-radius: 10px; overflow: hidden; }

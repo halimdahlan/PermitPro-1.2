@@ -33,7 +33,7 @@
 		</div>
 	</div>
 	<div>
-		<a asp-controller="permits" asp-action="new" class="btn btn-primary"><span class="px-2"><i class="fa-sharp fa-solid fa-plus me-2"></i> New permit</span></a>
+		<a asp-controller="permits" asp-action="new" class="btn btn-sm btn-primary"><span class="px-2"><i class="fa-sharp fa-solid fa-plus me-2"></i> New permit</span></a>
 	</div>
 </div>
 
@@ -76,7 +76,7 @@
 
 				c.Template(
 					$"<a href=\"/{Model.CompanyId}/permits/edit/#=Id#\" class=\"no-loading text-secondary me-3\"><i class=\"fa-solid fa-money-check-pen fa-lg\"></i></a>" +
-					"<a href=\"javascript:;\" onclick=\"deletePermit('#=Id#')\" class=\"no-loading text-danger\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>"
+					"<a href=\"javascript:;\" onclick=\"confirmDelete('#=Id#','#=PermitNumber#')\" class=\"no-loading text-danger\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>"
 				).Title("ACTION").HeaderHtmlAttributes(new { @class = "text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(100);
 			})
 			.Pageable()
@@ -101,6 +101,27 @@
 	</div>
 </div>
 
+<!-- Modal -->
+<div class="modal fade" id="dlgPermitConfirmDelete" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-warning">
+        <h2 class="modal-title" id="dlgPermitConfirmDeleteLabel">Confirm Delete <span class="mb-2 text-danger" id="permitNumber"></span></h2>
+        <button type="button" class="btn btn-clear" data-bs-dismiss="modal" aria-label="Close">
+					<i class="fa-regular fa-close fa-2x"></i>
+				</button>
+      </div>
+      <div class="modal-body h3">
+				You are about to delete this permit. Are you sure?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+        <button id="btnDelete" type="button" class="btn btn-outline-danger" data-permit-id="" data-bs-dismiss="modal">Yes, please proceed</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 @section CustomCss {
 	<!-- DataTables -->
 	<link href="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-1.13.7/b-2.4.2/b-colvis-2.4.2/b-html5-2.4.2/b-print-2.4.2/date-1.5.1/fc-4.3.0/fh-3.4.0/r-2.5.0/sp-2.2.0/sl-1.7.0/datatables.min.css" rel="stylesheet">
@@ -123,6 +144,8 @@
 		var gridFilterField = '@Model.GridFilterField';
 
 		$(document).ready(() => {
+
+			const dlgConfirm = document.getElementById('dlgPermitConfirmDelete');
 
 			grid = $("#grid").data("kendoGrid");
 
@@ -154,15 +177,43 @@
 			$('.lnk-reload-grid').click(() => {
 				grid.dataSource.read();
 			});
+
+
+			$('#dlgPermitConfirmDelete').on('hide.bs.modal', event => {
+				$('#permitNumber').text('');
+			});
+
+
+			$('#btnDelete').click(() => {
+				const id = $('#btnDelete').data('permitId');
+				const dlgConfirmDelete = new bootstrap.Modal('#dlgPermitConfirmDelete');
+				dlgConfirmDelete.hide();
+
+				deletePermit(id);
+			});
 			
 		});
 
 
-		const deletePermit = (e) => {
+		const confirmDelete = (id, permitNumber) => {
+			const dlgConfirmDelete = new bootstrap.Modal('#dlgPermitConfirmDelete');
+			dlgConfirmDelete.show();
+
+			$('#permitNumber').text(permitNumber);
+			$('#btnDelete').data('permitId', id);
+		};
+
+
+		const deletePermit = (id) => {
+			if (!id) {
+				console.log('Permit ID is missing.');
+				return;
+			}
+
 			$('.loading').show();
 
 			const xhr = $.ajax({
-				url: '/' + companyId + '/permits/' + e,
+				url: '/' + companyId + '/permits/' + id,
 				method: 'DELETE',
 			});
 
@@ -177,8 +228,10 @@
 			});
 
 			xhr.always(() => {
+				$('#btnDelete').data('permitId', '');
 				$('.loading').hide();
 			});
+
 		};
 
 

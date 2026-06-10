@@ -142,22 +142,22 @@ builder.Services.AddSingleton(jwtSettings!);
 builder.Services.AddPermitProServices();
 
 // Add Hangfire
-builder.Services.AddHangfire(config =>
-{
-	config
-		.UseSimpleAssemblyNameTypeSerializer()
-		.UseRecommendedSerializerSettings()
-		.UseSqlServerStorage(hangfireConnectionString);
-});
+// builder.Services.AddHangfire(config =>
+// {
+// 	config
+// 		.UseSimpleAssemblyNameTypeSerializer()
+// 		.UseRecommendedSerializerSettings()
+// 		.UseSqlServerStorage(hangfireConnectionString);
+// });
 
-builder.Services.AddHangfireServer();
+// builder.Services.AddHangfireServer();
 
 //builder.Services.AddTransient<IGeneralHelper, GeneralHelper>();
 
 var app = builder.Build();
 
 // Hangfire
-app.UseHangfireDashboard();
+//app.UseHangfireDashboard();
 
 //AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 

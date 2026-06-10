@@ -40,7 +40,7 @@
 	var isPortalAdmin = User.IsInRole("Portal Admin");
 }
 
-<ul class="navbar-nav">
+<ul class="navbar-nav mb-4">
 	<li class="nav-item">
 		<a href="/@companyId/dashboard" class="nav-link @navDashboard" href="#">
 			<i class="fa-regular fa-chart-line fa-xl fa-fw me-3"></i> Dashboard
@@ -69,44 +69,31 @@
 			<i class="fa-sharp fa-solid fa-envelope-open-text fa-xl fa-fw me-3"></i> Notifications
 		</a>
 	</li>
-	@if (User.IsInRole("Portal Admin") || User.IsInRole("Super User"))
-	{
+</ul>
+
+@if (User.IsInRole("Portal Admin") || User.IsInRole("Super User"))
+{
+	<h5 class="sidebar-heading text-uppercase text-white" style="opacity: 0.3; border-bottom: 1px solid #fff; padding-bottom: 10px;">Settings</h5>
+	<ul class="navbar-nav mt-2">
 		<li class="nav-item">
-			<a href="#" class="nav-link no-loading @navSettings">
-				<i class="fa-regular fa-sliders fa-xl fa-fw me-3"></i> Settings
+			<a href="/@companyId/sites" class="nav-link @navSites">
+				<i class="fa-sharp fa-regular fa-map-location-dot fa-xl fa-fw me-3"></i> Locations
 			</a>
-			<ul class="nav">
-				<li class="nav-item">
-					<a href="/@companyId/sites" class="nav-link @navSites">
-						<i class="fa-sharp fa-regular fa-map-location-dot fa-xl fa-fw me-3"></i> Locations
-					</a>
-				</li>
-				<li class="nav-item">
-					<a href="/@companyId/users" class="nav-link @navUsers">
-						<i class="fa-solid fa-user-gear fa-xl fa-fw me-3"></i> Users
-					</a>
-				</li>
-				<li class="nav-item">
-					<a href="/@companyId/workflow" class="nav-link @navWorkflow">
-						<i class="fa-regular fa-people-carry-box fa-xl fa-fw me-3"></i> Workflows
-					</a>
-				</li>
-			</ul>
 		</li>
 		<li class="nav-item">
-			<a class="nav-link @navRecycleBin" href="/@companyId/recyclebin">
+			<a href="/@companyId/users" class="nav-link @navUsers">
+				<i class="fa-solid fa-user-gear fa-xl fa-fw me-3"></i> Users
+			</a>
+		</li>
+		<li class="nav-item">
+			<a href="/@companyId/workflow" class="nav-link @navWorkflow">
+				<i class="fa-regular fa-people-carry-box fa-xl fa-fw me-3"></i> Workflows
+			</a>
+		</li>
+		<li class="nav-item mt-4">
+			<a href="/@companyId/recyclebin" class="nav-link @navRecycleBin">
 				<i class="fa-solid fa-trash-can-arrow-up fa-xl fa-fw me-3"></i> Recycle Bin
 			</a>
 		</li>
-	}
-
-	@if (User.IsInRole("Super User"))
-	{
-		<li class="nav-item">
-			<a href="/@companyId/companies" class="nav-link @(currentRoute?.ToLower() == "company" ? "active" : "")">
-				<i class="fa-regular fa-building fa-xl fa-fw me-3"></i> Companies
-			</a>
-		</li>
-	}
-</ul>
-
+	</ul>
+}

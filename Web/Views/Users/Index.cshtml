@@ -34,13 +34,13 @@
 	<div>
 		@if (Model.LimitReached)
 		{
-			<a href="#dlgLimitReached" class="btn btn-primary no-loading" data-bs-toggle="modal" data-bs-target="#dlgLimitReached"><span class="px-2"><i class="fa-sharp fa-solid fa-plus me-2"></i> New user</span></a>
+			<a href="#dlgLimitReached" class="btn btn-sm btn-primary no-loading" data-bs-toggle="modal" data-bs-target="#dlgLimitReached"><span class="px-2"><i class="fa-sharp fa-solid fa-plus me-2"></i> New user</span></a>
 		}
 		else
 		{
-			<a href="#dlgUser" class="btn btn-primary no-loading" data-bs-toggle="modal" data-bs-target="#dlgUser"><span class="px-2"><i class="fa-sharp fa-solid fa-plus me-2"></i> New user</span></a>
+			<a href="#dlgUser" class="btn btn-sm btn-primary no-loading" data-bs-toggle="modal" data-bs-target="#dlgUser"><span class="px-2"><i class="fa-sharp fa-solid fa-plus me-2"></i> New user</span></a>
 		}
-		<a asp-controller="users" asp-action="userroles" class="btn btn-primary"><span class="px-2">User roles</span></a>
+		<a asp-controller="users" asp-action="userroles" class="btn btn-sm btn-primary"><span class="px-2">User roles</span></a>
 	</div>
 </div>
 
@@ -739,6 +739,38 @@
 				$('#dlgConfirm .btn-proceed').data('userId', '');
 			});
 
+
+			$('#btnDeleteItem').click(() => {
+				var userId = $('#btnDeleteItem').data('itemId');
+
+				$('#dlgConfirmDeleteItem').modal('hide');
+				$('.loading').show();
+
+				var xhr = $.ajax({
+					method: 'DELETE',
+					url: `/@Model.CompanyId/users/${userId}`,
+				});
+
+				xhr.done((response, status) => {
+					if (status == 'success') {
+						if (response.data == 'OK') {
+							grid.dataSource.read();
+						}
+					}
+
+					//$('#dlgConfirmDeleteItem').modal('hide');
+				});
+
+				xhr.fail(() => {
+					//$('#dlgConfirmDeleteItem').modal('hide');
+				});
+
+				xhr.always(() => {
+					$('#dlgConfirmDeleteItem').modal('hide');
+					$('.loading').hide();
+				});
+			});
+
 		});
 
 
@@ -751,8 +783,8 @@
 
 
 		const deleteUser = (id) => {
-			$('#dlgConfirm .btn-proceed').data('userId', id);
-			$('#dlgConfirm').modal('show');
+			$('#btnDeleteItem').data('itemId', id);
+			$('#dlgConfirmDeleteItem').modal('show');
 		};
 
 

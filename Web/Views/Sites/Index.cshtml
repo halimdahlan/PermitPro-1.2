@@ -20,8 +20,21 @@
 					</li>
 				</ol>
 			</nav>
+			<a href="/@Model.CompanyId/sites/@Model.ParentId/new" class="btn btn-sm btn-primary"><span class="mx-3"><i class="fa-sharp fa-solid fa-plus me-2"></i> New location</span></a>
+		} else {
+			<a href="/@Model.CompanyId/sites/@Guid.Empty/new" class="btn btn-sm btn-primary"><span class="mx-3"><i class="fa-sharp fa-solid fa-plus me-2"></i> New location</span></a>
 		}
-		<a href="#dlgSite" data-bs-toggle="modal" data-bs-target="#dlgSite" class="btn btn-primary no-loading"><span class="mx-3"><i class="fa-sharp fa-solid fa-plus me-2"></i> New location</span></a>
+	</div>
+
+	
+
+	@if (TempData["SuccessMessage"] != null)
+	{
+		<div class="alert alert-success alert-dismissible fade show" role="alert">
+			@TempData["SuccessMessage"]
+		</div>
+	}
+
 	</div>
 
 	<div class="my-3">
@@ -51,8 +64,8 @@
 					).HeaderHtmlAttributes(new { @class = "grid-header text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(120);
 
 					c.Template(
-					"<a href=\"javascript:;\" onclick=\"manageSite('#=Id#', false)\" class=\"no-loading text-secondary me-3\"><i class=\"fa-solid fa-money-check-pen fa-lg\"></i></a>" +
-					"<a href=\"javascript:;\" onclick=\"manageSite('#=Id#', true)\" class=\"no-loading text-danger\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>"
+					$"<a href=\"/{Model.CompanyId}/sites/{Model.ParentId}/edit/#=Id#\" class=\"no-loading text-secondary me-3\"><i class=\"fa-solid fa-money-check-pen fa-lg\"></i></a>" +
+					"<a href=\"javascript:;\" onclick=\"deleteItem('#=Id#')\" class=\"no-loading text-danger\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>"
 					).Title("ACTION").HeaderHtmlAttributes(new { @class = "text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(100);
 				})
 				.DataSource(ds => ds
@@ -160,13 +173,13 @@
 							<div class="w-50 me-2">
 								<div class="form-group">
 									<label class="form-label" for="frm-site-lat">Latitude</label>
-									<input id="frm-site-lat" type="text" class="form-control" />
+									<input id="frm-site-lat" type="text" class="form-control" value="0.0" />
 								</div>
 							</div>
 							<div class="w-50 ms-2">
 								<div class="form-group">
 									<label class="form-label" for="frm-site-lng">Longitude</label>
-									<input id="frm-site-lng" type="text" class="form-control" />
+									<input id="frm-site-lng" type="text" class="form-control" value="0.0" />
 								</div>
 							</div>
 						</div>
@@ -250,6 +263,8 @@
 
 			// Add new site
 			$('.btn-save').click(() => {
+				$('#dlgSite').modal('hide');
+
 				$('#frmNew').addClass('was-validated');
 
 				var parentId = $('#frm-site-parent option:selected').val();
@@ -304,15 +319,12 @@
 
 					ajaxPost.done((response) => {
 						if (response.data == 'OK') {
-							$('#dlgSite').modal('hide');
-							//document.location.reload();
 							grid.dataSource.read();
 						}
 					});
 
 					ajaxPost.always(() => {
-						$('#dlgConfirm').modal('hide');
-						$('.loading').css('display', 'none');
+						$('.loading').hide();
 					});
 				}
 			});
@@ -334,7 +346,6 @@
 
 					xhr.done((response) => {
 						if (response.data == 'OK') {
-							//document.location.reload();
 							grid.dataSource.read();
 						}
 					});
@@ -377,6 +388,38 @@
 
 			$('#dlgConfirm').on('hide.bs.modal', () => {
 				$('.btn-proceed').data('siteId', '');
+			});
+
+
+			$('#btnDeleteItem').click(() => {
+				var id = $('#btnDeleteItem').data('itemId');
+
+				$('#dlgConfirmDeleteItem').modal('hide');
+				$('.loading').show();
+
+				var xhr = $.ajax({
+					method: 'DELETE',
+					url: `/@Model.CompanyId/sites/${id}`,
+				});
+
+				xhr.done((response, status) => {
+					if (status == 'success') {
+						if (response.data == 'OK') {
+							grid.dataSource.read();
+						}
+					}
+
+					//$('#dlgConfirmDeleteItem').modal('hide');
+				});
+
+				xhr.fail(() => {
+					//$('#dlgConfirmDeleteItem').modal('hide');
+				});
+
+				xhr.always(() => {
+					$('#dlgConfirmDeleteItem').modal('hide');
+					$('.loading').hide();
+				});
 			});
 
 		});
@@ -429,6 +472,12 @@
 				$('#dlgConfirm').modal('show');
 				$('.btn-proceed').data('siteId', id);
 			}
+		};
+
+
+		const deleteItem = (id) => {
+			$('#btnDeleteItem').data('itemId', id);
+			$('#dlgConfirmDeleteItem').modal('show');
 		};
 
 
