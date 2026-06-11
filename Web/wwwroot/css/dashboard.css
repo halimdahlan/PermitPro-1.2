@@ -88,7 +88,7 @@
     display: flex; align-items: center; justify-content: space-between;
 }
 .card-header .card-title {
-    font-size: .875rem; font-weight: 600; color: var(--text); margin: 0;
+    font-size: .875rem; font-weight: 500; color: var(--text); margin: 0;
 }
 .card-header .card-subtitle {
     font-size: .72rem; color: var(--muted); margin-top: 2px;

@@ -43,56 +43,56 @@
 <ul class="navbar-nav mb-4">
 	<li class="nav-item">
 		<a href="/@companyId/dashboard" class="nav-link @navDashboard" href="#">
-			<i class="fa-regular fa-chart-line fa-xl fa-fw me-3"></i> Dashboard
+			<i class="fa-regular fa-chart-line fa-fw me-3"></i> Dashboard
 		</a>
 	</li>
 	<li class="nav-item">
 		<a href="/@companyId/permits" class="nav-link @navPermits">
-			<i class="fa-sharp fa-regular fa-address-card fa-xl fa-fw me-3"></i> Permits
+			<i class="fa-sharp fa-regular fa-address-card fa-fw me-3"></i> Permits
 		</a>
 	</li>
 	@if (User.IsInRole("Portal Admin") || User.IsInRole("Super User") || User.IsInRole("Contractor"))
 	{
 		<li class="nav-item">
 			<a href="/@companyId/contractors" class="nav-link @navContractors">
-				<i class="fa-regular fa-user-helmet-safety fa-xl fa-fw me-3"></i> Contractors
+				<i class="fa-regular fa-user-helmet-safety fa-fw me-3"></i> Contractors
 			</a>
 		</li>
 	}
 	<li class="nav-item">
 		<a href="/@companyId/reports" class="nav-link @navReports">
-			<i class="fa-sharp fa-regular fa-file-invoice fa-xl fa-fw me-3"></i> Reports
+			<i class="fa-sharp fa-regular fa-file-invoice fa-fw me-3"></i> Reports
 		</a>
 	</li>
 	<li class="nav-item">
 		<a href="/@companyId/notifications" class="nav-link @navNotifications">
-			<i class="fa-sharp fa-solid fa-envelope-open-text fa-xl fa-fw me-3"></i> Notifications
+			<i class="fa-sharp fa-solid fa-envelope-open-text fa-fw me-3"></i> Notifications
 		</a>
 	</li>
 </ul>
 
 @if (User.IsInRole("Portal Admin") || User.IsInRole("Super User"))
 {
-	<h5 class="sidebar-heading text-uppercase text-white" style="opacity: 0.3; border-bottom: 1px solid #fff; padding-bottom: 10px;">Settings</h5>
+	<h5 class="sidebar-heading text-uppercase text-white" style="opacity: 0.3;">Settings</h5>
 	<ul class="navbar-nav mt-2">
 		<li class="nav-item">
 			<a href="/@companyId/sites" class="nav-link @navSites">
-				<i class="fa-sharp fa-regular fa-map-location-dot fa-xl fa-fw me-3"></i> Locations
+				<i class="fa-sharp fa-regular fa-map-location-dot fa-fw me-3"></i> Locations
 			</a>
 		</li>
 		<li class="nav-item">
 			<a href="/@companyId/users" class="nav-link @navUsers">
-				<i class="fa-solid fa-user-gear fa-xl fa-fw me-3"></i> Users
+				<i class="fa-solid fa-user-gear fa-fw me-3"></i> Users
 			</a>
 		</li>
 		<li class="nav-item">
 			<a href="/@companyId/workflow" class="nav-link @navWorkflow">
-				<i class="fa-regular fa-people-carry-box fa-xl fa-fw me-3"></i> Workflows
+				<i class="fa-regular fa-people-carry-box fa-fw me-3"></i> Workflows
 			</a>
 		</li>
 		<li class="nav-item mt-4">
 			<a href="/@companyId/recyclebin" class="nav-link @navRecycleBin">
-				<i class="fa-solid fa-trash-can-arrow-up fa-xl fa-fw me-3"></i> Recycle Bin
+				<i class="fa-solid fa-trash-can-arrow-up fa-fw me-3"></i> Recycle Bin
 			</a>
 		</li>
 	</ul>
