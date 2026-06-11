@@ -10,6 +10,7 @@ using PermitPro.Core.Data;
 using PermitPro.Core.Entities;
 using PermitPro.Core.Interfaces;
 
+using System.IO;
 using System.Security.Claims;
 
 namespace PermitPro.App.Controllers;
@@ -204,6 +205,42 @@ public class RecycleBinController : AppControllerBase
         await _dbContext.RestoreAsync(entity);
 
         TempData["RecycleBinMessage"] = $"{entityType} restored successfully.";
+        return RedirectToAction(nameof(Index), new { company });
+    }
+
+
+    [Authorize(Roles = "Super User")]
+    [HttpPost("{company}/recyclebin/delete/{entityType}/{id}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(Guid company, string entityType, Guid id)
+    {
+        object entity = entityType switch
+        {
+            "Permit" => await _dbContext.Permits.IgnoreQueryFilters().FirstOrDefaultAsync(e => e.Id == id),
+            "Site" => await _dbContext.Sites.IgnoreQueryFilters().FirstOrDefaultAsync(e => e.Id == id),
+            "Workflow" => await _dbContext.Workflows.IgnoreQueryFilters().FirstOrDefaultAsync(e => e.Id == id),
+            "WorkflowStep" => await _dbContext.WorkflowSteps.IgnoreQueryFilters().FirstOrDefaultAsync(e => e.Id == id),
+            "Company" => await _dbContext.Companies.IgnoreQueryFilters().FirstOrDefaultAsync(e => e.Id == id),
+            "User" => await _dbContext.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == id.ToString()),
+            _ => null
+        };
+
+        if (entity == null)
+            return NotFound();
+
+        if (entity is Permit permit)
+        {
+            var folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "attachments", "permits", permit.Id.ToString().ToLower());
+            if (Directory.Exists(folder))
+            {
+                Directory.Delete(folder, true);
+            }
+        }
+
+        _dbContext.Remove(entity);
+        await _dbContext.SaveChangesAsync();
+
+        TempData["RecycleBinMessage"] = $"{entityType} permanently deleted.";
         return RedirectToAction(nameof(Index), new { company });
     }
 }
