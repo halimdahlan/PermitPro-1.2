@@ -24,97 +24,101 @@
 		</div>
 	}
 
-	<!-- Tab navigation -->
-	<ul class="nav nav-tabs mb-3" id="recycleTabs" role="tablist">
-		<li class="nav-item" role="presentation">
-			<button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-permits" type="button" role="tab">
-				Permits <span class="badge bg-secondary ms-1">@permits.Count</span>
-			</button>
-		</li>
-		<li class="nav-item" role="presentation">
-			<button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-sites" type="button" role="tab">
-				Sites <span class="badge bg-secondary ms-1">@sites.Count</span>
-			</button>
-		</li>
-		<li class="nav-item" role="presentation">
-			<button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-workflows" type="button" role="tab">
-				Workflows <span class="badge bg-secondary ms-1">@workflows.Count</span>
-			</button>
-		</li>
-		<!--
-		<li class="nav-item" role="presentation">
-			<button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-workflowsteps" type="button" role="tab">
-				Workflow Steps <span class="badge bg-secondary ms-1">@workflowSteps.Count</span>
-			</button>
-		</li>
-		-->
-		<li class="nav-item" role="presentation">
-			<button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-users" type="button" role="tab">
-				Users <span class="badge bg-secondary ms-1">@users.Count</span>
-			</button>
-		</li>
-	</ul>
+	<div class="card shadow-sm">
+		<div class="card-body">
+			<!-- Tab navigation -->
+			<ul class="nav nav-tabs mb-3" id="recycleTabs" role="tablist">
+				<li class="nav-item" role="presentation">
+					<button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-permits" type="button" role="tab">
+						Permits <span class="badge bg-secondary ms-1">@permits.Count</span>
+					</button>
+				</li>
+				<li class="nav-item" role="presentation">
+					<button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-sites" type="button" role="tab">
+						Locations <span class="badge bg-secondary ms-1">@sites.Count</span>
+					</button>
+				</li>
+				<li class="nav-item" role="presentation">
+					<button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-workflows" type="button" role="tab">
+						Workflows <span class="badge bg-secondary ms-1">@workflows.Count</span>
+					</button>
+				</li>
+				<li class="nav-item" role="presentation">
+					<button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-workflowsteps" type="button" role="tab">
+						Workflow Steps <span class="badge bg-secondary ms-1">@workflowSteps.Count</span>
+					</button>
+				</li>
+				<li class="nav-item" role="presentation">
+					<button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-users" type="button" role="tab">
+						Users <span class="badge bg-secondary ms-1">@users.Count</span>
+					</button>
+				</li>
+			</ul>
 
-	<div class="tab-content" id="recycleTabContent">
+			<div class="tab-content" id="recycleTabContent">
 
-		<!-- Permits -->
-		<div class="tab-pane fade show active" id="tab-permits" role="tabpanel">
-			@await Html.PartialAsync("_RecycleBinTable", new ViewDataDictionary(ViewData)
+				<!-- Permits -->
+				<div class="tab-pane fade show active" id="tab-permits" role="tabpanel">
+					@await Html.PartialAsync("_RecycleBinTable", new ViewDataDictionary(ViewData)
 			{
 				{ "Items", permits },
 				{ "Columns", new[] { "Permit No", "Site", "Company" } },
 			})
-		</div>
+				</div>
 
-		<!-- Sites -->
-		<div class="tab-pane fade" id="tab-sites" role="tabpanel">
-			@await Html.PartialAsync("_RecycleBinTable", new ViewDataDictionary(ViewData)
+				<!-- Sites -->
+				<div class="tab-pane fade" id="tab-sites" role="tabpanel">
+					@await Html.PartialAsync("_RecycleBinTable", new ViewDataDictionary(ViewData)
 			{
 				{ "Items", sites },
 				{ "Columns", new[] { "Name", "Description", "Company" } },
 			})
-		</div>
+				</div>
 
-		<!-- Workflows -->
-		<div class="tab-pane fade" id="tab-workflows" role="tabpanel">
-			@await Html.PartialAsync("_RecycleBinTable", new ViewDataDictionary(ViewData)
+				<!-- Workflows -->
+				<div class="tab-pane fade" id="tab-workflows" role="tabpanel">
+					@await Html.PartialAsync("_RecycleBinTable", new ViewDataDictionary(ViewData)
 			{
 				{ "Items", workflows },
 				{ "Columns", new[] { "Name", "Description", "Company" } },
 			})
-		</div>
+				</div>
 
-		<!-- Workflow Steps -->
-		<div class="tab-pane fade" id="tab-workflowsteps" role="tabpanel">
-			@await Html.PartialAsync("_RecycleBinTable", new ViewDataDictionary(ViewData)
+				<!-- Workflow Steps -->
+				<div class="tab-pane fade" id="tab-workflowsteps" role="tabpanel">
+					@await Html.PartialAsync("_RecycleBinTable", new ViewDataDictionary(ViewData)
 			{
 				{ "Items", workflowSteps },
 				{ "Columns", new[] { "Name", "Workflow", "Company" } },
 			})
-		</div>
+				</div>
 
-		<!-- Users -->
-		<div class="tab-pane fade" id="tab-users" role="tabpanel">
-			@await Html.PartialAsync("_RecycleBinTable", new ViewDataDictionary(ViewData)
+				<!-- Users -->
+				<div class="tab-pane fade" id="tab-users" role="tabpanel">
+					@await Html.PartialAsync("_RecycleBinTable", new ViewDataDictionary(ViewData)
 			{
 				{ "Items", users },
 				{ "Columns", new[] { "Name", "Email", "Company" } },
 			})
-		</div>
+				</div>
 
-		<!-- Companies (Super User only) -->
-		@if (isSuperUser)
-		{
-			<div class="tab-pane fade" id="tab-companies" role="tabpanel">
-				@await Html.PartialAsync("_RecycleBinTable", new ViewDataDictionary(ViewData)
+				<!-- Companies (Super User only) -->
+				@if (isSuperUser)
+				{
+					<div class="tab-pane fade" id="tab-companies" role="tabpanel">
+						@await Html.PartialAsync("_RecycleBinTable", new ViewDataDictionary(ViewData)
 				{
 					{ "Items", companies },
 					{ "Columns", new[] { "Name", "Description", "" } },
 				})
-			</div>
-		}
+					</div>
+				}
 
+			</div>
+		</div>
 	</div>
+
+
 </div>
 
 <!-- Confirmation modal for restore and delete -->
@@ -122,17 +126,17 @@
 	<div class="modal-dialog modal-dialog-centered">
 		<div class="modal-content">
 			<div class="modal-header bg-warning">
-				<h2 class="modal-title" id="recycleBinConfirmModalLabel">Confirm action</h2>
+				<h2 class="modal-title" id="recycleBinConfirmModalLabel" style="font-weight:600;">Confirm action</h2>
 				<button type="button" class="btn btn-clear" data-bs-dismiss="modal" aria-label="Close">
 					<i class="fa-regular fa-close fa-2x"></i>
 				</button>
 			</div>
-			<div class="modal-body h3 mb-0">
+			<div class="modal-body mb-0">
 				<p class="mb-0" id="recycleBinConfirmMessage"></p>
 			</div>
 			<div class="modal-footer">
-				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-				<button type="button" class="btn btn-outline-primary" id="recycleBinConfirmSubmit">Confirm</button>
+				<button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+				<button type="button" class="btn btn-sm btn-outline-primary" id="recycleBinConfirmSubmit">Confirm</button>
 			</div>
 		</div>
 	</div>

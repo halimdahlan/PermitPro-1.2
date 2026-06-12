@@ -95,7 +95,7 @@ public class SitesController : AppControllerBase
 		ViewBag.CompanyId = company;
 		ViewBag.ParentId = parentId;
 
-		return View(new SitesNewViewModel());
+		return View(new SitesNewViewModel { CompanyId = company });
 	}
 
 

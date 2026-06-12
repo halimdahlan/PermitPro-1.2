@@ -65,6 +65,9 @@
 
 	@await RenderSectionAsync("CustomCss", required: false)
 
+	<!-- CSS Isolation Bundle Reference -->
+	<!--link rel="stylesheet" href="~/PermitPro.App.styles.css" asp-appendversion="true" /-->
+
 	<!-- Title -->
 	<title>PermitPro / @ViewData["Title"]</title>
 </head>
@@ -172,12 +175,12 @@
 		<div class="modal-dialog modal-dialog-centered">
 			<div class="modal-content">
 				<div class="modal-header bg-warning">
-					<h2 class="modal-title" id="dlgConfirmDeleteItemLabel">Confirm Delete</h2>
-					<button type="button" class="btn btn-clear" data-bs-dismiss="modal" aria-label="Close">
+					<h2 class="modal-title" id="dlgConfirmDeleteItemLabel" style="font-weight:600;">Confirm Delete</h2>
+					<button type="button" class="btn btn-sm btn-clear" data-bs-dismiss="modal" aria-label="Close">
 						<i class="fa-regular fa-close fa-2x"></i>
 					</button>
 				</div>
-				<div class="modal-body h3 mb-0">
+				<div class="modal-body mb-0">
 					You are about to delete this item. Are you sure?
 				</div>
 				<div class="modal-footer">

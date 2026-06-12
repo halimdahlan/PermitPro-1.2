@@ -523,8 +523,9 @@ public class WorkflowController : AppControllerBase
 		{
 			var workflow = _dbContext.Workflows.SingleOrDefault(e => e.Id == id);
 
-			//_dbContext.Workflows.Remove(workflow);
-			await _dbContext.SoftDeleteAsync(workflow, Guid.Parse(""));
+			_dbContext.Workflows.Remove(workflow);
+			//await _dbContext.SoftDeleteAsync(workflow, Guid.Parse(_currentUserService.GetCurrentUser().Id));
+
 			await _dbContext.SaveChangesAsync();
 
 			return Ok(new
@@ -622,7 +623,7 @@ public class WorkflowController : AppControllerBase
 
 		icons += "<div class=\"d-flex flex-row action-icons justify-content-center\">";
 		icons += $"<a href=\"/{companyId}/workflow/edit/{id}\" class=\"no-loading text-secondary\"><i class=\"fa-solid fa-money-check-pen fa-lg\"></i></a>";
-		icons += $"<a href=\"javascript:;\" class=\"no-loading text-danger\" onclick=\"deleteWorkflow('{id}')\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>";
+		icons += $"<a href=\"javascript:;\" class=\"no-loading text-danger\" onclick=\"deleteItem('{id}')\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>";
 		icons += "</div>";
 
 		return icons;

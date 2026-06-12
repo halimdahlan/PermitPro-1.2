@@ -16,7 +16,7 @@
 else
 {
 	<div class="table-responsive">
-		<table class="table table-hover align-middle">
+		<table class="table table-striped table-hover align-middle">
 			<thead class="table-light">
 				<tr>
 					<th>@(columns.Length > 0 ? columns[0] : "Name")</th>
@@ -63,7 +63,7 @@ else
 									<form id="delete-form-@item.Id" method="post"
 											action="/@companyId/recyclebin/delete/@item.EntityType/@item.Id">
 										@Html.AntiForgeryToken()
-										<button type="button" class="btn btn-sm btn-outline-danger recycle-bin-confirm-btn"
+										<button type="button" class="btn btn-sm btn-outline-danger recycle-bin-confirm-btn ms-2"
 												  data-action="delete" data-entity="@item.EntityType" data-item="@item.DisplayName"
 												  data-form-id="delete-form-@item.Id">
 											<i class="fa-solid fa-trash-can me-1"></i> Delete

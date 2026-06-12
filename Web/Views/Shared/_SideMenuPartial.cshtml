@@ -74,7 +74,7 @@
 @if (User.IsInRole("Portal Admin") || User.IsInRole("Super User"))
 {
 	<h5 class="sidebar-heading text-uppercase text-white" style="opacity: 0.3;">Settings</h5>
-	<ul class="navbar-nav mt-2">
+	<ul class="navbar-nav mt-2 mb-4">
 		<li class="nav-item">
 			<a href="/@companyId/sites" class="nav-link @navSites">
 				<i class="fa-sharp fa-regular fa-map-location-dot fa-fw me-3"></i> Locations
@@ -90,7 +90,14 @@
 				<i class="fa-regular fa-people-carry-box fa-fw me-3"></i> Workflows
 			</a>
 		</li>
-		<li class="nav-item mt-4">
+	</ul>
+}
+
+@if (User.IsInRole("Portal Admin") || User.IsInRole("Super User"))
+{
+	<h5 class="sidebar-heading text-uppercase text-white" style="opacity: 0.3;">Admin</h5>
+	<ul class="navbar-nav mt-2">
+		<li class="nav-item">
 			<a href="/@companyId/recyclebin" class="nav-link @navRecycleBin">
 				<i class="fa-solid fa-trash-can-arrow-up fa-fw me-3"></i> Recycle Bin
 			</a>
