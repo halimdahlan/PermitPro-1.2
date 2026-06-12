@@ -41,7 +41,8 @@
         <a href="#" id="userDropdown" class="topbar-user-pill no-loading dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" role="button">
             @if (!string.IsNullOrEmpty(profileImage))
             {
-                <img src="~/img/profile/@profileImage"
+                <img src="~/img/profiles/@profileImage"
+                     id="topbarUserAvatar"
                      class="topbar-user-avatar"
                      style="object-fit:cover;"
                      alt="@user?.FirstName" />

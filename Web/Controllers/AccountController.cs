@@ -352,6 +352,7 @@ public class AccountController : Controller
 	
 
 	[Authorize()]
+	[HttpGet("{company}/account/profile")]
 	public IActionResult Profile()
 	{
 		var currentUser = _currentUserService.GetCurrentUser();
@@ -360,7 +361,7 @@ public class AccountController : Controller
 		// Check for profile image if exists
 		if (currentUser.ProfileImage != null)
 		{
-			profileImageUrl = Path.Combine(_webHostEnvironment.WebRootPath, "img", "profile", currentUser.ProfileImage);
+			profileImageUrl = Path.Combine(_webHostEnvironment.WebRootPath, "img", "profiles", currentUser.ProfileImage);
 		}
 
 		var imageFile = currentUser.ProfileImage;
@@ -372,8 +373,11 @@ public class AccountController : Controller
 			LastName = currentUser.LastName,
 			Email = currentUser.Email,
 			Designation = currentUser.Designation,
-			ProfileImageUrl = System.IO.File.Exists(profileImageUrl) ? currentUser.ProfileImage : "no-image.png",
-			HasProfileImage = !string.IsNullOrEmpty(currentUser.ProfileImage) && currentUser.ProfileImage != "no-image.png",
+			ProfileImageUrl = System.IO.File.Exists(profileImageUrl) ? $"/img/profiles/{currentUser.ProfileImage}" : "/img/user-default.png",
+			HasProfileImage = !string.IsNullOrEmpty(currentUser.ProfileImage) && currentUser.ProfileImage != "/img/user-default.png",
+			RoleNames = currentUser.UserRoles.Select(r => r.Role!.Name!).ToList(),
+			IsSuperAdmin = currentUser.UserRoles.Any(r => r.Role!.NormalizedName == "SUPERUSER"),
+			PhoneNumber = currentUser.PhoneNumber,
 		};
 
 		return View(model);
@@ -420,6 +424,7 @@ public class AccountController : Controller
 	}
 
 
+	[Authorize()]
 	[HttpPut("{company}/account/changepassword")]
 	[ValidateAntiForgeryToken]
 	public async Task<IActionResult> ChangePassword(Guid company)
@@ -469,6 +474,7 @@ public class AccountController : Controller
 	}
 
 
+	[Authorize()]
 	[HttpPut("{company}/account/removeimage")]
 	public async Task<IActionResult> RemoveImage(Guid company)
 	{
@@ -555,6 +561,38 @@ public class AccountController : Controller
 	}
 
 
+	// ── Avatar upload (AJAX) ──────────────────────────────────────────────────────
+
+	[HttpPost("{company}/account/profile/upload-avatar")]
+	public async Task<IActionResult> UploadAvatar(Guid id, IFormFile file)
+	{
+		if (!CanAccess(UserId)) return Forbid();
+
+		var user = await _context.Users.FirstOrDefaultAsync(e => e.Id == UserId.ToString());
+		if (user == null) return NotFound();
+
+		if (file == null || file.Length == 0)
+			return BadRequest(new { error = "No file provided." });
+
+		var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+		if (ext is not (".png" or ".jpg" or ".jpeg" or ".gif" or ".webp"))
+			return BadRequest(new { error = "Only image files are allowed." });
+
+		await using var stream = file.OpenReadStream();
+		var (fileName, path, _) = await FileSaveAsync(stream, file.FileName, "profiles");
+
+		if (!string.IsNullOrEmpty(user.ProfileImage))
+			await FileDeleteAsync(user.ProfileImage);
+
+		user.ProfileImage = fileName;
+		_context.Users.Update(user);
+
+		await _context.SaveChangesAsync();
+
+		return Ok(new { path = $"{fileName}" });
+	}
+
+
 	#region Token (JWT)
 
 	/// <summary>
@@ -631,6 +669,35 @@ public class AccountController : Controller
 
 
 	#region Private methods/functions
+
+	private async Task<(string storedName, string path, long size)> FileSaveAsync(Stream stream, string originalFileName, string folder, CancellationToken ct = default)
+	{
+		var ext = Path.GetExtension(originalFileName);
+		var storedName = $"{Guid.NewGuid()}{ext}";
+		var dir = Path.Combine(_webHostEnvironment.WebRootPath, "img", folder);
+
+		Directory.CreateDirectory(dir);
+
+		var fullPath = Path.Combine(dir, storedName);
+
+		await using var fs = new FileStream(fullPath, FileMode.Create);
+		await stream.CopyToAsync(fs, ct);
+
+		return (storedName, fullPath, fs.Length);
+	}
+
+	private Task FileDeleteAsync(string filePath, CancellationToken ct = default)
+	{
+		if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
+		return Task.CompletedTask;
+	}
+
+
+	protected Guid UserId => Guid.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : Guid.Empty;
+
+	private bool CanAccess(Guid targetUserId) => targetUserId == UserId || IsInRole("Portal Admin") || IsInRole("Super User");
+
+	protected bool IsInRole(string role) => User.IsInRole(role);
 
 	private UserInfo CreateUser()
 	{
