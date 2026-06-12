@@ -37,7 +37,7 @@ input[type="text"].form-control {
 }
 
 #grid, #grid .k-input-inner {
-	font-family: 'Cerebri Sans';
+	font-family: 'Poppins', sans-serif;
 	font-size: 14px;
 }
 
@@ -67,11 +67,15 @@ input[type="text"].form-control {
 	}
 
 .k-treeview-leaf {
-	font-family: 'Cerebri Sans', sans-serif;
+	font-family: 'Poppins', sans-serif;
 	font-size: 14px;
 }
 
 .k-chip {
-	font-family: 'Cerebri Sans', sans-serif;
+	font-family: 'Poppins', sans-serif;
 	font-size: 12px;
+}
+
+.k-column-title {
+  font-size: 14px !important;
 }

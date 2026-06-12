@@ -14,12 +14,12 @@
 	<div class="d-flex flex-row align-items-center mb-2">
 		<div class="me-3 label-width">
 			@(Html.Kendo().RadioButton()
-						.Name("option1")
-						.Checked(true)
-						.HtmlAttributes(new { @name = "filterOption" })
-						.Label("Month/Year")
-						.Events(events => events.Change("onOptionChange"))
-						)
+				.Name("option1")
+				.Checked(true)
+				.HtmlAttributes(new { @name = "filterOption" })
+				.Label("Month/Year")
+				.Events(events => events.Change("onOptionChange"))
+			)
 		</div>
 		<div>
 			@(Html.Kendo().DropDownList()

@@ -196,7 +196,7 @@ xthead tr, xtfoot tr {
 }
 
 .form-control, .k-input-outline, .k-picker-outline {
-	font-family: 'Cerebri Sans' !important;
+	font-family: 'Poppins' !important;
 	font-size: 14px !important;
 }
 
@@ -269,7 +269,7 @@ xthead tr, xtfoot tr {
 
 
 #grid, #grid .k-input-inner {
-	font-family: 'Cerebri Sans';
+	font-family: 'Poppins';
 	font-size: 14px;
 }
 
@@ -287,12 +287,12 @@ xthead tr, xtfoot tr {
 	}
 
 .k-treeview-leaf {
-	font-family: 'Cerebri Sans', sans-serif;
+	font-family: 'Poppins', sans-serif;
 	font-size: 14px;
 }
 
 .k-chip {
-	font-family: 'Cerebri Sans', sans-serif;
+	font-family: 'Poppins', sans-serif;
 	font-size: 12px;
 }
 
@@ -309,4 +309,8 @@ xthead tr, xtfoot tr {
 	display: none;
 	justify-items: center;
 	align-items: center;
+}
+
+.k-column-title {
+  font-size: 14px !important;
 }

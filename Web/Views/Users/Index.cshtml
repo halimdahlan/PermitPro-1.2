@@ -10,26 +10,24 @@
 @model UsersViewModel
 
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
-	<div class="d-flex flex-row align-items-center">
-		<div class="me-3">View by</div>
-		<button type="button" class="btn btn-sm btn-dark btn-filter rounded-pill me-2" data-search="all|all">
-			ALL
-		</button>
-		<button type="button" class="btn btn-sm btn-secondary btn-filter rounded-pill me-2" data-search="isActive|true">
-			ACTIVE
-		</button>
-		<button type="button" class="btn btn-sm btn-secondary btn-filter rounded-pill me-2" data-search="isActive|false">
-			INACTIVE
-		</button>
-		@if (Model.Roles != null)
-		{
-			foreach (var role in Model.Roles)
-			{
-				<button type="button" class="btn btn-sm btn-secondary btn-filter rounded-pill me-2" data-search="roles|@role.Name">
-					@role?.Name?.ToUpper()
-				</button>
-			}
-		}
+	<div class="d-flex flex-row align-items-center gap-3">
+		<label for="filterDropdown" class="form-label mb-0">View by:</label>
+		<div>
+
+		@(Html.Kendo().DropDownList()
+			.Name("filterDropdown")
+			.Size(ComponentSize.Medium)
+			.Rounded(Rounded.Medium)
+			.FillMode(FillMode.Outline)
+			.DataValueField("value")
+			.DataTextField("text")
+			.HtmlAttributes(new { style = "width: 280px" })
+			.Events(e => e.Change("onFilterChange"))
+			.DataSource(ds => ds
+				.Read(r => r.Url($"/{Model.CompanyId}/users/filters").Type(HttpVerbs.Get))
+			)
+		)
+		</div>
 	</div>
 	<div>
 		@if (Model.LimitReached)
@@ -66,7 +64,7 @@
 			{
 				t.Read(r => r.Url($"/{Model.CompanyId}/users/grid").Type(HttpVerbs.Get));
 			})
-			.PageSize(20)
+			.PageSize(10)
 		)
 		.Columns(c =>
 		{
@@ -310,11 +308,6 @@
 		var selectedLocations = [];
 
 		$(document).ready(() => {
-			var currentFilter = null;
-			var btnFilters = $('.btn-filter');
-
-			currentFilter = btnFilters[0];
-
 			var grid = $("#grid").data("kendoGrid");
 
 			//$('.table-grid table').addClass('table-responsive');
@@ -322,51 +315,6 @@
 			grid.dataSource.transport.options.read.beforeSend = (req) => {
 				req.setRequestHeader('RequestVerificationToken', $('input:hidden[name="__RequestVerificationToken"]').val());
 			};
-
-			// $('.info-pwd').popover({
-			// 	html: true,
-			// 	placement: 'left',
-			// 	title: 'Password settings'
-			// 	content: '<ul><li>Minimum 12 characters in length</li></ul>',
-			// 	popperConfig: {
-			// 		html: true,
-			// 	},
-			// });
-
-			// const popTest = new bootstrap.Popover('.info-pwd', {
-			// 	trigger: 'focus',
-			// 	html: true,
-			// 	placement: 'left',
-			// 	title: 'Password settings',
-			// 	content: '<ul><li>Minimum 12 characters in length</li></ul>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-			// });
-
-
-			$('.btn-filter').click((e) => {
-				var btn = $(e.currentTarget);
-				var search = $(e.currentTarget).data('search');
-
-				if (btn[0] != currentFilter) {
-					$(currentFilter).removeClass('btn-dark').addClass('btn-secondary');
-					$(e.currentTarget).removeClass('btn-secondary').addClass('btn-dark');
-
-					var filter = search.split('|');
-
-					if (filter[0] == 'all') {
-						grid.dataSource.filter(null);
-					} else {
-						if (filter[0] == 'isActive') {
-							var state = filter[1];
-							grid.dataSource.filter({ field: 'IsActive', operator: 'eq', value: state == 'true' });
-						} else {
-							grid.dataSource.filter({ field: 'Roles', operator: 'eq', value: filter[1] });
-						}
-					}
-
-				}
-
-				currentFilter = btn[0];
-			});
 
 
 			$('.btn-save').click(() => {
@@ -772,6 +720,31 @@
 			});
 
 		});
+
+
+		const onFilterChange = (e) => {
+			var dropdownlist = e.sender;
+			var search = dropdownlist.value();
+			var grid = $("#grid").data("kendoGrid");
+
+			if (!search) {
+				grid.dataSource.filter(null);
+				return;
+			}
+
+			var filter = search.split('|');
+
+			if (filter[0] == 'all') {
+				grid.dataSource.filter(null);
+			} else {
+				if (filter[0] == 'isActive') {
+					var state = filter[1];
+					grid.dataSource.filter({ field: 'IsActive', operator: 'eq', value: state == 'true' });
+				} else {
+					grid.dataSource.filter({ field: 'Roles', operator: 'eq', value: filter[1] });
+				}
+			}
+		};
 
 
 		const editUser = (id) => {
