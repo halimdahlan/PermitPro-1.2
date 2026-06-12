@@ -18,7 +18,7 @@ public class UsersGridViewModel
 	public string Location { get; set; }
 
 	[Display(Name = "DESIGNATION")]
-	public string Designation {  get; set; }
+	public string Designation { get; set; }
 
 	[Display(Name = "ROLE")]
 	public string Roles { get; set; }
@@ -33,7 +33,7 @@ public class UsersGridViewModel
 	public bool IsActive { get; set; }
 
 	[Display(Name = "DATE CREATED")]
-	public DateTime CreatedWhen {  get; set; }
+	public DateTime CreatedWhen { get; set; }
 
 	[Display(Name = "ACTION")]
 	public string ActionIcons { get; set; }

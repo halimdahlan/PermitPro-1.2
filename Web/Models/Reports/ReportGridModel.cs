@@ -25,7 +25,7 @@ namespace PermitPro.App.Models.Reports
 		public string? PermitStatus { get; set; }
 
 		[Display(Name = "CERTIFICATES")]
-		public string? Certificates {  get; set; }
+		public string? Certificates { get; set; }
 
 		[Display(Name = "SUBMITTED ON")]
 		public DateTime CreatedWhen { get; set; }

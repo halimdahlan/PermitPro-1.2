@@ -451,7 +451,7 @@ public class SitesController : AppControllerBase
 			var sites = _dbContext.Sites
 				.Include(e => e.Permits)
 				.Where(x => x.Permits.Count > 0 && x.Latitude != null && x.Longitude != null && x.ShowInMap == true && x.SiteCompany.Id == companyId)
-				.Select(x => new 
+				.Select(x => new
 				{
 					x.Id,
 					x.Name,

@@ -59,7 +59,7 @@ namespace PermitPro.App.Controllers
 
 
 		#region "API"
-		
+
 		public JsonResult GetSitesDropDown()
 		{
 			List<SelectListItem> list = new();
@@ -84,11 +84,11 @@ namespace PermitPro.App.Controllers
 						Value = "",
 					});
 				}
-         }
+			}
 
-         return Json(list.ToList());
-      }
-		
+			return Json(list.ToList());
+		}
+
 		#endregion
 
 

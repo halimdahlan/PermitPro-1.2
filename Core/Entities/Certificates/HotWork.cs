@@ -6,7 +6,7 @@ public class HotWork : EntityBase
 {
 	public List<Permit> Permits { get; set; } = new();
 
-	public bool IsCommunicationLinkEstablished {  get; set; }
+	public bool IsCommunicationLinkEstablished { get; set; }
 
 	public bool IsGasTesterCalibrated { get; set; }
 
@@ -14,7 +14,7 @@ public class HotWork : EntityBase
 
 	public bool IsFireWatchDesignated { get; set; }
 
-	public bool IsAreaSafe {  get; set; }
+	public bool IsAreaSafe { get; set; }
 
 	public bool IsAreaSparkSafe { get; set; }
 
@@ -26,11 +26,11 @@ public class HotWork : EntityBase
 
 	public DateTime? GasTestPerformedWhen { get; set; }
 
-	public string? InitialLELReading {  get; set; }
+	public string? InitialLELReading { get; set; }
 
-	public string? LELTestFrequency {  get; set; }
+	public string? LELTestFrequency { get; set; }
 
-	public string? LELTestReadingJson {  get; set; }
+	public string? LELTestReadingJson { get; set; }
 
 	public string? AtmosReadingJson { get; set; }
 

@@ -1233,7 +1233,8 @@ public class PermitService : IPermitService
 						JToken permitValidityFrom = null;
 						JToken permitValidityTo = null;
 
-						if (cert["permitValidity"] != null) {
+						if (cert["permitValidity"] != null)
+						{
 							permitValidityFrom = cert["permitValidity"]["from"];
 							permitValidityTo = cert["permitValidity"]["to"];
 						}

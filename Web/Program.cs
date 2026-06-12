@@ -1,5 +1,3 @@
-using Hangfire;
-
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -44,8 +42,8 @@ builder.Services.AddIdentity<UserInfo, Role>(options =>
 	.AddRoles<Role>()
 	.AddEntityFrameworkStores<ApplicationDbContext>()
 	.AddDefaultTokenProviders();
-	//.AddTokenProvider<CustomEmailConfirmationTokenProvider<SiteUser>>("CustomEmailConfirmation")
-	//.AddDefaultUI();
+//.AddTokenProvider<CustomEmailConfirmationTokenProvider<SiteUser>>("CustomEmailConfirmation")
+//.AddDefaultUI();
 
 // JWT Bearer is an additional scheme alongside the default Identity cookie scheme.
 // Use [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)] on

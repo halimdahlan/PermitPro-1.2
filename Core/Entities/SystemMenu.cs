@@ -14,9 +14,9 @@ public class SystemMenu : EntityBase
 
 	public string? Description { get; set; }
 
-	public string? IconName { get; set;}
+	public string? IconName { get; set; }
 
-	public string? ControllerName {  get; set; }
+	public string? ControllerName { get; set; }
 
 	public string? ActionName { get; set; }
 

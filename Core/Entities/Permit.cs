@@ -1,8 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using PermitPro.Core.Entities.Base;
-using PermitPro.Core.Enums;
+﻿using PermitPro.Core.Enums;
 using PermitPro.Core.Interfaces;
+using System.ComponentModel.DataAnnotations;
 
 namespace PermitPro.Core.Entities;
 
@@ -46,7 +44,7 @@ public class Permit : ISoftDeletable
 
 	public PermitStatusEnum? PreviousPermitStatus { get; set; }
 
-	public string? PermitForm {  get; set; }
+	public string? PermitForm { get; set; }
 
 	public int RunningNumber { get; set; }
 

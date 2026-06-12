@@ -140,7 +140,7 @@ public class ScheduledTaskController : Controller
 
 			return Ok("Update OK");
 		}
-		
+
 		return Ok("Nothing to update");
 	}
 

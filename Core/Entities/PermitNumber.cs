@@ -9,7 +9,7 @@ public class PermitNumber
 {
 	[Key]
 	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-	public int Id {  get; set; }
+	public int Id { get; set; }
 
-	public string PermitNo {  get; set; }
+	public string PermitNo { get; set; }
 }

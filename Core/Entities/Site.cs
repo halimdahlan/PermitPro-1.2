@@ -21,15 +21,15 @@ public class Site : EntityBase
 
 	public SiteTypeEnum SiteType { get; set; }
 
-	[Precision(8,6)]
+	[Precision(8, 6)]
 	public decimal? Latitude { get; set; }
 
-   [Precision(9, 6)]
-   public decimal? Longitude { get; set; }
+	[Precision(9, 6)]
+	public decimal? Longitude { get; set; }
 
 	public bool ShowInMap { get; set; }
 
-   public Company? SiteCompany { get; set; }
+	public Company? SiteCompany { get; set; }
 
 	public List<Permit> Permits { get; set; } = new();
 

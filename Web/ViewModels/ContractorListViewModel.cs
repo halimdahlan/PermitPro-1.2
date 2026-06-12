@@ -25,7 +25,7 @@ public class ContractorListViewModel
 	public string IsActiveIcons { get; set; }
 
 	[Display(Name = "DATE CREATED")]
-	public DateTime CreatedWhen {  get; set; }
+	public DateTime CreatedWhen { get; set; }
 
 	[Display(Name = "ACTION")]
 	public string ActionIcons { get; set; }

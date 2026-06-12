@@ -15,7 +15,7 @@ public class WorkflowStep : EntityBase
 
 	public DurationTypeEnum DurationType { get; set; }
 
-	public bool AllowDelete {  get; set; }
+	public bool AllowDelete { get; set; }
 
 	public bool AllowMove { get; set; } = true;
 

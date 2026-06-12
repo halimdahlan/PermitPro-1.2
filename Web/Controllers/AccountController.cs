@@ -1,29 +1,23 @@
 ﻿#nullable disable
 
 using MailKit.Net.Smtp;
-
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-
-using System.IdentityModel.Tokens.Jwt;
-using System.Text;
-
 using MimeKit;
-
+using PermitPro.App.ViewModels;
 using PermitPro.Core.Data;
 using PermitPro.Core.Entities;
 using PermitPro.Core.Helpers;
 using PermitPro.Core.Interfaces;
-using PermitPro.App.ViewModels;
-
 using Scriban;
-
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Text;
 
 namespace PermitPro.App.Controllers;
 
@@ -89,7 +83,6 @@ public class AccountController : Controller
 		}
 	}
 
-	#region "GET"
 
 	[HttpGet("account/login")]
 	public IActionResult Login()
@@ -135,159 +128,6 @@ public class AccountController : Controller
 		return View(model);
 	}
 
-
-	[HttpGet("account/logout")]
-	public async Task<IActionResult> Logout()
-	{
-		await _signInManager.SignOutAsync();
-		return LocalRedirect("/account/login");
-	}
-
-
-	#endregion
-
-
-	#region "Token (JWT)"
-
-	/// <summary>
-	/// Issues a signed JWT for API/mobile clients.
-	/// POST /api/auth/token
-	/// Body: { "email": "...", "password": "...", "companyId": "..." }
-	/// </summary>
-	[HttpPost("api/auth/token")]
-	[AllowAnonymous]
-	public async Task<IActionResult> GetToken([FromBody] TokenRequest request)
-	{
-		var user = _context.Users
-			.Include(e => e.UserCompany)
-			.Include(e => e.UserRoles).ThenInclude(e => e.Role)
-			.FirstOrDefault(e => e.Email == request.Email);
-
-		if (user == null)
-			return Unauthorized(new { message = "Invalid credentials" });
-
-		if (!user.IsActive)
-			return Unauthorized(new { message = "Account is inactive" });
-
-		var isSuperUser = user.UserRoles.Any(e => e.Role.NormalizedName == "SUPERUSER");
-
-		if (!isSuperUser && request.CompanyId != null)
-		{
-			if (user.UserCompany?.Id.ToString() != request.CompanyId)
-				return Unauthorized(new { message = "Invalid company" });
-		}
-
-		var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
-
-		if (!result.Succeeded)
-		{
-			if (result.IsLockedOut)
-				return Unauthorized(new { message = "Account is locked. Please try again in 10 minutes." });
-
-			return Unauthorized(new { message = "Invalid credentials" });
-		}
-
-		var roles = user.UserRoles.Select(r => r.Role!.Name!).ToList();
-
-		var claims = new List<Claim>
-		{
-			new(ClaimTypes.NameIdentifier, user.Id),
-			new(ClaimTypes.Email, user.Email!),
-			new(ClaimTypes.Name, user.UserName!),
-			new("company", user.UserCompany?.Id.ToString() ?? string.Empty),
-		};
-		claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
-
-		var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
-		var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-		var expires = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiresInMinutes);
-
-		var token = new JwtSecurityToken(
-			issuer: _jwtSettings.Issuer,
-			audience: _jwtSettings.Audience,
-			claims: claims,
-			expires: expires,
-			signingCredentials: creds);
-
-		await _logService.LogMessageAsync(Core.Enums.LogTypeEnum.Information, "TOKEN", $"JWT issued for user ({user.UserName}).", user);
-
-		return Ok(new
-		{
-			token = new JwtSecurityTokenHandler().WriteToken(token),
-			expires,
-			companyId = user.UserCompany?.Id
-		});
-	}
-
-	#endregion
-
-
-	#region "GET"
-
-	[HttpGet("account/forgot")]
-	public IActionResult ForgotPassword()
-	{
-		return View(new ForgotPasswordViewModel { Email = string.Empty, });
-	}
-
-
-	[HttpGet("account/reset-password")]
-	public IActionResult ResetPassword(string id, string token)
-	{
-		var model = new ResetPasswordViewModel
-		{
-			Password = string.Empty,
-			ConfirmPassword = string.Empty,
-			Id = id,
-			ResetToken = token
-		};
-
-		return View(model);
-	}
-
-
-	[Authorize()]
-	public IActionResult Profile()
-	{
-		var currentUser = _currentUserService.GetCurrentUser();
-		var profileImageUrl = string.Empty;
-
-		// Check for profile image if exists
-		if (currentUser.ProfileImage != null)
-		{
-			profileImageUrl = Path.Combine(_webHostEnvironment.WebRootPath, "img", "profile", currentUser.ProfileImage);
-		}
-
-		var imageFile = currentUser.ProfileImage;
-
-		var model = new ProfileViewModel
-		{
-			UserId = currentUser.Id,
-			FirstName = currentUser.FirstName,
-			LastName = currentUser.LastName,
-			Email = currentUser.Email,
-			Designation = currentUser.Designation,
-			ProfileImageUrl = System.IO.File.Exists(profileImageUrl) ? currentUser.ProfileImage : "no-image.png",
-			HasProfileImage = !string.IsNullOrEmpty(currentUser.ProfileImage) && currentUser.ProfileImage != "no-image.png",
-		};
-
-		return View(model);
-	}
-
-
-	//[Route("account/accessdenied")]
-	public IActionResult AccessDenied()
-	{
-		var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-		var currentUser = _context.Users.Include(f => f.UserCompany).Single(f => f.Id == userId);
-
-		return LocalRedirect($"~/{currentUser.UserCompany.Id}/restricted/accessdenied");
-	}
-
-	#endregion
-
-
-	#region "POST"
 
 	[HttpPost("account/login")]
 	[ValidateAntiForgeryToken]
@@ -370,6 +210,21 @@ public class AccountController : Controller
 	}
 
 
+	[HttpGet("account/logout")]
+	public async Task<IActionResult> Logout()
+	{
+		await _signInManager.SignOutAsync();
+		return LocalRedirect("/account/login");
+	}
+
+
+	[HttpGet("account/forgot")]
+	public IActionResult ForgotPassword()
+	{
+		return View(new ForgotPasswordViewModel { Email = string.Empty, });
+	}
+
+
 	[HttpPost("account/forgot")]
 	[ValidateAntiForgeryToken]
 	public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
@@ -439,6 +294,21 @@ public class AccountController : Controller
 	}
 
 
+	[HttpGet("account/reset-password")]
+	public IActionResult ResetPassword(string id, string token)
+	{
+		var model = new ResetPasswordViewModel
+		{
+			Password = string.Empty,
+			ConfirmPassword = string.Empty,
+			Id = id,
+			ResetToken = token
+		};
+
+		return View(model);
+	}
+
+
 	[HttpPost("account/reset-password")]
 	[ValidateAntiForgeryToken]
 	public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
@@ -479,11 +349,36 @@ public class AccountController : Controller
 
 		return View(model);
 	}
+	
 
-	#endregion
+	[Authorize()]
+	public IActionResult Profile()
+	{
+		var currentUser = _currentUserService.GetCurrentUser();
+		var profileImageUrl = string.Empty;
 
+		// Check for profile image if exists
+		if (currentUser.ProfileImage != null)
+		{
+			profileImageUrl = Path.Combine(_webHostEnvironment.WebRootPath, "img", "profile", currentUser.ProfileImage);
+		}
 
-	#region "PUT"
+		var imageFile = currentUser.ProfileImage;
+
+		var model = new ProfileViewModel
+		{
+			UserId = currentUser.Id,
+			FirstName = currentUser.FirstName,
+			LastName = currentUser.LastName,
+			Email = currentUser.Email,
+			Designation = currentUser.Designation,
+			ProfileImageUrl = System.IO.File.Exists(profileImageUrl) ? currentUser.ProfileImage : "no-image.png",
+			HasProfileImage = !string.IsNullOrEmpty(currentUser.ProfileImage) && currentUser.ProfileImage != "no-image.png",
+		};
+
+		return View(model);
+	}
+
 
 	[HttpPut("{company}/account/profile")]
 	[ValidateAntiForgeryToken]
@@ -573,7 +468,52 @@ public class AccountController : Controller
 		}
 	}
 
-	#endregion
+
+	[HttpPut("{company}/account/removeimage")]
+	public async Task<IActionResult> RemoveImage(Guid company)
+	{
+		var currentUser = _currentUserService.GetCurrentUser();
+
+		if (currentUser == null)
+		{
+			return BadRequest(new
+			{
+				Message = "User not found"
+			});
+		}
+
+		if (!string.IsNullOrEmpty(currentUser.ProfileImage))
+		{
+			var fullPath = Path.Combine(_webHostEnvironment.WebRootPath, "img", "profile", currentUser.ProfileImage);
+
+			if (System.IO.File.Exists(fullPath))
+			{
+				System.IO.File.Delete(fullPath);
+			}
+
+			currentUser.ProfileImage = null;
+			await _userManager.UpdateAsync(currentUser);
+
+			return Ok(new
+			{
+				FileRemoved = true,
+			});
+		}
+
+		return Ok(new
+		{
+			FileRemoved = false,
+		});
+	}
+
+
+	public IActionResult AccessDenied()
+	{
+		var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+		var currentUser = _context.Users.Include(f => f.UserCompany).Single(f => f.Id == userId);
+
+		return LocalRedirect($"~/{currentUser.UserCompany.Id}/restricted/accessdenied");
+	}
 
 
 	public async Task<ActionResult> UploadFile(IEnumerable<IFormFile> files)
@@ -615,45 +555,82 @@ public class AccountController : Controller
 	}
 
 
-	[HttpPut("{company}/account/removeimage")]
-	public async Task<IActionResult> RemoveImage(Guid company)
+	#region Token (JWT)
+
+	/// <summary>
+	/// Issues a signed JWT for API/mobile clients.
+	/// POST /api/auth/token
+	/// Body: { "email": "...", "password": "...", "companyId": "..." }
+	/// </summary>
+	[HttpPost("api/auth/token")]
+	[AllowAnonymous]
+	public async Task<IActionResult> GetToken([FromBody] TokenRequest request)
 	{
-		var currentUser = _currentUserService.GetCurrentUser();
+		var user = _context.Users
+			.Include(e => e.UserCompany)
+			.Include(e => e.UserRoles).ThenInclude(e => e.Role)
+			.FirstOrDefault(e => e.Email == request.Email);
 
-		if (currentUser == null)
+		if (user == null)
+			return Unauthorized(new { message = "Invalid credentials" });
+
+		if (!user.IsActive)
+			return Unauthorized(new { message = "Account is inactive" });
+
+		var isSuperUser = user.UserRoles.Any(e => e.Role.NormalizedName == "SUPERUSER");
+
+		if (!isSuperUser && request.CompanyId != null)
 		{
-			return BadRequest(new
-			{
-				Message = "User not found"
-			});
+			if (user.UserCompany?.Id.ToString() != request.CompanyId)
+				return Unauthorized(new { message = "Invalid company" });
 		}
 
-		if (!string.IsNullOrEmpty(currentUser.ProfileImage))
+		var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
+
+		if (!result.Succeeded)
 		{
-			var fullPath = Path.Combine(_webHostEnvironment.WebRootPath, "img", "profile", currentUser.ProfileImage);
+			if (result.IsLockedOut)
+				return Unauthorized(new { message = "Account is locked. Please try again in 10 minutes." });
 
-			if (System.IO.File.Exists(fullPath))
-			{
-				System.IO.File.Delete(fullPath);
-			}
-
-			currentUser.ProfileImage = null;
-			await _userManager.UpdateAsync(currentUser);
-
-			return Ok(new
-			{
-				FileRemoved = true,
-			});
+			return Unauthorized(new { message = "Invalid credentials" });
 		}
+
+		var roles = user.UserRoles.Select(r => r.Role!.Name!).ToList();
+
+		var claims = new List<Claim>
+		{
+			new(ClaimTypes.NameIdentifier, user.Id),
+			new(ClaimTypes.Email, user.Email!),
+			new(ClaimTypes.Name, user.UserName!),
+			new("company", user.UserCompany?.Id.ToString() ?? string.Empty),
+		};
+		claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
+
+		var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
+		var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+		var expires = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiresInMinutes);
+
+		var token = new JwtSecurityToken(
+			issuer: _jwtSettings.Issuer,
+			audience: _jwtSettings.Audience,
+			claims: claims,
+			expires: expires,
+			signingCredentials: creds);
+
+		await _logService.LogMessageAsync(Core.Enums.LogTypeEnum.Information, "TOKEN", $"JWT issued for user ({user.UserName}).", user);
 
 		return Ok(new
 		{
-			FileRemoved = false,
+			token = new JwtSecurityTokenHandler().WriteToken(token),
+			expires,
+			companyId = user.UserCompany?.Id
 		});
 	}
 
+	#endregion
 
-	#region "Private methods/functions"
+
+	#region Private methods/functions
 
 	private UserInfo CreateUser()
 	{

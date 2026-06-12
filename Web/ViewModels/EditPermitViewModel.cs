@@ -32,7 +32,7 @@ public record EditPermitViewModel
 
 	public IEnumerable<WorkflowHistoryViewModel> WorkflowHistories { get; set; }
 
-	public Site Location {  get; set; }
+	public Site Location { get; set; }
 
 	public DateTime? SuspendDate { get; set; }
 

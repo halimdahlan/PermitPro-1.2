@@ -1,12 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-
+using PermitPro.App.Controllers.Base;
+using PermitPro.Core.Data;
 using PermitPro.Core.Entities;
 using PermitPro.Core.Interfaces;
-using PermitPro.App.Controllers.Base;
-
 using System.Security.Claims;
-using PermitPro.Core.Data;
 
 namespace PermitPro.App.Controllers;
 

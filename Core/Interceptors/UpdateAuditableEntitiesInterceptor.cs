@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
+using PermitPro.Core.Data;
 using PermitPro.Core.Interfaces;
 
 using System.Security.Claims;
@@ -45,13 +46,19 @@ public sealed class UpdateAuditableEntitiesInterceptor : SaveChangesInterceptor
 
 
 	// Intercepts Remove() / RemoveRange() for ISoftDeletable entities and converts
-	// the physical DELETE into a soft-delete UPDATE.  Cascade to child entities still
-	// requires an explicit SoftDeleteAsync call — only entities already tracked as
-	// Deleted are handled here.
+	// the physical DELETE into a soft-delete UPDATE (if UseSoftDelete flag is TRUE).
+	// If UseSoftDelete is FALSE, performs a hard delete (actual removal from database).
 	private void ConvertDeletedToSoftDelete(DbContext dbContext)
 	{
 		var userId = GetCurrentUserId();
 		var now = DateTime.UtcNow;
+
+		// Check if we should use soft delete (default is true)
+		if (dbContext is ApplicationDbContext appContext && !appContext.UseSoftDelete)
+		{
+			// Hard delete mode - don't convert to soft delete, allow physical removal
+			return;
+		}
 
 		foreach (var entry in dbContext.ChangeTracker.Entries<ISoftDeletable>()
 			.Where(e => e.State == EntityState.Deleted))

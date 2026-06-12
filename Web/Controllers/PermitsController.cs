@@ -98,7 +98,8 @@ public class PermitsController : AppControllerBase
 				{
 					UserDisplayName = _dbContext.Users
 						.Where(u => u.Id.ToLower() == e.CreatedBy.ToString().ToLower())
-						.Select(u => new {
+						.Select(u => new
+						{
 							FullName = $"{u.FirstName.Trim()} {u.LastName.Trim()}"
 						})
 						.Single()
@@ -122,10 +123,12 @@ public class PermitsController : AppControllerBase
 			{
 				var updatedBy = permit.WorkflowHistories
 					.OrderByDescending(e => e.CreatedWhen)
-					.Select(e => new {
-                        _dbContext.Users
+					.Select(e => new
+					{
+						_dbContext.Users
 							.Where(u => u.Id.ToLower() == e.CreatedBy.ToString().ToLower())
-							.Select(u => new {
+							.Select(u => new
+							{
 								FullName = $"{u.FirstName.Trim()} {u.LastName.Trim()}"
 							})
 							.Single()
@@ -165,7 +168,8 @@ public class PermitsController : AppControllerBase
 					{
 						UserDisplayName = _dbContext.Users
 							.Where(u => u.Id.ToLower() == e.CreatedBy.ToString().ToLower())
-							.Select(u => new {
+							.Select(u => new
+							{
 								FullName = $"{u.FirstName.Trim()} {u.LastName.Trim()}"
 							})
 							.Single()
@@ -551,7 +555,7 @@ public class PermitsController : AppControllerBase
 		{
 			return BadRequest(ex.Message);
 		}
-	
+
 	}
 
 	#endregion

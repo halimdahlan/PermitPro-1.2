@@ -8,6 +8,6 @@ public class AjaxWorkflowStepRequest
 	public string Name { get; set; }
 	public string Description { get; set; }
 	public int DurationType { get; set; }
-	public int Duration {  get; set; }
+	public int Duration { get; set; }
 	public Guid? WorkflowId { get; set; }
 }

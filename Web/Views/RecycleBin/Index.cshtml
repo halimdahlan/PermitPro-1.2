@@ -41,24 +41,18 @@
 				Workflows <span class="badge bg-secondary ms-1">@workflows.Count</span>
 			</button>
 		</li>
+		<!--
 		<li class="nav-item" role="presentation">
 			<button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-workflowsteps" type="button" role="tab">
 				Workflow Steps <span class="badge bg-secondary ms-1">@workflowSteps.Count</span>
 			</button>
 		</li>
+		-->
 		<li class="nav-item" role="presentation">
 			<button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-users" type="button" role="tab">
 				Users <span class="badge bg-secondary ms-1">@users.Count</span>
 			</button>
 		</li>
-		@if (isSuperUser)
-		{
-			<li class="nav-item" role="presentation">
-				<button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-companies" type="button" role="tab">
-					Companies <span class="badge bg-secondary ms-1">@companies.Count</span>
-				</button>
-			</li>
-		}
 	</ul>
 
 	<div class="tab-content" id="recycleTabContent">
@@ -121,6 +115,7 @@
 		}
 
 	</div>
+</div>
 
 <!-- Confirmation modal for restore and delete -->
 <div class="modal fade" id="recycleBinConfirmModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="recycleBinConfirmModalLabel" aria-hidden="true">

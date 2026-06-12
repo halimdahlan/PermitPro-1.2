@@ -311,7 +311,7 @@ public class DataController : ControllerBase
 		try
 		{
 			var user = await _userManager.FindByIdAsync(id);
-			
+
 			if (user == null)
 			{
 				return NotFound("Unable to find user");

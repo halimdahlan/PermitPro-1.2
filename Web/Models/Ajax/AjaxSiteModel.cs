@@ -6,7 +6,7 @@ public class AjaxSiteModel
 	public required string ParentId { get; set; }
 	public required string Name { get; set; }
 	public required string Description { get; set; }
-	public required string Contact {  get; set; }
+	public required string Contact { get; set; }
 	public required string Email { get; set; }
 	public required decimal Latitude { get; set; }
 	public required decimal Longitude { get; set; }
