@@ -75,41 +75,37 @@
 		<!-- Sites -->
 		<div class="tab-pane fade" id="tab-sites" role="tabpanel">
 			@await Html.PartialAsync("_RecycleBinTable", new ViewDataDictionary(ViewData)
-				{
-					 { "Items", sites },
-					 { "Columns", new[] { "Name", "Description", "Company" } },
-
-})
+			{
+				{ "Items", sites },
+				{ "Columns", new[] { "Name", "Description", "Company" } },
+			})
 		</div>
 
 		<!-- Workflows -->
 		<div class="tab-pane fade" id="tab-workflows" role="tabpanel">
 			@await Html.PartialAsync("_RecycleBinTable", new ViewDataDictionary(ViewData)
-				{
-					 { "Items", workflows },
-					 { "Columns", new[] { "Name", "Description", "Company" } },
-
-})
+			{
+				{ "Items", workflows },
+				{ "Columns", new[] { "Name", "Description", "Company" } },
+			})
 		</div>
 
 		<!-- Workflow Steps -->
 		<div class="tab-pane fade" id="tab-workflowsteps" role="tabpanel">
 			@await Html.PartialAsync("_RecycleBinTable", new ViewDataDictionary(ViewData)
-				{
-					 { "Items", workflowSteps },
-					 { "Columns", new[] { "Name", "Workflow", "Company" } },
-
-})
+			{
+				{ "Items", workflowSteps },
+				{ "Columns", new[] { "Name", "Workflow", "Company" } },
+			})
 		</div>
 
 		<!-- Users -->
 		<div class="tab-pane fade" id="tab-users" role="tabpanel">
 			@await Html.PartialAsync("_RecycleBinTable", new ViewDataDictionary(ViewData)
-				{
-					 { "Items", users },
-					 { "Columns", new[] { "Name", "Email", "Company" } },
-
-})
+			{
+				{ "Items", users },
+				{ "Columns", new[] { "Name", "Email", "Company" } },
+			})
 		</div>
 
 		<!-- Companies (Super User only) -->
@@ -117,88 +113,89 @@
 		{
 			<div class="tab-pane fade" id="tab-companies" role="tabpanel">
 				@await Html.PartialAsync("_RecycleBinTable", new ViewDataDictionary(ViewData)
-					 {
-						  { "Items", companies },
-						  { "Columns", new[] { "Name", "Description", "" } },
-					 })
+				{
+					{ "Items", companies },
+					{ "Columns", new[] { "Name", "Description", "" } },
+				})
 			</div>
 		}
 
 	</div>
 
-	<!-- Confirmation modal for restore and delete -->
-	<div class="modal fade" id="recycleBinConfirmModal" tabindex="-1" aria-labelledby="recycleBinConfirmModalLabel"
-		  aria-hidden="true">
-		<div class="modal-dialog modal-dialog-centered">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="recycleBinConfirmModalLabel">Confirm action</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
-					<p id="recycleBinConfirmMessage"></p>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-					<button type="button" class="btn btn-primary" id="recycleBinConfirmSubmit">Confirm</button>
-				</div>
+<!-- Confirmation modal for restore and delete -->
+<div class="modal fade" id="recycleBinConfirmModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="recycleBinConfirmModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header bg-warning">
+				<h2 class="modal-title" id="recycleBinConfirmModalLabel">Confirm action</h2>
+				<button type="button" class="btn btn-clear" data-bs-dismiss="modal" aria-label="Close">
+					<i class="fa-regular fa-close fa-2x"></i>
+				</button>
+			</div>
+			<div class="modal-body h3 mb-0">
+				<p class="mb-0" id="recycleBinConfirmMessage"></p>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+				<button type="button" class="btn btn-outline-primary" id="recycleBinConfirmSubmit">Confirm</button>
 			</div>
 		</div>
 	</div>
+</div>
 
-	@section CustomCss {
-		<link rel="stylesheet" href="~/css/recyclebin.css" />
-	}
+@section CustomCss {
+	<link rel="stylesheet" href="~/css/recyclebin.css" />
+}
 
-	@section Scripts {
-		<script>
-				// Persist active tab across restores via hash
-				const tabHash = location.hash || '#tab-permits';
-				const trigger = document.querySelector(`[data-bs-target="${tabHash}"]`);
-				//if (trigger) $(`[data-bs-target="${tabHash}"]`).tab('show');
-				if (trigger) new bootstrap.Tab(trigger).show();
+@section Scripts {
+	<script>
+		// Persist active tab across restores via hash
+		const tabHash = location.hash || '#tab-permits';
+		const trigger = document.querySelector(`[data-bs-target="${tabHash}"]`);
+		//if (trigger) $(`[data-bs-target="${tabHash}"]`).tab('show');
+		if (trigger) new bootstrap.Tab(trigger).show();
 
-				document.querySelectorAll('[data-bs-toggle="tab"]').forEach(btn => {
-					btn.addEventListener('shown.bs.tab', e => {
-						history.replaceState(null, '', e.target.dataset.bsTarget);
-					});
-				});
+		document.querySelectorAll('[data-bs-toggle="tab"]').forEach(btn => {
+			btn.addEventListener('shown.bs.tab', e => {
+				history.replaceState(null, '', e.target.dataset.bsTarget);
+			});
+		});
 
-				const confirmModalEl = document.getElementById('recycleBinConfirmModal');
-				const confirmModal = new bootstrap.Modal(confirmModalEl);
-				const confirmMessage = document.getElementById('recycleBinConfirmMessage');
-				const confirmSubmit = document.getElementById('recycleBinConfirmSubmit');
-				let pendingForm = null;
+		const confirmModalEl = document.getElementById('recycleBinConfirmModal');
+		const confirmModal = new bootstrap.Modal(confirmModalEl);
+		const confirmMessage = document.getElementById('recycleBinConfirmMessage');
+		const confirmSubmit = document.getElementById('recycleBinConfirmSubmit');
+		let pendingForm = null;
 
-				document.querySelectorAll('.recycle-bin-confirm-btn').forEach(button => {
-					button.addEventListener('click', () => {
-						const action = button.dataset.action;
-						const entity = button.dataset.entity;
-						const item = button.dataset.item;
-						const formId = button.dataset.formId;
-						pendingForm = document.getElementById(formId);
+		document.querySelectorAll('.recycle-bin-confirm-btn').forEach(button => {
+			button.addEventListener('click', () => {
+				const action = button.dataset.action;
+				const entity = button.dataset.entity;
+				const item = button.dataset.item;
+				const formId = button.dataset.formId;
+				pendingForm = document.getElementById(formId);
 
-						confirmModalEl.querySelector('.modal-title').textContent = action === 'delete'
-							? 'Confirm permanent delete'
-							: 'Confirm restore';
+				confirmModalEl.querySelector('.modal-title').textContent = action === 'delete'
+					? 'Confirm permanent delete'
+					: 'Confirm restore';
 
-						confirmMessage.textContent = action === 'delete'
-							? `Permanently delete this ${entity} "${item}"? This cannot be undone.`
-							: `Restore ${entity} "${item}"?`;
+				confirmMessage.textContent = action === 'delete'
+					? `Permanently delete this ${entity} "${item}"? This cannot be undone.`
+					: `Restore ${entity} "${item}"?`;
 
-						confirmSubmit.classList.toggle('btn-danger', action === 'delete');
-						confirmSubmit.classList.toggle('btn-primary', action !== 'delete');
-						confirmSubmit.textContent = action === 'delete' ? 'Delete' : 'Restore';
+				confirmSubmit.classList.toggle('btn-outline-danger', action === 'delete');
+				confirmSubmit.classList.toggle('btn-outline-primary', action !== 'delete');
+				confirmSubmit.textContent = action === 'delete' ? 'Delete' : 'Restore';
 
-						confirmModal.show();
-						//$('#recycleBinConfirmModal').modal('show');
-					});
-				});
+				confirmModal.show();
+				//$('#recycleBinConfirmModal').modal('show');
+			});
+		});
 
-				confirmSubmit.addEventListener('click', () => {
-					if (pendingForm) {
-						pendingForm.submit();
-					}
-				});
-		</script>
-	}
+		confirmSubmit.addEventListener('click', () => {
+			if (pendingForm) {
+				pendingForm.submit();
+			}
+		});
+	</script>
+}

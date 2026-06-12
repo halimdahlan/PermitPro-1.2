@@ -177,7 +177,7 @@
 						<i class="fa-regular fa-close fa-2x"></i>
 					</button>
 				</div>
-				<div class="modal-body h3">
+				<div class="modal-body h3 mb-0">
 					You are about to delete this item. Are you sure?
 				</div>
 				<div class="modal-footer">
@@ -195,6 +195,13 @@
 	<script>
 		const dropdownElementList = document.querySelectorAll('.dropdown-toggle');
 		const dropdownList = [...dropdownElementList].map(dropdownToggleEl => new bootstrap.Dropdown(dropdownToggleEl));
+
+		$(document).ready(() => {
+			$('#userDropdown').click(function (e) {
+				e.preventDefault();
+				$(this).dropdown('toggle');
+			});
+		});
 	</script>
 
 </body>

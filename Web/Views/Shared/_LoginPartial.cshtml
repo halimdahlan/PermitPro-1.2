@@ -1,7 +1,6 @@
 @using Microsoft.AspNetCore.Identity
 @using PermitPro.Core.Entities
 @using PermitPro.Core.Interfaces
-@using PermitPro.Core.Services
 
 @inject SignInManager<UserInfo> _signInManager
 @inject UserManager<UserInfo> _userManager
@@ -39,7 +38,7 @@
 
     <!-- User dropdown -->
     <div class="dropdown">
-        <a href="#" class="topbar-user-pill no-loading dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" role="button">
+        <a href="#" id="userDropdown" class="topbar-user-pill no-loading dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" role="button">
             @if (!string.IsNullOrEmpty(profileImage))
             {
                 <img src="~/img/profile/@profileImage"
@@ -71,7 +70,6 @@
                     <i class="fa-solid fa-user fa-fw" style="color:#6b7c93;"></i> Profile
                 </a>
             </li>
-            <li><hr class="dropdown-divider my-1"></li>
             <li>
                 <a href="~/account/logout"
                    class="dropdown-item d-flex align-items-center gap-2"
