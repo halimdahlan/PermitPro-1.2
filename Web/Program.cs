@@ -16,7 +16,6 @@ var appConfig = builder.Configuration;
 
 // Add services to the container.
 var connectionString = appConfig.GetConnectionString(builder.Environment.EnvironmentName);
-//var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION");
 var hangfireConnectionString = Environment.GetEnvironmentVariable("HANGFIRE_DB_CONNECTION");
 var emailSettings = appConfig.GetSection("EmailSettings").Get<EmailSettings>();
 var ptwSettings = appConfig.GetSection("PTWSettings").Get<PTWSettings>();

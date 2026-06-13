@@ -200,9 +200,27 @@
 		const dropdownList = [...dropdownElementList].map(dropdownToggleEl => new bootstrap.Dropdown(dropdownToggleEl));
 
 		$(document).ready(() => {
-			$('#userDropdown').click(function (e) {
+			$('#userDropdown').click((e) => {
 				e.preventDefault();
 				$(this).dropdown('toggle');
+			});
+
+
+			$('#permitsDropdown').click((e) => {
+				e.preventDefault();
+				$('#permitSubmenu').collapse('toggle');
+			});
+
+
+			$('#permitSubmenu').on('show.bs.collapse', (e) => {
+				$('#permitsDropdown i:last-child').removeClass('fa-chevron-down');
+				$('#permitsDropdown i:last-child').addClass('fa-chevron-up');
+			});
+
+
+			$('#permitSubmenu').on('hide.bs.collapse', (e) => {
+				$('#permitsDropdown i:last-child').removeClass('fa-chevron-up');
+				$('#permitsDropdown i:last-child').addClass('fa-chevron-down');
 			});
 		});
 	</script>

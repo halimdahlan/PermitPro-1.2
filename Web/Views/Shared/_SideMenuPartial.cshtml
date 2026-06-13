@@ -23,6 +23,9 @@
 	var navSettings = currentRoute?.ToLower() == "settings" ? "active" : "";
 	var navGeneral = currentRoute?.ToLower() == "dashboard" ? "active" : "";
 	var navRecycleBin = currentRoute?.ToLower() == "recyclebin" ? " active" : "";
+	var showMenu = "";
+	var navPermitsMain = "";
+	var arrowClass = "fa-chevron-down";
 
 	if (companyId == Guid.Empty.ToString())
 	{
@@ -33,6 +36,20 @@
 	if (currentRoute?.ToLower() == "sites" || currentRoute?.ToLower() == "users" || currentRoute?.ToLower() == "workflow")
 	{
 		navSettings = "active-light";
+	}
+
+	if (navSitemap == "active")
+	{
+		showMenu = " show";
+		navPermitsMain = "active-light active";
+		arrowClass = "fa-chevron-up";
+	}
+
+	if (navPermits == "active")
+	{
+		showMenu = " show";
+		navPermitsMain = "active-light active";
+		arrowClass = "fa-chevron-up";
 	}
 
 
@@ -47,9 +64,24 @@
 		</a>
 	</li>
 	<li class="nav-item">
-		<a href="/@companyId/permits" class="nav-link @navPermits">
-			<i class="fa-sharp fa-regular fa-address-card fa-fw me-3"></i> Permits
+		<a href="#" id="permitsDropdown" class="no-loading nav-link @navPermitsMain">
+			<i class="fa-solid fa-list-ul fa-fw me-3"></i> Permits
+			<i class="fa-solid fa-fw ms-auto @arrowClass"></i>
 		</a>
+		<div id="permitSubmenu" class="collapse @showMenu">
+			<ul class="navbar-nav ms-2">
+				<li class="nav-item">
+					<a href="/@companyId/permits" class="nav-link @navPermits">
+						<i class="fa-solid fa-list-ul fa-fw me-3"></i> All Permits
+					</a>
+				</li>
+				<li class="nav-item">
+					<a href="/@companyId/sitemap" class="nav-link @navSitemap">
+						<i class="fa-solid fa-map-location-dot fa-fw me-3"></i> Site Map
+					</a>
+				</li>
+			</ul>
+		</div>
 	</li>
 	@if (User.IsInRole("Portal Admin") || User.IsInRole("Super User") || User.IsInRole("Contractor"))
 	{

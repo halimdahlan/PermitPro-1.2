@@ -639,6 +639,48 @@ body, input, select, textarea, button {
 }
 .login-logo .logo-sub { font-size: .75rem; color: var(--muted); }
 
+/* ── Sidebar submenu ─────────────────────────────────────── */
+.nav-link-parent {
+    display: flex !important;
+    align-items: center;
+    cursor: pointer;
+}
+
+.nav-chevron {
+    margin-left: auto;
+    font-size: .6rem;
+    transition: transform .2s ease;
+    opacity: .5;
+    flex-shrink: 0;
+}
+
+.nav-link-parent[aria-expanded="true"] .nav-chevron {
+    transform: rotate(180deg);
+    opacity: .8;
+}
+
+.nav-submenu {
+    padding-left: .35rem;
+    border-left: 1px solid rgba(255,255,255,.07);
+    margin-left: 1.15rem;
+    margin-top: 2px;
+    margin-bottom: 4px;
+}
+
+.nav-submenu .nav-link {
+    font-size: .82rem !important;
+    padding-top: .3rem !important;
+    padding-bottom: .3rem !important;
+    color: var(--sidebar-text) !important;
+    opacity: .85;
+}
+
+.nav-submenu .nav-link:hover,
+.nav-submenu .nav-link.active {
+    color: #fff !important;
+    opacity: 1;
+}
+
 /* ── Scrollbar ───────────────────────────────────────────── */
 .sidebar::-webkit-scrollbar { width: 4px; }
 .sidebar::-webkit-scrollbar-track { background: transparent; }

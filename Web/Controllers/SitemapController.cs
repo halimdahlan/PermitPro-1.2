@@ -50,8 +50,10 @@ namespace PermitPro.App.Controllers
 
 			return View(new SitemapViewModel
 			{
-				Latitude = site?.Latitude?.ToString() ?? "0",
-				Longitude = site?.Longitude?.ToString() ?? "0",
+				CompanyId = company,
+				CompanyName = site?.SiteCompany?.Name ?? string.Empty,
+				Latitude = site?.Latitude?.ToString() ?? "3.139",
+				Longitude = site?.Longitude?.ToString() ?? "101.687",
 			});
 		}
 

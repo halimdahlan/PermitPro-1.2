@@ -1,317 +1,328 @@
-﻿@using Kendo.Mvc.UI
+@{
+	ViewData["Title"] = "Permit";
+	ViewData["SubTitle"] = "Site Map";
+	var companyId = ViewContext.RouteData.Values["company"] as string;
+}
 
 @model SitemapViewModel
 
-@{
-	ViewData["Title"] = "Site Map";
-	ViewData["SubTitle"] = "Summary";
+<div class="permit-map-page">
 
-   var companyId = ViewContext.RouteData.Values["company"] as string;
-}
+	@* ── Filter bar ──────────────────────────────────────── *@
+	<div class="map-filter-bar">
+		<div class="d-flex align-items-center gap-3 flex-wrap">
+			<span class="map-section-label">Filter by status:</span>
+			<div class="map-filter-chips">
+				<button class="map-chip active" data-filter="active">
+					<i class="fa-solid fa-circle-check me-1" style="font-size:.68rem;"></i>Active
+				</button>
+				<button class="map-chip chip-pending" data-filter="pending">
+					<i class="fa-solid fa-clock me-1" style="font-size:.68rem;"></i>Pending
+				</button>
+				<button class="map-chip chip-approved" data-filter="approved">
+					<i class="fa-solid fa-thumbs-up me-1" style="font-size:.68rem;"></i>Approved
+				</button>
+				<button class="map-chip chip-suspended" data-filter="suspended">
+					<i class="fa-solid fa-pause me-1" style="font-size:.68rem;"></i>Suspended
+				</button>
+				<button class="map-chip" data-filter="all">All</button>
+			</div>
+		</div>
+		<div class="d-flex align-items-center gap-2">
+			<i class="fa-solid fa-location-dot" style="color:#e74c3c;font-size:.85rem;"></i>
+			<span class="map-marker-count" id="markerCount">Loading…</span>
+		</div>
+	</div>
 
-<div class="mt-3">
-   <div id="map" class="map"></div>
+	@* ── Map ─────────────────────────────────────────────── *@
+	<div class="map-container">
+		<div id="map"></div>
+
+		@* Legend *@
+		<div class="map-legend">
+			<div class="map-legend-title">Permit Types</div>
+			<div class="map-legend-item">
+				<span class="map-legend-dot" style="background:#f38001;">HW</span>
+				<span class="map-legend-label">Hot Work</span>
+			</div>
+			<div class="map-legend-item">
+				<span class="map-legend-dot" style="background:#e74c3c;">CS</span>
+				<span class="map-legend-label">Confined Space</span>
+			</div>
+			<div class="map-legend-item">
+				<span class="map-legend-dot" style="background:#e67e22;">RA</span>
+				<span class="map-legend-label">Radiation</span>
+			</div>
+			<div class="map-legend-item">
+				<span class="map-legend-dot" style="background:#2c7be5;">EX</span>
+				<span class="map-legend-label">Excavation</span>
+			</div>
+			<div class="map-legend-item">
+				<span class="map-legend-dot" style="background:#9b59b6;">IS</span>
+				<span class="map-legend-label">Isolation</span>
+			</div>
+			<div class="map-legend-item">
+				<span class="map-legend-dot" style="background:#27ae60;">MS</span>
+				<span class="map-legend-label">Method Statement</span>
+			</div>
+			<div class="map-legend-item">
+				<span class="map-legend-dot" style="background:#1abc9c;">LH</span>
+				<span class="map-legend-label">Lifting &amp; Hoisting</span>
+			</div>
+			<div class="map-legend-item">
+				<span class="map-legend-dot" style="background:#95a5a6;">OV</span>
+				<span class="map-legend-label">Override</span>
+			</div>
+		</div>
+	</div>
+
 </div>
 
 <input type="hidden" id="hidCompanyId" value="@companyId" />
+<input type="hidden" id="hidLat" value="@Model.Latitude" />
+<input type="hidden" id="hidLng" value="@Model.Longitude" />
 
 @section CustomCss {
-   <link href="~/css/sitemap.css" rel="stylesheet" />
-   <script async src="https://ga.jspm.io/npm:es-module-shims@1.9.0/dist/es-module-shims.js"></script>   
-   <script type="importmap">
-   {
-      "imports": {
-         "three": "https://cdn.jsdelivr.net/npm/three@@0.163.0/build/three.module.js",
-         "three/addons/": "https://cdn.jsdelivr.net/npm/three@@0.163.0/examples/jsm/",
-         "@@googlemaps/three": "https://unpkg.com/@@googlemaps/three/dist/index.esm.js"
-      }
-   }
-   </script>
+	<link href="~/css/sitemap.css" rel="stylesheet" />
 }
 
 @section Scripts {
-   <script>
-      (g => { var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window; b = b[c] || (b[c] = {}); var d = b.maps || (b.maps = {}), r = new Set, e = new URLSearchParams, u = () => h || (h = new Promise(async (f, n) => { await (a = m.createElement("script")); e.set("libraries", [...r] + ""); for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]); e.set("callback", c + ".maps." + q); a.src = `https://maps.${c}apis.com/maps/api/js?` + e; d[q] = f; a.onerror = () => h = n(Error(p + " could not load.")); a.nonce = m.querySelector("script[nonce]")?.nonce || ""; m.head.append(a) })); d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n)) })({
-         key: "AIzaSyAvl1p58jpa2Nu_LVYK3gFdezNna4Puk8A",
-         v: "weekly",
-      });
+<script>
+(g => {
+	var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window;
+	b = b[c] || (b[c] = {});
+	var d = b.maps || (b.maps = {}), r = new Set, e = new URLSearchParams,
+	u = () => h || (h = new Promise(async (f, n) => {
+		await (a = m.createElement("script")); e.set("libraries", [...r] + "");
+		for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]);
+		e.set("callback", c + ".maps." + q); a.src = `https://maps.${c}apis.com/maps/api/js?` + e;
+		d[q] = f; a.onerror = () => h = n(Error(p + " could not load.")); a.nonce = m.querySelector("script[nonce]")?.nonce || "";
+		m.head.append(a);
+	})); d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n));
+})({ key: "AIzaSyAvl1p58jpa2Nu_LVYK3gFdezNna4Puk8A", v: "weekly" });
 
-      const mapStyle = {
-         retro: [
-            { elementType: 'geometry', stylers: [{ color: '#ebe3cd' }] },
-            { elementType: 'labels.text.fill', stylers: [{ color: '#523735' }] },
-            { elementType: 'labels.text.stroke', stylers: [{ color: '#f5f1e6' }] },
-            {
-               featureType: 'administrative',
-               elementType: 'geometry.stroke',
-               stylers: [{ color: '#c9b2a6' }],
-            },
-            {
-               featureType: 'administrative.land_parcel',
-               elementType: 'geometry.stroke',
-               stylers: [{ color: '#dcd2be' }],
-            },
-            {
-               featureType: 'administrative.land_parcel',
-               elementType: 'labels.text.fill',
-               stylers: [{ color: '#ae9e90' }],
-            },
-            {
-               featureType: 'landscape.natural',
-               elementType: 'geometry',
-               stylers: [{ color: '#dfd2ae' }],
-            },
-            {
-               featureType: 'poi',
-               elementType: 'geometry',
-               stylers: [{ color: '#dfd2ae' }],
-            },
-            {
-               featureType: 'poi',
-               elementType: 'labels.text.fill',
-               stylers: [{ color: '#93817c' }],
-            },
-            {
-               featureType: 'poi.park',
-               elementType: 'geometry.fill',
-               stylers: [{ color: '#a5b076' }],
-            },
-            {
-               featureType: 'poi.park',
-               elementType: 'labels.text.fill',
-               stylers: [{ color: '#447530' }],
-            },
-            {
-               featureType: 'road',
-               elementType: 'geometry',
-               stylers: [{ color: '#f5f1e6' }],
-            },
-            {
-               featureType: 'road.arterial',
-               elementType: 'geometry',
-               stylers: [{ color: '#fdfcf8' }],
-            },
-            {
-               featureType: 'road.highway',
-               elementType: 'geometry',
-               stylers: [{ color: '#f8c967' }],
-            },
-            {
-               featureType: 'road.highway',
-               elementType: 'geometry.stroke',
-               stylers: [{ color: '#e9bc62' }],
-            },
-            {
-               featureType: 'road.highway.controlled_access',
-               elementType: 'geometry',
-               stylers: [{ color: '#e98d58' }],
-            },
-            {
-               featureType: 'road.highway.controlled_access',
-               elementType: 'geometry.stroke',
-               stylers: [{ color: '#db8555' }],
-            },
-            {
-               featureType: 'road.local',
-               elementType: 'labels.text.fill',
-               stylers: [{ color: '#806b63' }],
-            },
-            {
-               featureType: 'transit.line',
-               elementType: 'geometry',
-               stylers: [{ color: '#dfd2ae' }],
-            },
-            {
-               featureType: 'transit.line',
-               elementType: 'labels.text.fill',
-               stylers: [{ color: '#8f7d77' }],
-            },
-            {
-               featureType: 'transit.line',
-               elementType: 'labels.text.stroke',
-               stylers: [{ color: '#ebe3cd' }],
-            },
-            {
-               featureType: 'transit.station',
-               elementType: 'geometry',
-               stylers: [{ color: '#dfd2ae' }],
-            },
-            {
-               featureType: 'water',
-               elementType: 'geometry.fill',
-               stylers: [{ color: '#b9d3c2' }],
-            },
-            {
-               featureType: 'water',
-               elementType: 'labels.text.fill',
-               stylers: [{ color: '#92998d' }],
-            },
-         ]
-      };
+// ── Permit type definitions ─────────────────────────────
+const PERMIT_TYPES = [
+	{ name: 'hotwork',         abbr: 'HW', label: 'Hot Work',           color: '#f38001' },
+	{ name: 'confinedspace',   abbr: 'CS', label: 'Confined Space',     color: '#e74c3c' },
+	{ name: 'radiation',       abbr: 'RA', label: 'Radiation',          color: '#e67e22' },
+	{ name: 'excavation',      abbr: 'EX', label: 'Excavation',         color: '#2c7be5' },
+	{ name: 'isolation',       abbr: 'IS', label: 'Isolation',          color: '#9b59b6' },
+	{ name: 'methodStatement', abbr: 'MS', label: 'Method Statement',   color: '#27ae60' },
+	{ name: 'liftingHoisting', abbr: 'LH', label: 'Lifting & Hoisting', color: '#1abc9c' },
+	{ name: 'override',        abbr: 'OV', label: 'Override',           color: '#95a5a6' },
+];
 
-      const toggleHighlight = (markerView, property, map) => {
-         if (markerView.content.classList.contains('highlight')) {
-            markerView.content.classList.remove('highlight');
-            markerView.zIndex = null;
-         } else {
-            markerView.content.classList.add('highlight');
-            markerView.zIndex = 1;
-         }
+// ── Helpers ─────────────────────────────────────────────
 
-         map.panTo({
-            lat: property.position.lat,
-            lng: property.position.lng
-         });
-      };
+function permitMatchesFilter(status, filter) {
+	switch (filter) {
+		case 'pending':   return status === 1;
+		case 'approved':  return status === 2;
+		case 'suspended': return status === 4;
+		case 'all':       return true;
+		default:          // active: exclude Draft(0), Suspended(4), KIV(5), Closed(6)
+			return status !== 0 && status !== 4 && status !== 5 && status !== 6;
+	}
+}
 
-      const buildContent = (site) => {
-         const content = document.createElement('div');
+function countTypes(permits, filter) {
+	const counts = {};
+	PERMIT_TYPES.forEach(t => { counts[t.name] = 0; });
 
-         content.classList.add('site-pin');
-         content.innerHTML = `
-         <div>
-            <i class="fa-duotone fa-user-helmet-safety fa-xl fa-fade"></i>
-         </div>`;
+	(permits || []).forEach(permit => {
+		if (!permitMatchesFilter(permit.permitStatus, filter)) return;
+		if (!permit.permitForm) return;
+		try {
+			const form = JSON.parse(permit.permitForm);
+			(form?.general?.certificates || []).forEach(cert => {
+				if (counts[cert.name] !== undefined) counts[cert.name]++;
+			});
+		} catch { /* skip malformed JSON */ }
+	});
 
-         return content;
-      };
+	return PERMIT_TYPES
+		.filter(t => counts[t.name] > 0)
+		.map(t => ({ ...t, count: counts[t.name] }));
+}
 
-      
-      const buildPermitContentX = (permitTypes) => {
-         var content = '';
+// ── Pin HTML ────────────────────────────────────────────
 
-         for (const permitType of permitTypes)
-         {
-            content += `
-               <div class="d-flex flex-row mb-2 align-items-center">
-                  <div class="permit-type">
-                     <div class="circle">${permitType.description}</div>
-                  </div>
-                  <div class="permit-count">${permitType.count}</div>
-               </div>`;
-         }
+function buildPinElement(site, filter) {
+	const types = countTypes(site.permits, filter);
+	const el = document.createElement('div');
+	el.className = 'map-pin';
 
-         return content;
-      };
+	let typesHtml = '';
+	if (types.length > 0) {
+		typesHtml = '<div class="map-pin-types">' +
+			types.map(t =>
+				`<div class="map-pin-row">
+					<span class="map-pin-badge" style="background:${t.color};">${t.abbr}</span>
+					<span class="map-pin-count">${t.count}</span>
+				</div>`
+			).join('') + '</div>';
+	} else {
+		typesHtml = '<div class="map-pin-no-permits">No permits</div>';
+	}
 
-      
-      const buildPermitContent = (site) => {
-         const content = document.createElement('div');
-         let html = '';
+	el.innerHTML =
+		`<div class="map-pin-header">
+			<i class="fa-solid fa-location-dot me-1" style="color:#2c7be5;font-size:8px;"></i>${site.name}
+		</div>${typesHtml}`;
 
-         for (const permitType of site.permitTypes)
-         {
-            html += `
-               <div class="d-flex flex-row mb-2 align-items-center">
-                  <div class="permit-type">
-                     <div class="circle">${permitType.description}</div>
-                  </div>
-                  <div class="permit-count">${permitType.activeCount} (<span class="suspend-count">${permitType.suspendedCount}</span>)</div>
-               </div>`;
-         }
+	return el;
+}
 
-         content.classList.add('site-pin');
-         content.innerHTML = html;
+// ── Info window HTML ─────────────────────────────────────
 
-         return content;
-      };
+function buildInfoContent(site) {
+	const allTypes = countTypes(site.permits, 'all');
+	const total = (site.permits || []).length;
 
-      /**
-      * Function to initialize the map
-      */
-      const initMap = async (sites) => {
-         const { Map, InfoWindow } = await google.maps.importLibrary('maps');
-         const { AdvancedMarkerElement } = await google.maps.importLibrary('marker');
-         const center = {
-            lat: @Model.Latitude,
-            lng: @Model.Longitude,
-         };
+	const rows = allTypes.length > 0
+		? allTypes.map(t =>
+			`<tr>
+				<td><span class="map-info-badge" style="background:${t.color};">${t.abbr}</span></td>
+				<td>${t.label}</td>
+				<td class="map-info-count">${t.count}</td>
+			</tr>`
+		).join('')
+		: `<tr><td colspan="3" style="color:#a0aec0;text-align:center;padding:8px 0;">No permit data</td></tr>`;
 
-         const map = new Map(document.getElementById('map'), {
-            disableDefaultUI: true,
-            zoom: 17,
-            center,
-            mapId: 'dd60996d28e89f78',
-            mapTypeId: google.maps.MapTypeId.SATELLITE,
-            mapTypeControl: false,
-            tilt: 0,
-         });
+	return `<div class="map-info-window">
+		<div class="map-info-title">
+			<i class="fa-solid fa-location-dot" style="color:#2c7be5;"></i>
+			${site.name}
+		</div>
+		<table class="map-info-table">
+			<thead>
+				<tr>
+					<th style="width:28px;"></th>
+					<th>Type</th>
+					<th style="text-align:right;">Count</th>
+				</tr>
+			</thead>
+			<tbody>${rows}</tbody>
+		</table>
+		<div class="map-info-footer">
+			<span>Total permits at this location</span>
+			<strong>${total}</strong>
+		</div>
+	</div>`;
+}
 
-         for (const site of sites) {
-            if (site.permitTypes.length > 0) {
-               const advancedMarkerElement = new AdvancedMarkerElement({
-                  map,
-                  content: buildPermitContent(site),
-                  position: site.position,
-                  title: site.description,
-               });
-            }
-         }
-      };
+// ── Map state ────────────────────────────────────────────
 
+let allSitesData = [];
+let activeMarkers = [];
+let currentFilter = 'active';
+let mapInstance = null;
+let infoWindowInstance = null;
+let MarkerClass = null;
 
-      var url = '/' + $('#hidCompanyId').val() + '/sites/map/locations';
+function renderMarkers() {
+	if (!mapInstance || !MarkerClass) return;
 
-      var ajaxGet = $.ajax({
-         url: url,
-         type: 'GET',
-         dataType: 'json',
-      });
+	// Remove existing markers from map
+	activeMarkers.forEach(m => { m.map = null; });
+	activeMarkers = [];
 
-      ajaxGet.done(function (data) {
-         if (data == null) {
-            return;
-         }
+	infoWindowInstance.close();
 
-         var sites = [];
+	let visible = 0;
 
-         data.forEach((site) => {
-            const certificateTypes = [
-               { name: 'hotwork', description: 'HOT WORK', icon: 'HW', activeCount: 0, suspendedCount: 0, },
-               { name: 'confinedspace', description: 'CONFINED SPACE', icon: 'CS', activeCount: 0, suspendedCount: 0, },
-               { name: 'radiation', description: 'RADIATION', icon: 'RA', activeCount: 0, suspendedCount: 0, },
-               { name: 'excavation', description: 'EXCAVATION', icon: 'EX', activeCount: 0, suspendedCount: 0, },
-               { name: 'isolation', description: 'ISOLATION', icon: 'IS', activeCount: 0, suspendedCount: 0, },
-               { name: 'methodStatement', description: 'METHOD STATEMENT', icon: 'MS', activeCount: 0, suspendedCount: 0, },
-               { name: 'liftingHoisting', description: 'LIFTING & HOISTING', icon: 'LH', activeCount: 0, suspendedCount: 0, },
-               { name: 'override', description: 'OVERRIDE', icon: 'OV', activeCount: 0, suspendedCount: 0, },
-            ];
+	allSitesData.forEach(site => {
+		if (!site.latitude || !site.longitude) return;
 
-            site.permits.forEach((permit) => {
-               var permitFormJson = JSON.parse(permit.permitForm);
+		const types = countTypes(site.permits, currentFilter);
+		// Skip sites with no matching permits (except "all" filter)
+		if (types.length === 0 && currentFilter !== 'all') return;
 
-               if (permitFormJson != null) {
-                  permitFormJson.general.certificates.forEach((cert) => {
-                     certificateTypes.forEach((certType) => {
-                        if (certType.name == cert.name) {
-                           if (permit.permitStatus != 0 && permit.permitStatus != 4 && permit.permitStatus != 5 && permit.permitStatus != 6) {
-                              certType.activeCount++;
-                           }
+		const pinEl = buildPinElement(site, currentFilter);
+		const marker = new MarkerClass({
+			map: mapInstance,
+			content: pinEl,
+			position: {
+				lat: parseFloat(site.latitude),
+				lng: parseFloat(site.longitude),
+			},
+			title: site.name,
+		});
 
-                           if (permit.permitStatus == 4) {
-                              certType.suspendedCount++;
-                           }
-                        }
-                     });
-                  });
-               }
-            });
+		marker.addListener('click', () => {
+			infoWindowInstance.setContent(buildInfoContent(site));
+			infoWindowInstance.open({ anchor: marker, map: mapInstance });
+		});
 
-            const filteredPermits = certificateTypes.filter((cert) => cert.activeCount > 0);
-            site.permitTypes = filteredPermits;
+		activeMarkers.push(marker);
+		visible++;
+	});
 
-            sites.push({
-               name: site.name,
-               description: '',
-               position: {
-                  lat: site.latitude,
-                  lng: site.longitude,
-               },
-               permitTypes: site.permitTypes,
-            });
-         });
+	document.getElementById('markerCount').textContent =
+		visible + ' location' + (visible !== 1 ? 's' : '');
 
-         initMap(sites);
-      });
-   </script>
+	// Fit map to all visible markers
+	if (activeMarkers.length > 0) {
+		const bounds = new google.maps.LatLngBounds();
+		activeMarkers.forEach(m => bounds.extend(m.position));
+		mapInstance.fitBounds(bounds, { padding: 80 });
+	}
+}
+
+// ── Init ─────────────────────────────────────────────────
+
+async function initMap() {
+	const { Map, InfoWindow } = await google.maps.importLibrary('maps');
+	({ AdvancedMarkerElement: MarkerClass } = await google.maps.importLibrary('marker'));
+
+	const lat = parseFloat(document.getElementById('hidLat').value) || 3.139;
+	const lng = parseFloat(document.getElementById('hidLng').value) || 101.687;
+
+	mapInstance = new Map(document.getElementById('map'), {
+		zoom: 16,
+		center: { lat, lng },
+		mapId: 'dd60996d28e89f78',
+		mapTypeId: google.maps.MapTypeId.SATELLITE,
+		mapTypeControl: false,
+		tilt: 0,
+		zoomControl: true,
+		fullscreenControl: true,
+		streetViewControl: false,
+	});
+
+	infoWindowInstance = new InfoWindow({ maxWidth: 300 });
+
+	// Close info window on map click
+	mapInstance.addListener('click', () => infoWindowInstance.close());
+
+	// Load site + permit data
+	const companyId = document.getElementById('hidCompanyId').value;
+	try {
+		const resp = await fetch('/' + companyId + '/sites/map/locations');
+		const data = await resp.json();
+		if (data && data.length) {
+			allSitesData = data;
+			renderMarkers();
+		} else {
+			document.getElementById('markerCount').textContent = '0 locations';
+		}
+	} catch {
+		document.getElementById('markerCount').textContent = 'Error loading data';
+	}
+}
+
+// ── Filter chip click handler ─────────────────────────────
+
+document.querySelectorAll('.map-chip').forEach(btn => {
+	btn.addEventListener('click', function () {
+		document.querySelectorAll('.map-chip').forEach(b => b.classList.remove('active'));
+		this.classList.add('active');
+		currentFilter = this.dataset.filter;
+		renderMarkers();
+	});
+});
+
+initMap();
+</script>
 }
