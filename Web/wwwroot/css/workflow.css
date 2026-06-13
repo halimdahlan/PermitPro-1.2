@@ -49,7 +49,7 @@
 }
 
 #grid, #grid .k-input-inner {
-	font-family: 'Cerebri Sans';
+	font-family: 'Poppins';
 	font-size: 14px;
 }
 
@@ -65,3 +65,7 @@
 	#grid .k-grid-norecords-template {
 		border: 0;
 	}
+
+.k-column-title {
+  font-size: 14px !important;
+}

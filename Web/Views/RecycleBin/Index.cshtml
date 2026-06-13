@@ -152,7 +152,7 @@
 		const tabHash = location.hash || '#tab-permits';
 		const trigger = document.querySelector(`[data-bs-target="${tabHash}"]`);
 		//if (trigger) $(`[data-bs-target="${tabHash}"]`).tab('show');
-		if (trigger) new bootstrap.Tab(trigger).show();
+		//if (trigger) new bootstrap.Tab(trigger).show();
 
 		document.querySelectorAll('[data-bs-toggle="tab"]').forEach(btn => {
 			btn.addEventListener('shown.bs.tab', e => {
@@ -161,7 +161,7 @@
 		});
 
 		const confirmModalEl = document.getElementById('recycleBinConfirmModal');
-		const confirmModal = new bootstrap.Modal(confirmModalEl);
+		const confirmModal = $(confirmModalEl); //new bootstrap.Modal(confirmModalEl);
 		const confirmMessage = document.getElementById('recycleBinConfirmMessage');
 		const confirmSubmit = document.getElementById('recycleBinConfirmSubmit');
 		let pendingForm = null;
@@ -186,8 +186,8 @@
 				confirmSubmit.classList.toggle('btn-outline-primary', action !== 'delete');
 				confirmSubmit.textContent = action === 'delete' ? 'Delete' : 'Restore';
 
-				confirmModal.show();
-				//$('#recycleBinConfirmModal').modal('show');
+				//confirmModal.show();
+				$('#recycleBinConfirmModal').modal('show');
 			});
 		});
 

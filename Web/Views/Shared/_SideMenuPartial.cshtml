@@ -38,20 +38,12 @@
 		navSettings = "active-light";
 	}
 
-	if (navSitemap == "active")
+	if (navSitemap == "active" || navPermits == "active")
 	{
 		showMenu = " show";
 		navPermitsMain = "active-light active";
 		arrowClass = "fa-chevron-up";
 	}
-
-	if (navPermits == "active")
-	{
-		showMenu = " show";
-		navPermitsMain = "active-light active";
-		arrowClass = "fa-chevron-up";
-	}
-
 
 	var isSuperUser = User.IsInRole("Super User");
 	var isPortalAdmin = User.IsInRole("Portal Admin");
