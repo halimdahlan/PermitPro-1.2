@@ -47,6 +47,7 @@ namespace PermitPro.App.ViewModels
 	{
 		public string IconClass { get; set; } = string.Empty;
 		public string IconBackground { get; set; } = string.Empty;
+		public string IconColor { get; set; } = string.Empty;
 		public string Title { get; set; } = string.Empty;
 		public string Description { get; set; } = string.Empty;
 		public string TimeAgo { get; set; } = string.Empty;

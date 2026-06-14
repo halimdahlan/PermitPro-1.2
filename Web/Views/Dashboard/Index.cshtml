@@ -190,16 +190,7 @@
 								<tr>
 									<td><a asp-controller="permits" asp-action="index" style="color:#2c7be5;font-weight:600;text-decoration:none;font-size:.825rem;">@permit.PermitNumber</a></td>
 									<td><span style="font-weight:500;">@permit.SiteName</span></td>
-									<td>
-										<div class="d-flex align-items-center gap-2">
-											@{
-												var initials = permit.RequestedByName?.Split(' ').Select(w => w.FirstOrDefault()).Take(2);
-												var initStr = string.Concat(initials ?? []).ToUpper();
-											}
-											<div class="avatar-sm" style="background:#2c7be5;font-size:.6rem;width:28px;height:28px;">@initStr</div>
-											<span style="font-size:.8rem;">@permit.RequestedByName</span>
-										</div>
-									</td>
+									<td>@permit.RequestedByName</td>
 									<td>
 										@if (permit.Status == PermitStatusEnum.Approved)
 										{
@@ -252,7 +243,7 @@
 				@foreach (var activity in Model.RecentActivity)
 				{
 					<div class="activity-item">
-						<div class="activity-icon" style="background:@activity.IconBackground;"><i class="@activity.IconClass fa-sm" style="color:#2c7be5;"></i></div>
+						<div class="activity-icon" style="background:@activity.IconBackground;"><i class="@activity.IconClass fa-sm" style="color:@activity.IconColor;"></i></div>
 						<div>
 							<div class="activity-text"><strong>@activity.Title</strong><br><span style="color:#6b7c93;">@activity.Description</span></div>
 							<div class="activity-time">@activity.TimeAgo</div>

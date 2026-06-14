@@ -103,21 +103,30 @@ public class DashboardController : AppControllerBase
 				PermitNumber = $"PTW{e.PermitNo}" ?? "—",
 				PermitDescription = GetDescriptionFromJson(e.PermitForm),
 				SiteName = e.Site?.Name ?? "—",
-				RequestedByName = e.PermitHolderName ?? "—",
+				RequestedByName = _dbContext.Users.Select(u => new { Id = u.Id, FullName = $"{u.FirstName} {u.LastName}" }).FirstOrDefault(u => u.Id == e.CreatedBy.ToString()).FullName,
 				Status = e.PermitStatus,
 				CreatedWhen = e.CreatedWhen
 			})
 			.ToList();
 
-		// Recent activity (simple mock)
-		var recentActivity = new List<DashboardActivityItem>
-		{
-			new() { IconClass = "fa-solid fa-check", IconBackground = "#e8f0fb", Title = "Permit Approved", Description = "PTW-2026-0841 approved by Lead Permit Issuer", TimeAgo = "2 mins ago" },
-			new() { IconClass = "fa-solid fa-clock", IconBackground = "#fff8e1", Title = "Permit Submitted", Description = "New confined space permit submitted", TimeAgo = "18 mins ago" },
-			new() { IconClass = "fa-solid fa-xmark", IconBackground = "#fdeaea", Title = "Permit Rejected", Description = "PTW-2026-0837 rejected — incomplete docs", TimeAgo = "1 hour ago" },
-			new() { IconClass = "fa-solid fa-user-plus", IconBackground = "#f0e8ff", Title = "User Added", Description = "New user Faizal Zin added as Permit Issuer", TimeAgo = "3 hours ago" },
-			new() { IconClass = "fa-solid fa-rotate", IconBackground = "#e6f8f1", Title = "Permit Resumed", Description = "PTW-2026-0838 auto-resumed after suspension", TimeAgo = "Yesterday" }
-		};
+		// Recent activity from AuditLog (last 5 for this company)
+		var recentActivity = _dbContext.AuditLogs
+			.Include(e => e.AuditLogUser)
+			.ThenInclude(u => u.UserCompany)
+			.Where(e => e.LogType == LogTypeEnum.Information && e.AuditLogUser != null && e.AuditLogUser.UserCompany != null && e.AuditLogUser.UserCompany.Id == company)
+			.OrderByDescending(e => e.CreatedWhen)
+			.Take(3)
+			.ToList()
+			.Select(e => new DashboardActivityItem
+			{
+				IconClass = GetActivityIcon(e.Category, e.LogType),
+				IconBackground = GetActivityBackground(e.LogType),
+				IconColor = GetActivityIconColor(e.LogType),
+				Title = GetActivityTitle(e.Category, e.LogType),
+				Description = e.Description ?? string.Empty,
+				TimeAgo = GetTimeAgo(e.CreatedWhen),
+			})
+			.ToList();
 
 		return View(new DashboardViewModel
 		{
@@ -307,6 +316,85 @@ public class DashboardController : AppControllerBase
 		string value = jsonObj["general"]["description"]?.ToString() ?? string.Empty;
 
 		return value;
+	}
+
+	private static string GetActivityIcon(string category, LogTypeEnum logType)
+	{
+		if (logType == LogTypeEnum.Error)
+			return "fa-solid fa-triangle-exclamation";
+
+		return category?.ToUpperInvariant() switch
+		{
+			"SIGN_IN"         => "fa-solid fa-arrow-right-to-bracket",
+			"CREATE_PERMIT"   => "fa-solid fa-circle-plus",
+			"UPDATE_PERMIT"   => "fa-solid fa-pen",
+			"DELETE_PERMIT"   => "fa-solid fa-trash",
+			"PERMIT_APPROVAL" => "fa-solid fa-check",
+			"PERMIT_CLOSED"   => "fa-solid fa-lock",
+			"PERMIT_SUSPEND"  => "fa-solid fa-pause",
+			"FORGOT_PASSWORD" => "fa-solid fa-key",
+			"RESET_PASSWORD"  => "fa-solid fa-key",
+			"SENDEMAIL"       => "fa-solid fa-envelope",
+			"TOKEN"           => "fa-solid fa-shield",
+			_                 => "fa-solid fa-circle-info",
+		};
+	}
+
+	private static string GetActivityBackground(LogTypeEnum logType) => logType switch
+	{
+		LogTypeEnum.Error   => "#fdeaea",
+		LogTypeEnum.Warning => "#fff8e1",
+		_                   => "#e8f0fb",
+	};
+
+	private static string GetActivityIconColor(LogTypeEnum logType) => logType switch
+	{
+		LogTypeEnum.Error   => "#e74c3c",
+		LogTypeEnum.Warning => "#e67e22",
+		_                   => "#2c7be5",
+	};
+
+	private static string GetActivityTitle(string category, LogTypeEnum logType)
+	{
+		if (logType == LogTypeEnum.Error)
+		{
+			return category?.ToUpperInvariant() switch
+			{
+				"SIGN_IN"         => "Sign In Failed",
+				"FORGOT_PASSWORD" => "Password Reset Error",
+				"RESET_PASSWORD"  => "Password Reset Error",
+				"PERMIT_SUSPEND"  => "Permit Suspend Failed",
+				_                 => "Error",
+			};
+		}
+
+		return category?.ToUpperInvariant() switch
+		{
+			"SIGN_IN"         => "User Signed In",
+			"CREATE_PERMIT"   => "Permit Created",
+			"UPDATE_PERMIT"   => "Permit Updated",
+			"DELETE_PERMIT"   => "Permit Deleted",
+			"PERMIT_APPROVAL" => "Permit Approved",
+			"PERMIT_CLOSED"   => "Permit Closed",
+			"PERMIT_SUSPEND"  => "Permit Suspended",
+			"FORGOT_PASSWORD" => "Password Reset Requested",
+			"RESET_PASSWORD"  => "Password Reset",
+			"SENDEMAIL"       => "Email Sent",
+			"TOKEN"           => "API Token Issued",
+			_                 => category ?? "Activity",
+		};
+	}
+
+	private static string GetTimeAgo(DateTime createdWhen)
+	{
+		var diff = DateTime.UtcNow - createdWhen;
+
+		if (diff.TotalMinutes < 1)  return "Just now";
+		if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes} min{((int)diff.TotalMinutes > 1 ? "s" : "")} ago";
+		if (diff.TotalHours < 24)   return $"{(int)diff.TotalHours} hour{((int)diff.TotalHours > 1 ? "s" : "")} ago";
+		if (diff.TotalDays < 2)     return "Yesterday";
+		if (diff.TotalDays < 7)     return $"{(int)diff.TotalDays} days ago";
+		return createdWhen.ToLocalTime().ToString("dd MMM yyyy");
 	}
 
 	#endregion
