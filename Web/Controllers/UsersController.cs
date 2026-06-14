@@ -99,9 +99,73 @@ public class UsersController : AppControllerBase
 	}
 
 
-	public IActionResult Edit()
+	[HttpGet("{company}/users/edit/{userId}")]
+	public async Task<IActionResult> Edit(Guid company, Guid userId)
 	{
-		return View();
+		var user = await _dbContext.Users
+			.Include(e => e.UserRoles)
+			.Select(e => new
+			{
+				e.Id,
+				e.FirstName,
+				e.LastName,
+				e.Email,
+				e.Designation,
+				RoleId = e.UserRoles.FirstOrDefault().RoleId ?? string.Empty
+			})
+			.FirstOrDefaultAsync(e => e.Id == userId.ToString());
+
+		if (user == null)
+			return NotFound("User not found!");
+
+		var model = new ManageUserViewNodel
+		{
+			FirstName = user.FirstName,
+			LastName = user.LastName,
+			Email = user.Email,
+			Designation = user.Designation,
+			UserRole = user.RoleId,
+			CompanyID = company
+		};
+
+		var userRoles = _dbContext.Roles
+			.Where(e => e.NormalizedName != "SUPERUSER")
+			.Select(e => new RoleDropDown
+			{
+				Id = e.Id,
+				Name = e.Name,
+			})
+			.ToList();
+		
+		model.Roles = userRoles;
+
+		return View(model);
+	}
+
+
+	[HttpPost("{company}/users/edit/{userId}")]
+	public async Task<IActionResult> Edit(Guid company, Guid userId, ManageUserViewNodel model)
+	{
+		if (!ModelState.IsValid)
+		{
+			return View(model);
+		}
+
+		var user = await _dbContext.Users.FirstOrDefaultAsync(e => e.Id == userId.ToString());
+
+		if (user == null)
+			return NotFound("User not found!");
+
+		user.FirstName = model.FirstName;
+		user.LastName = model.LastName;
+		user.Designation = model.Designation;
+
+		_dbContext.Users.Update(user);
+		await _dbContext.SaveChangesAsync();
+
+		TempData["SuccessMessage"] = "User information has been successfully updated.";
+
+		return RedirectToAction("Index", new { company });
 	}
 
 
@@ -150,7 +214,7 @@ public class UsersController : AppControllerBase
 				Roles = string.Join(", ", e.UserRoles.Select(role => role.Role.Name).ToList()),
 				Designation = e.Designation,
 				CreatedWhen = GeneralHelper.GetDateInTimeZone(e.CreatedWhen),
-				ActionIcons = UsersGridActionIcons(e.Id, e.PasswordHash != null)
+				ActionIcons = UsersGridActionIcons(company, e.Id, e.PasswordHash != null)
 			})
 			.ToList();
 
@@ -575,12 +639,12 @@ public class UsersController : AppControllerBase
 
 	#region "Private static functions"
 
-	private static string UsersGridActionIcons(string id, bool isSecured)
+	private static string UsersGridActionIcons(Guid company, string id, bool isSecured)
 	{
 		var icons = string.Empty;
 
 		icons += "<div class=\"d-flex flex-row action-icons\">";
-		icons += $"<a href=\"javascript:;\" onclick=\"editUser('{id}')\" class=\"no-loading text-secondary\"><i class=\"fa-solid fa-money-check-pen fa-lg\"></i></a>";
+		icons += $"<a href=\"/{company}/users/edit/{id}\"  class=\"no-loading text-secondary\"><i class=\"fa-solid fa-money-check-pen fa-lg\"></i></a>";
 		icons += $"<a href=\"javascript:;\" class=\"no-loading text-danger\" onclick=\"deleteUser('{id}')\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>";
 		icons += "<a href=\"javascript:;\" class=\"no-loading text-secondary menu-context dropdown-toggle\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\"><i class=\"fa-solid fa-gear fa-lg\"></i></a>";
 		icons += "<ul class=\"dropdown-menu\">";

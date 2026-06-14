@@ -26,15 +26,17 @@
             <label class="form-label small fw-semibold">Description</label>
             <textarea asp-for="Description" class="form-control" rows="2"></textarea>
           </div>
-          <div class="mb-3">
-            <label class="form-label small fw-semibold">Contact Name <span class="text-danger">*</span></label>
-            <input asp-for="ContactName" class="form-control" placeholder="Full name"/>
-            <span asp-validation-for="ContactName" class="text-danger small"></span>
-          </div>
-          <div class="mb-3">
-            <label class="form-label small fw-semibold">Contact Email <span class="text-danger">*</span></label>
-            <input asp-for="ContactEmail" class="form-control" placeholder="Email address"/>
-            <span asp-validation-for="ContactEmail" class="text-danger small"></span>
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label small fw-semibold">Contact Name <span class="text-danger">*</span></label>
+              <input asp-for="ContactName" class="form-control" placeholder="Full name"/>
+              <span asp-validation-for="ContactName" class="text-danger small"></span>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-semibold">Contact Email <span class="text-danger">*</span></label>
+              <input asp-for="ContactEmail" class="form-control" placeholder="Email address"/>
+              <span asp-validation-for="ContactEmail" class="text-danger small"></span>
+            </div>
           </div>
           <div class="row g-3 mb-3">
             <div class="col-6">

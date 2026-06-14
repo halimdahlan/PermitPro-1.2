@@ -9,7 +9,7 @@
 
 @model UsersViewModel
 
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3">
 	<div class="d-flex flex-row align-items-center gap-3">
 		<label for="filterDropdown" class="form-label mb-0">View by:</label>
 		<div>
@@ -42,7 +42,14 @@
 	</div>
 </div>
 
-<div class="mt-5">
+@if (TempData["SuccessMessage"] != null)
+{
+	<div class="alert alert-success alert-dismissible fade show" role="alert mb-3">
+		@TempData["SuccessMessage"]
+	</div>
+}
+
+<div>
 	@Html.AntiForgeryToken()
 	@(Html.Kendo()
 		.Grid<UsersGridViewModel>()

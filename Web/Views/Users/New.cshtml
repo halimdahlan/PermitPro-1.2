@@ -3,60 +3,32 @@
 	ViewData["SubTitle"] = "New user";
 }
 
+@model ManageUserViewNodel
+
 <div class="d-flex flex-column form-user">
-	<form>
+	<form method="post">
+		@Html.AntiForgeryToken()
 		<div class="card shadow-sm">
 			<div class="card-body">
-				<div class="form-group mb-3">
-					<label class="form-label" for="ctrl01">Full name</label>
-					<input type="text" id="ctrl01" class="form-control" />
-				</div>
-				<div class="form-group mb-3">
-					<label class="form-label" for="ctrl02">Email</label>
-					<input type="email" id="ctrl02" class="form-control" />
-				</div>
-				<div class="form-group mb-3">
-					<label class="form-label" for="ctrl03">User role</label>
-					<select id="ctrl03" class="form-select" aria-label="User role">
-						<option selected>(select a role)</option>
-						<option>User</option>
-						<option>Permit Issuer</option>
-						<option>Lead Permit Issuer</option>
-						<option>Worker</option>
-						<option>Contractor</option>
-					</select>
-				</div>
-				<div class="form-group mb-3">
-					<label class="form-label" for="ctrl03">Site</label>
-					<select id="ctrl03" class="form-select" aria-label="Site">
-						<option selected>(select a site)</option>
-						<option>IOTM, Site #1</option>
-						<option>IOTM, Site #2</option>
-						<option>IOTM, Site #3</option>
-						<option>IOTM, Site #4</option>
-						<option>IOTM, Site #5</option>
-					</select>
-				</div>
-				<div class="form-group mb-3 d-flex flex-row align-items-center">
-					<div class="form-check me-5">
-						<input class="form-check-input" type="radio" id="ctrl04" name="ctrl04">
-						<label class="form-check-label" for="ctrl04">Active</label>
+				<div class="row">
+					<div class="col-6">
+						<label class="form-label small fw-semibold">First Name <span class="text-danger">*</span></label>
+						<input asp-for="FirstName" class="form-control" placeholder="John"/>
+						<span asp-validation-for="FirstName" class="text-danger small"></span>
 					</div>
-					<div class="form-check">
-						<input class="form-check-input" type="radio" id="ctrl05" name="ctrl04">
-						<label class="form-check-label" for="ctrl05">Inactive</label>
+					<div class="col-6">
+						<label class="form-label small fw-semibold">Last Name <span class="text-danger">*</span></label>
+						<input asp-for="LastName" class="form-control" placeholder="John"/>
+						<span asp-validation-for="LastName" class="text-danger small"></span>
 					</div>
 				</div>
 			</div>
+			<div class="card-footer text-body-secondary d-flex justify-content-between">
+				<a href="" role="button" class="btn btn-sm btn-outline-secondary"><span class="mx-3">Back</span></a>
+				<button type="button" class="btn btn-sm btn-primary"><span class="mx-3">Submit</span></button>
+			</div>
 		</div>
 	</form>
-
-	<div class="d-flex flex-row align-items-center justify-content-between mt-3">
-		<div>
-			<a asp-controller="users" asp-action="index"><i class="fa-sharp fa-solid fa-chevrons-left me-2"></i> Back</a>
-		</div>
-		<button type="button" class="btn btn-sm btn-primary"><span class="mx-3">Submit</span></button>
-	</div>
 </div>
 
 

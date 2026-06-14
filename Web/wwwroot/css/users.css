@@ -236,7 +236,7 @@ input[type="text"].form-control {
 	background-color: #fff !important;
 }
 
-.form-control, .k-input-outline, .k-picker-outline {
+.form-control, .form-select, .k-input-outline, .k-picker-outline {
 	font-family: 'Poppins', sans-serif !important;
 	font-size: 14px !important;
 }

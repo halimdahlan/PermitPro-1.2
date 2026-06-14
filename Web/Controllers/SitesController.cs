@@ -65,6 +65,32 @@ public class SitesController : AppControllerBase
 	}
 
 
+	[HttpPost("{company}/sites/{parentId?}/edit/{id}")]
+	public async Task<IActionResult> Edit(Guid company, Guid? parentId, Guid id, SitesNewViewModel model)
+	{
+		if (!ModelState.IsValid) return View("New", model);
+
+		var site = await _dbContext.Sites.FirstOrDefaultAsync(e => e.Id == id);
+		if (site == null) return NotFound();
+
+		site.Name = model.Name;
+		site.Description = model.Description;
+		site.ContactEmail = model.ContactEmail;
+		site.ContactName = model.ContactName;
+		site.Latitude = model.Latitude;
+		site.Longitude = model.Longitude;
+		site.IsActive = model.IsActive;
+		site.ShowInMap = model.ShowInMap;
+
+		_dbContext.Sites.Update(site);
+		await _dbContext.SaveChangesAsync();
+
+		TempData["SuccessMessage"] = "Site has been updated successfully.";
+
+		return RedirectToAction("Index", new { company = model.CompanyId, parentId = model.ParentId });
+	}
+	
+
 	public IActionResult Site2()
 	{
 		return View();
@@ -96,32 +122,6 @@ public class SitesController : AppControllerBase
 		ViewBag.ParentId = parentId;
 
 		return View(new SitesNewViewModel { CompanyId = company });
-	}
-
-
-	[HttpPost("{company}/sites/{parentId?}/edit/{id}")]
-	public async Task<IActionResult> Edit(Guid company, Guid? parentId, Guid id, SitesNewViewModel model)
-	{
-		if (!ModelState.IsValid) return View("New", model);
-
-		var site = await _dbContext.Sites.FirstOrDefaultAsync(e => e.Id == id);
-		if (site == null) return NotFound();
-
-		site.Name = model.Name;
-		site.Description = model.Description;
-		site.ContactEmail = model.ContactEmail;
-		site.ContactName = model.ContactName;
-		site.Latitude = model.Latitude;
-		site.Longitude = model.Longitude;
-		site.IsActive = model.IsActive;
-		site.ShowInMap = model.ShowInMap;
-
-		_dbContext.Sites.Update(site);
-		await _dbContext.SaveChangesAsync();
-
-		TempData["SuccessMessage"] = "Site has been updated successfully.";
-
-		return RedirectToAction("Index", new { company = model.CompanyId, parentId = model.ParentId });
 	}
 
 

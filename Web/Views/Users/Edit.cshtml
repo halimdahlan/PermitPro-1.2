@@ -1,62 +1,85 @@
-﻿@{
+﻿@using Kendo.Mvc.UI;
+
+@{
 	ViewData["Title"] = "Settings / Users";
 	ViewData["SubTitle"] = "Edit user";
 }
 
+@model ManageUserViewNodel
+
 <div class="d-flex flex-column form-user">
-	<form>
+	<form method="post">
+		@Html.AntiForgeryToken()
 		<div class="card shadow-sm">
 			<div class="card-body">
-				<div class="form-group mb-3">
-					<label class="form-label" for="ctrl01">Full name</label>
-					<input type="text" id="ctrl01" class="form-control" value="John Smith" />
-				</div>
-				<div class="form-group mb-3">
-					<label class="form-label" for="ctrl02">Email</label>
-					<input type="email" id="ctrl02" class="form-control" value="john.smith@email.com" />
-				</div>
-				<div class="form-group mb-3">
-					<label class="form-label" for="ctrl03">User role</label>
-					<select id="ctrl03" class="form-select" aria-label="User role">
-						<option>(select a role)</option>
-						<option selected>User</option>
-						<option>Permit Issuer</option>
-						<option>Lead Permit Issuer</option>
-						<option>Worker</option>
-						<option>Contractor</option>
-					</select>
-				</div>
-				<div class="form-group mb-3">
-					<label class="form-label" for="ctrl03">Site</label>
-					<select id="ctrl03" class="form-select" aria-label="Site">
-						<option>(select a site)</option>
-						<option>IOTM, Site #1</option>
-						<option>IOTM, Site #2</option>
-						<option>IOTM, Site #3</option>
-						<option>IOTM, Site #4</option>
-						<option selected>IOTM, Site #5</option>
-					</select>
-				</div>
-				<div class="form-group mb-3 d-flex flex-row align-items-center">
-					<div class="form-check me-5">
-						<input class="form-check-input" type="radio" id="ctrl04" name="ctrl04" checked>
-						<label class="form-check-label" for="ctrl04">Active</label>
+				<div class="row g-3 mb-3">
+					<div class="col-6">
+						<label class="form-label small fw-semibold">First Name <span class="text-danger">*</span></label>
+						<input asp-for="FirstName" class="form-control" placeholder="John"/>
+						<span asp-validation-for="FirstName" class="text-danger small"></span>
 					</div>
-					<div class="form-check">
-						<input class="form-check-input" type="radio" id="ctrl05" name="ctrl04">
-						<label class="form-check-label" for="ctrl05">Inactive</label>
+					<div class="col-6">
+						<label class="form-label small fw-semibold">Last Name <span class="text-danger">*</span></label>
+						<input asp-for="LastName" class="form-control" placeholder="Doe"/>
+						<span asp-validation-for="LastName" class="text-danger small"></span>
+					</div>
+				</div>
+				<div class="row g-3 mb-3">
+					<div class="col-6">
+						<label class="form-label small fw-semibold">Email <span class="text-danger">*</span></label>
+						<input readonly asp-for="Email" class="form-control" placeholder="i.e. john.doe@email.com"/>
+						<span asp-validation-for="Email" class="text-danger small"></span>
+					</div>
+					<div class="col-6">
+						<label class="form-label small fw-semibold">Designation</label>
+						<input asp-for="Designation" class="form-control" />
+						<span asp-validation-for="Designation" class="text-danger small"></span>
+					</div>
+				</div>
+				<div class="row g-3 mb-3">
+					<div class="col-6">
+						<label class="form-label">User role <span class="text-danger">*</span></label>
+						<select asp-for="UserRole" class="form-select" asp-items="@(new SelectList(Model.Roles, "Id", "Name"))">
+							<option value="">(select a role)</option>
+						</select>
+						<span asp-validation-for="UserRole" class="text-danger small"></span>
+					</div>
+					<div class="col-6">
+						<label class="form-label">Locations</label>
+						@(Html
+							.Kendo()
+								.DropDownTree()
+									.Name("ddlLocations")
+									.DataValueField("id")
+									.DataTextField("name")
+									.Placeholder("(select locations)")
+									.Events(events => events.Change("onChangeSites"))
+									.FillMode(FillMode.Outline)
+									.Rounded(Rounded.Large)
+									.CheckAll(false)
+									.AutoClose(false)
+									.Checkboxes(checkboxes => checkboxes
+										.Name("checkedFiles")
+										.CheckChildren(true)
+									)
+									.DataSource(ds => ds
+										.Read(read => read
+											.Url($"/api/data/{Model.CompanyID}/sites/hierarchical").Type(HttpVerbs.Get)
+										)
+									)
+							)
 					</div>
 				</div>
 			</div>
+			<div class="card-footer text-body-secondary d-flex justify-content-between">
+				<a href="/@Model.CompanyID/users" role="button" class="btn btn-sm btn-outline-secondary">
+					<span class="mx-3"><i class="fa-solid fa-arrow-left"></i> Cancel</span>
+				</a>
+				<button type="submit" class="btn btn-sm btn-primary"><span class="mx-3">Save Changes</span></button>
+			</div>
 		</div>
+		<input id="hidLocations" type="hidden" asp-for="Locations" />
 	</form>
-
-	<div class="d-flex flex-row align-items-center justify-content-between mt-3">
-		<div>
-			<a asp-controller="users" asp-action="index"><i class="fa-sharp fa-solid fa-chevrons-left me-2"></i> Back</a>
-		</div>
-		<button type="button" class="btn btn-sm btn-primary"><span class="mx-3">Submit</span></button>
-	</div>
 </div>
 
 
@@ -66,4 +89,33 @@
 	<script src="~/lib/DataTables/datatables.min.js"></script>
 
 	<link rel="stylesheet" href="~/css/users.css" />
+}
+
+@section Scripts {
+	<!-- Includes jQuery validation for instant client-side checks without reloading -->
+	<partial name="_ValidationScriptsPartial" />
+
+	<script>
+		var selectedLocations = [];
+
+		const onChangeSites = () => {
+			var checkedNodes = [];
+			var dropDownTree = $('#ddlLocations').data('kendoDropDownTree');
+
+			checkedNodeIds(dropDownTree.dataSource.view(), checkedNodes);
+			$('#hidLocations').val(JSON.stringify(checkedNodes));
+		};
+
+		const checkedNodeIds = (nodes, checkedNodes) => {
+			for (var i = 0; i < nodes.length; i++) {
+				if (nodes[i].checked) {
+					checkedNodes.push(nodes[i].id);
+				}
+
+				if (nodes[i].hasChildren) {
+					checkedNodeIds(nodes[i].children.view(), checkedNodes);
+				}
+			}
+		};
+	</script>
 }
