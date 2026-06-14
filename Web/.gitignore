@@ -367,3 +367,6 @@ FodyWeavers.xsd
 
 # Project specific (PermitPro)
 appsettings.Development.json
+
+Properties/
+
