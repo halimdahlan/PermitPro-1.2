@@ -72,9 +72,9 @@
 				<div>
 					@if (Model.PermitStatus == PermitPro.Core.Enums.PermitStatusEnum.Draft)
 					{
-						<button type="button" class="btn btn-secondary btn-draft me-2"><span class="mx-3">Save as draft</span></button>
-						<button type="button" class="btn btn-primary btn-approval me-4"><span class="mx-3">Submit for approval</span></button>
-						<button type="button" class="btn btn-danger btn-delete" data-id="@Model.PermitId"><span class="mx-3">Delete</span></button>
+						<button type="button" class="btn btn-sm btn-secondary btn-draft me-2"><span class="mx-3">Save as draft</span></button>
+						<button type="button" class="btn btn-sm btn-primary btn-approval me-4"><span class="mx-3">Submit for approval</span></button>
+						<button type="button" class="btn btn-sm btn-danger btn-delete" data-id="@Model.PermitId"><span class="mx-3">Delete</span></button>
 					}
 				</div>
 			</div>
@@ -111,10 +111,10 @@
 						</div>
 						<div class="d-flex flex-row justify-content-evenly align-items-center">
 							<div class="flex-grow-1 me-2">
-								<button type="button" class="btn btn-danger w-100 btn-workflow-action" data-mode="reject"><span class="mx-3">REJECT</span></button>
+								<button type="button" class="btn btn-sm btn-danger w-100 btn-workflow-action" data-mode="reject"><span class="mx-3">REJECT</span></button>
 							</div>
 							<div class="flex-grow-1 ms-2">
-								<button type="button" class="btn btn-primary w-100 btn-workflow-action" data-mode="approve"><span class="mx-3">APPROVE</span></button>
+								<button type="button" class="btn btn-sm btn-primary w-100 btn-workflow-action" data-mode="approve"><span class="mx-3">APPROVE</span></button>
 							</div>
 						</div>
 					</div>
@@ -194,7 +194,7 @@
 		@if (Model.PermitStatus == PermitPro.Core.Enums.PermitStatusEnum.Draft || Model.PermitStatus == PermitPro.Core.Enums.PermitStatusEnum.Closed)
 		{
 			<div class="mt-5">
-				<button class="btn btn-info shadow-sm btn-export" type="button">
+				<button class="btn btn-sm btn-info shadow-sm btn-export" type="button">
 					<span class="mx-3">Export to PDF <i class="fa-duotone fa-file-pdf fa-xl ms-2"></i></span>
 				</button>
 			</div>
@@ -204,7 +204,7 @@
 		@if (Model.PermitStatus == PermitPro.Core.Enums.PermitStatusEnum.Approved)
 		{
 			<div class="mt-5">
-				<button class="btn btn-info shadow-sm btn-export" type="button">
+				<button class="btn btn-sm btn-info shadow-sm btn-export" type="button">
 					<span class="mx-3">Export to PDF <i class="fa-duotone fa-file-pdf fa-xl ms-2"></i></span>
 				</button>
 			</div>
@@ -236,7 +236,7 @@
 							)
 						</div>
 						<div class="mt-3 d-flex flex-row justify-content-end">
-							<button type="button" class="btn btn-primary btn-mark-closed" data-id="@Model.PermitId"><span class="mx-3">Mark as closed</span></button>
+							<button type="button" class="btn btn-sm btn-primary btn-mark-closed" data-id="@Model.PermitId"><span class="mx-3">Mark as closed</span></button>
 						</div>
 					</div>
 				</div>
@@ -251,9 +251,9 @@
 		<div>
 			@if (Model.PermitStatus == PermitPro.Core.Enums.PermitStatusEnum.Draft)
 			{
-				<button type="button" class="btn btn-secondary btn-draft me-2"><span class="mx-2">Save as draft</span></button>
-				<button type="button" class="btn btn-primary btn-approval me-4"><span class="mx-3">Submit for approval</span></button>
-				<button type="button" class="btn btn-danger btn-delete" data-id="@Model.PermitId"><span class="mx-3">Delete</span></button>
+				<button type="button" class="btn btn-sm btn-secondary btn-draft me-2"><span class="mx-2">Save as draft</span></button>
+				<button type="button" class="btn btn-sm btn-primary btn-approval me-4"><span class="mx-3">Submit for approval</span></button>
+				<button type="button" class="btn btn-sm btn-danger btn-delete" data-id="@Model.PermitId"><span class="mx-3">Delete</span></button>
 			}
 		</div>
 	</div>
@@ -282,8 +282,8 @@
 				[FORM]
 			</div>
 			<div class="modal-footer">
-				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><span class="mx-3">Close</span></button>
-				<button type="button" class="btn btn-primary"><span class="mx-3">Export</span></button>
+				<button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal"><span class="mx-3">Close</span></button>
+				<button type="button" class="btn btn-sm btn-primary"><span class="mx-3">Export</span></button>
 			</div>
 		</div>
 	</div>
@@ -305,7 +305,7 @@
 				<div id="divInputErrors"></div>
 			</div>
 			<div class="modal-footer">
-				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><span class="mx-3">Close</span></button>
+				<button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal"><span class="mx-3">Close</span></button>
 			</div>
 		</div>
 	</div>

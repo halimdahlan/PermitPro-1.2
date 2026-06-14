@@ -75,14 +75,17 @@
 
 .text-instruction {
 	font-size: 12px;
+	font-family: 'Poppins', sans-serif !important;
 }
 
 .accordion-button h3 {
 	text-transform: uppercase;
+	font-family: 'Poppins', sans-serif !important;
 }
 
 .accordion-body h4 {
 	text-transform: uppercase;
+	font-family: 'Poppins', sans-serif !important;
 }
 
 .form-control {
@@ -263,7 +266,7 @@ xthead tr, xtfoot tr {
 }
 
 #main-div div {
-	font-family: Arial, Helvetica, sans-serif !important;
+	font-family: 'Poppins', Arial, Helvetica, sans-serif !important;
 	font-size: 8pt !important;
 }
 
@@ -313,4 +316,8 @@ xthead tr, xtfoot tr {
 
 .k-column-title {
   font-size: 14px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-family: 'Poppins', sans-serif !important;
 }
