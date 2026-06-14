@@ -226,7 +226,7 @@ Deployment secrets are stored in GitHub repository settings (not in source).
 ### WebDeploy (Manual)
 
 Target host: SmarterASP.NET  
-Deployment user: `halimdahlan-002-subsite7`
+Deployment user: `[YOUR_WEB_DEPLOY_USERNAME]`
 
 ---
 
