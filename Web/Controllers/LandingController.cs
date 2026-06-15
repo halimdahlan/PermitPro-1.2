@@ -32,9 +32,7 @@ public class LandingController : AppControllerBase
 		{
 			_systemConfigurationService.Init();
 
-			var userId = _httpContextAccessor!.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier);
-			var currentUser = await _userManager.FindByIdAsync(userId!);
-			var isContractorOrAGT = (await _userManager.IsInRoleAsync(currentUser!, "contractor")) || (await _userManager.IsInRoleAsync(currentUser!, "authorizedgastester"));
+			var isContractorOrAGT = User.IsInRole("Permit Holder / Contractor") || User.IsInRole("Authorized Gas Tester");
 			var controller = "dashboard";
 
 			if (isContractorOrAGT)

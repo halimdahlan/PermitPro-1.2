@@ -143,7 +143,7 @@ else
 			var dropDownTree = $('#ddlLocations').data('kendoDropDownTree');
 
 			checkedNodeIds(dropDownTree.dataSource.view(), checkedNodes);
-			$('#hidLocations').val(checkedNodes.join(','));
+			$('#hidLocations').val(JSON.stringify(checkedNodes));
 		};
 
 		const checkedNodeIds = (nodes, checkedNodes) => {

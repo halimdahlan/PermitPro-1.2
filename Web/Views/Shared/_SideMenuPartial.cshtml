@@ -47,39 +47,48 @@
 
 	var isSuperUser = User.IsInRole("Super User");
 	var isPortalAdmin = User.IsInRole("Portal Admin");
+	var isContractor = User.IsInRole("Permit Holder / Contractor");
 }
 
 <ul class="navbar-nav mb-4">
-	<li class="nav-item">
-		<a href="/@companyId/dashboard" class="nav-link @navDashboard" href="#">
-			<i class="fa-regular fa-chart-line fa-fw me-3"></i> Dashboard
-		</a>
-	</li>
-	<li class="nav-item">
-		<a href="#" id="permitsDropdown" class="no-loading nav-link @navPermitsMain">
-			<i class="fa-solid fa-list-ul fa-fw me-3"></i> Permits
-			<i class="fa-solid fa-fw ms-auto @arrowClass"></i>
-		</a>
-		<div id="permitSubmenu" class="collapse @showMenu">
-			<ul class="navbar-nav ms-2">
-				<li class="nav-item">
-					<a href="/@companyId/permits" class="nav-link @navPermits">
-						<i class="fa-solid fa-list-ul fa-fw me-3"></i> All Permits
-					</a>
-				</li>
-				@if (!User.IsInRole("Contractor"))
-				{
+	@if (isContractor)
+	{
+		<li class="nav-item">
+			<a href="/@companyId/permits" class="nav-link @navPermits">
+				<i class="fa-solid fa-list-ul fa-fw me-3"></i> Permits
+			</a>
+		</li>
+	}
+	else
+	{
+		<li class="nav-item">
+			<a href="/@companyId/dashboard" class="nav-link @navDashboard" href="#">
+				<i class="fa-regular fa-chart-line fa-fw me-3"></i> Dashboard
+			</a>
+		</li>
+		<li class="nav-item">
+			<a href="#" id="permitsDropdown" class="no-loading nav-link @navPermitsMain">
+				<i class="fa-solid fa-list-ul fa-fw me-3"></i> Permits
+				<i class="fa-solid fa-fw ms-auto @arrowClass"></i>
+			</a>
+			<div id="permitSubmenu" class="collapse @showMenu">
+				<ul class="navbar-nav ms-2">
+					<li class="nav-item">
+						<a href="/@companyId/permits" class="nav-link @navPermits">
+							<i class="fa-solid fa-list-ul fa-fw me-3"></i> All Permits
+						</a>
+					</li>
 					<li class="nav-item">
 						<a href="/@companyId/sitemap" class="nav-link @navSitemap">
 							<i class="fa-solid fa-map-location-dot fa-fw me-3"></i> Site Map
 						</a>
 					</li>
-				}
-			</ul>
-		</div>
-	</li>
+				</ul>
+			</div>
+		</li>
+	}
 	
-	@if (User.IsInRole("Portal Admin") || User.IsInRole("Super User") || User.IsInRole("Contractor"))
+	@if (isPortalAdmin || isSuperUser || isContractor)
 	{
 		<li class="nav-item">
 			<a href="/@companyId/contractors" class="nav-link @navContractors">
@@ -88,7 +97,7 @@
 		</li>
 	}
 
-	@if (!User.IsInRole("Contractor"))
+	@if (!isContractor)
 	{
 		<li class="nav-item">
 			<a href="/@companyId/reports" class="nav-link @navReports">
@@ -104,7 +113,7 @@
 	</li>
 </ul>
 
-@if (User.IsInRole("Portal Admin") || User.IsInRole("Super User"))
+@if (isPortalAdmin || isSuperUser)
 {
 	<h5 class="sidebar-heading text-uppercase text-white" style="opacity: 0.3;">Settings</h5>
 	<ul class="navbar-nav mt-2 mb-4">
@@ -126,7 +135,7 @@
 	</ul>
 }
 
-@if (User.IsInRole("Portal Admin") || User.IsInRole("Super User"))
+@if (isPortalAdmin || isSuperUser)
 {
 	<h5 class="sidebar-heading text-uppercase text-white" style="opacity: 0.3;">Admin</h5>
 	<ul class="navbar-nav mt-2">

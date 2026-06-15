@@ -160,7 +160,7 @@ public class UsersController : AppControllerBase
 		// Add user to selected site(s)
 		if (!string.IsNullOrEmpty(model.Locations))
 		{
-			var locations = model.Locations.Split(',');
+			var locations = JsonSerializer.Deserialize<List<string>>(model.Locations);
 
 			foreach (var location in locations)
 			{
