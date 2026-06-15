@@ -34,6 +34,7 @@ public class ContractorsController : AppControllerBase
 	public IActionResult Index(Guid company)
 	{
 		var sites = _dbContext.Sites
+			.AsNoTracking()
 			.Include(x => x.SiteCompany)
 			.Where(x => x.IsActive == true && x.SiteType == SiteTypeEnum.Site && x.SiteCompany.Id == company);
 
@@ -98,7 +99,7 @@ public class ContractorsController : AppControllerBase
 				IsActiveIcons = e.IsActive ? "<i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-success\"></i>" : "<i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-warning\"></i>",
 				IsActive = e.IsActive,
 				CreatedWhen = GeneralHelper.GetDateInTimeZone(e.CreatedWhen),
-				ActionIcons = ContractorsGridActions(e.Id, e.PasswordHash != null),
+				ActionIcons = ContractorsGridActions(company, e.Id, e.PasswordHash != null),
 			});
 
 		return new JsonResult(contractors, new JsonSerializerOptions
@@ -135,7 +136,7 @@ public class ContractorsController : AppControllerBase
 
 	#region "Private static functions/methods"
 
-	private static string ContractorsGridActions(string id, bool isSecured)
+	private static string ContractorsGridActions(Guid company, string id, bool isSecured)
 	{
 		var icons = string.Empty;
 		var disabled = isSecured ? " disabled" : "";
@@ -143,25 +144,8 @@ public class ContractorsController : AppControllerBase
 		StringBuilder sb = new();
 
 		sb.AppendLine("<div class=\"d-flex flex-row action-icons\">");
-		sb.AppendLine("<a href=\"javascript:;\" onclick=\"editUser('" + id + "')\" class=\"no-loading text-secondary\"><i class=\"fa-solid fa-money-check-pen fa-lg\"></i></a>");
-		sb.AppendLine("<a href=\"javascript:;\" class=\"no-loading text-danger\" onclick=\"deleteUser('" + id + "')\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>");
-		sb.AppendLine("<a href=\"#\" class=\"no-loading text-secondary\" data-bs-toggle=\"dropdown\"><i class=\"fa-solid fa-gear fa-lg\"></i></a>");
-		sb.AppendLine("<ul class=\"dropdown-menu\">");
-		sb.AppendLine("<li class=\"dropdown-item\">");
-
-		//if (isSecured)
-		//{
-		//	sb.AppendLine("Set password");
-		//}
-		//else
-		//{
-		//	sb.AppendLine("<a href=\"javascript:;\" class=\"no-loading\" onclick=\"setPassword(this)\" data-user-id=\"" + id + "\">Set password</a>");
-		//}
-
-		sb.AppendLine("<a href=\"javascript:;\" class=\"no-loading\" onclick=\"setPassword(this)\" data-user-id=\"" + id + "\">Set password</a>");
-
-		sb.AppendLine("</li>");
-		sb.AppendLine("</ul>");
+		sb.AppendLine($"<a href=\"/{company}/users/edit/{id}?org=c\" class=\"text-secondary\"><i class=\"fa-solid fa-money-check-pen fa-lg\"></i></a>");
+		sb.AppendLine($"<a href=\"javascript:;\" class=\"no-loading text-danger\" onclick=\"deleteUser('{id}')\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>");
 		sb.AppendLine("</div>");
 
 

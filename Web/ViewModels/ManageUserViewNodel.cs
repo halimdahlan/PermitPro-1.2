@@ -47,6 +47,8 @@ public class ManageUserViewNodel
 
   public bool HasExceededLimit { get; set; }
 
+  public bool OriginFromContractors { get; set; }
+
 }
 
 

@@ -122,7 +122,7 @@
 </div>
 
 <div>
-	<a href="/@Model.UserInfoForm?.CompanyID/users" role="button" class="btn btn-sm btn-outline-secondary">
+	<a href="/@Model.UserInfoForm?.CompanyID/@((Model.UserInfoForm!.OriginFromContractors) ? "contractors" : "users")" role="button" class="btn btn-sm btn-outline-secondary">
 		<span class="mx-3"><i class="fa-solid fa-arrow-left me-3"></i> Cancel</span>
 	</a>
 </div>

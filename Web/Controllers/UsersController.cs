@@ -184,7 +184,7 @@ public class UsersController : AppControllerBase
 
 
 	[HttpGet("{company}/users/edit/{id}")]
-	public async Task<IActionResult> Edit(Guid company, Guid id)
+	public async Task<IActionResult> Edit(Guid company, Guid id, string org)
 	{
 		var user = await _dbContext.Users
 			.Include(e => e.UserRoles)
@@ -217,6 +217,7 @@ public class UsersController : AppControllerBase
 		
 		user.Roles = userRoles;
 		user.IsEdit = true;
+		user.OriginFromContractors = !string.IsNullOrEmpty(org) ? org == "c" : false;
 
 		var model = new ManageUserMainViewModel
 		{
@@ -801,7 +802,7 @@ public class UsersController : AppControllerBase
 		var icons = string.Empty;
 
 		icons += "<div class=\"d-flex flex-row action-icons\">";
-		icons += $"<a href=\"/{company}/users/edit/{id}\"  class=\"no-loading text-secondary\"><i class=\"fa-solid fa-money-check-pen fa-lg\"></i></a>";
+		icons += $"<a href=\"/{company}/users/edit/{id}\" class=\"no-loading text-secondary\"><i class=\"fa-solid fa-money-check-pen fa-lg\"></i></a>";
 		icons += $"<a href=\"javascript:;\" class=\"no-loading text-danger\" onclick=\"deleteUser('{id}')\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>";
 		
 		// icons += "<a href=\"javascript:;\" class=\"no-loading text-secondary menu-context dropdown-toggle\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\"><i class=\"fa-solid fa-gear fa-lg\"></i></a>";

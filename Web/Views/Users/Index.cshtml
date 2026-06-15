@@ -94,7 +94,7 @@
 
 			c.Bound(f => f.CreatedWhen).Format("{0:dd MMM, yyyy}").Width(150);
 
-			c.Bound(f => f.ActionIcons).Sortable(false).Encoded(false).HeaderHtmlAttributes(new { @class = "grid-header text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(110);
+			c.Bound(f => f.ActionIcons).Sortable(false).Encoded(false).HeaderHtmlAttributes(new { @class = "grid-header text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(80);
 		})
 		.Events(ev => ev.DataBound("onGridDataBound"))
 		)

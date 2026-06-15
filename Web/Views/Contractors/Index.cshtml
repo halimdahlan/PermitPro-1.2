@@ -35,8 +35,12 @@
 		.Sortable()
 		.Columns(c =>
 		{
-			c.Bound(p => p.Name).Width(250);
+			c.Bound(p => p.Name)
+				.ClientTemplate($"<a href=\"/{Model.CompanyId}/users/edit/#=Id#?org=c\" class=\"text-info\">#=Name#</a>")
+				.Width(250);
+
 			c.Bound(p => p.Email);
+
 			c.Bound(p => p.IsSecured).Encoded(false).HeaderHtmlAttributes(new { @class = "text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(140);
 
 			c.Bound(p => p.IsActive)
@@ -50,7 +54,8 @@
 					.HeaderHtmlAttributes(new { @class = "text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(130);
 
 			c.Bound(p => p.CreatedWhen).Format("{0:dd MMM, yyyy}").Width(150);
-			c.Bound(p => p.ActionIcons).Sortable(false).Exportable(false).Encoded(false).HeaderHtmlAttributes(new { @class = "text-center" }).Width(100);
+
+			c.Bound(p => p.ActionIcons).Sortable(false).Exportable(false).Encoded(false).HeaderHtmlAttributes(new { @class = "text-center" }).Width(80);
 		})
 		.DataSource(ds => ds
 			.Custom()
