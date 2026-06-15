@@ -103,7 +103,7 @@ public class DashboardController : AppControllerBase
 				PermitNumber = $"PTW{e.PermitNo}" ?? "—",
 				PermitDescription = GetDescriptionFromJson(e.PermitForm),
 				SiteName = e.Site?.Name ?? "—",
-				RequestedByName = _dbContext.Users.Select(u => new { Id = u.Id, FullName = $"{u.FirstName} {u.LastName}" }).FirstOrDefault(u => u.Id == e.CreatedBy.ToString()).FullName,
+				RequestedByName = _dbContext.Users.IgnoreQueryFilters().Select(u => new { Id = u.Id, FullName = $"{u.FirstName} {u.LastName}" }).FirstOrDefault(u => u.Id == e.CreatedBy.ToString()).FullName,
 				Status = e.PermitStatus,
 				CreatedWhen = e.CreatedWhen
 			})

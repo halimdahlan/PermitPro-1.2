@@ -49,7 +49,7 @@ public class UsersController : AppControllerBase
 		_webHostEnvironment = webHostEnvironment;
 	}
 
-
+	[HttpGet("{company}/users")]
 	public IActionResult Index(Guid company)
 	{
 		var userRoles = _dbContext.Roles
@@ -93,38 +93,15 @@ public class UsersController : AppControllerBase
 	}
 
 
-	public IActionResult New()
+	[HttpGet("{company}/users/new")]
+	public IActionResult New(Guid company)
 	{
-		return View();
-	}
-
-
-	[HttpGet("{company}/users/edit/{userId}")]
-	public async Task<IActionResult> Edit(Guid company, Guid userId)
-	{
-		var user = await _dbContext.Users
-			.Include(e => e.UserRoles)
-			.Select(e => new
-			{
-				e.Id,
-				e.FirstName,
-				e.LastName,
-				e.Email,
-				e.Designation,
-				RoleId = e.UserRoles.FirstOrDefault().RoleId ?? string.Empty
-			})
-			.FirstOrDefaultAsync(e => e.Id == userId.ToString());
-
-		if (user == null)
-			return NotFound("User not found!");
-
-		var model = new ManageUserViewNodel
+		var model = new NewUserViewModel
 		{
-			FirstName = user.FirstName,
-			LastName = user.LastName,
-			Email = user.Email,
-			Designation = user.Designation,
-			UserRole = user.RoleId,
+			FirstName = string.Empty,
+			LastName = string.Empty,
+			Email = string.Empty,
+			UserRole = string.Empty,
 			CompanyID = company
 		};
 
@@ -136,36 +113,217 @@ public class UsersController : AppControllerBase
 				Name = e.Name,
 			})
 			.ToList();
-		
+
+		var totalUsers = _dbContext.Users.Include(e => e.UserCompany).Count(e => e.UserCompany.Id == company);
+
 		model.Roles = userRoles;
+		model.MaxNumOfUsers = _systemConfiguration.UserCreateLimit;
+		model.HasExceededLimit = false; //totalUsers > _systemConfiguration.UserCreateLimit;
 
 		return View(model);
 	}
 
 
-	[HttpPost("{company}/users/edit/{userId}")]
-	public async Task<IActionResult> Edit(Guid company, Guid userId, ManageUserViewNodel model)
+	[HttpPost("{company}/users/new")]
+	[ValidateAntiForgeryToken]
+	public async Task<IActionResult> New(Guid company, NewUserViewModel model)
 	{
+		if (!ModelState.IsValid)
+			return View(model);
+
+		var userCompany = await _dbContext.Companies.FirstOrDefaultAsync(e => e.Id == company);
+
+		var userInfo = new UserInfo
+		{
+			Id = Guid.NewGuid().ToString(),
+			FirstName = model.FirstName,
+			LastName = model.LastName,
+			Email = model.Email,
+			Designation = model.Designation,
+			UserName = model.Email,
+			NormalizedUserName = model.Email.ToUpper(),
+			NormalizedEmail = model.Email.ToUpper(),
+			EmailConfirmed = true,
+			IsActive = true,
+			UserCompany = userCompany,
+			CreatedBy = Guid.Parse(_httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier)),
+			CreatedWhen = DateTime.UtcNow.ToUniversalTime(),
+		};
+
+		_dbContext.Users.Add(userInfo);
+		await _dbContext.SaveChangesAsync();
+
+		// Add user to the selected role
+		var role = _roleManager.Roles.FirstOrDefault(e => e.Id == model.UserRole);
+		await _userManager.AddToRoleAsync(userInfo, role.NormalizedName);
+
+		// Add user to selected site(s)
+		if (!string.IsNullOrEmpty(model.Locations))
+		{
+			var locations = model.Locations.Split(',');
+
+			foreach (var location in locations)
+			{
+				var loc = _dbContext.Sites.FirstOrDefault(e => e.Id == Guid.Parse(location));
+				userInfo.Sites.Add(loc);
+			}
+		}
+
+		await _dbContext.SaveChangesAsync();
+
+		// Set user password if any
+		userInfo.PasswordHash = _userManager.PasswordHasher.HashPassword(userInfo, model.ConfirmPassword);
+
+		await _userManager.UpdateAsync(userInfo);
+		await _userManager.CheckPasswordAsync(userInfo, model.ConfirmPassword);
+
+		TempData["SuccessMessage"] = $"User ({userInfo.Email}) has been successfully created.";
+
+		return RedirectToAction("Index", new { company });
+	}
+
+
+	[HttpGet("{company}/users/edit/{id}")]
+	public async Task<IActionResult> Edit(Guid company, Guid id)
+	{
+		var user = await _dbContext.Users
+			.Include(e => e.UserRoles)
+			.Include(e => e.Sites)
+			.Select(e => new ManageUserViewNodel
+			{
+				Id = e.Id,
+				FirstName = e.FirstName,
+				LastName = e.LastName,
+				Email = e.Email,
+				Designation = e.Designation,
+				UserRole = e.UserRoles.FirstOrDefault().RoleId ?? string.Empty,
+				CompanyID = company,
+				Locations = JsonSerializer.Serialize(e.Sites.Select(s => s.Id).ToList()),
+				IsActive = e.IsActive
+			})
+			.FirstOrDefaultAsync(e => e.Id == id.ToString());
+
+		if (user == null)
+			return NotFound("User not found!");
+
+		var userRoles = _dbContext.Roles
+			.Where(e => e.NormalizedName != "SUPERUSER")
+			.Select(e => new RoleDropDown
+			{
+				Id = e.Id,
+				Name = e.Name,
+			})
+			.ToList();
+		
+		user.Roles = userRoles;
+		user.IsEdit = true;
+
+		var model = new ManageUserMainViewModel
+		{
+			UserInfoForm = user
+		};
+
+		return View("Edit", model);
+	}
+
+
+	[HttpPost("{company}/users/edit/{id}")]
+	[ValidateAntiForgeryToken]
+	public async Task<IActionResult> Edit(Guid company, Guid id, ManageUserMainViewModel model)
+	{
+		ModelState.Remove("UserPasswordForm");
+
 		if (!ModelState.IsValid)
 		{
 			return View(model);
 		}
 
-		var user = await _dbContext.Users.FirstOrDefaultAsync(e => e.Id == userId.ToString());
+		var userInfo = await _dbContext.Users
+			.Include(e => e.UserRoles)
+			.ThenInclude(e => e.Role)
+			.Include(e => e.Sites)
+			.FirstOrDefaultAsync(e => e.Id == id.ToString());
 
-		if (user == null)
+		if (userInfo == null)
 			return NotFound("User not found!");
 
-		user.FirstName = model.FirstName;
-		user.LastName = model.LastName;
-		user.Designation = model.Designation;
+		var oldUserRole = userInfo.UserRoles.FirstOrDefault(e => e.User == userInfo);
 
-		_dbContext.Users.Update(user);
+		userInfo.FirstName = model.UserInfoForm.FirstName;
+		userInfo.LastName = model.UserInfoForm.LastName;
+		userInfo.Designation = model.UserInfoForm.Designation;
+		userInfo.IsActive = model.UserInfoForm.IsActive;
+		userInfo.UpdatedWhen = DateTime.UtcNow.ToUniversalTime();
+		userInfo.UpdatedBy = Guid.Parse(_httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier));
+
+		await _userManager.UpdateAsync(userInfo);
+
+		// Update user's role
+		await _userManager.RemoveFromRoleAsync(userInfo, oldUserRole.Role.NormalizedName);
+
+		var role = _roleManager.Roles.FirstOrDefault(e => e.Id == model.UserInfoForm.UserRole);
+		await _userManager.AddToRoleAsync(userInfo, role.NormalizedName);
+
+		// Update user's site(s)
+		var sitesToRemove = userInfo.Sites.ToList();
+
+		sitesToRemove.ForEach(site =>
+		{
+			userInfo.Sites.Remove(site);
+		});
+
+		if (!string.IsNullOrEmpty(model.UserInfoForm.Locations))
+		{
+			var locations = JsonSerializer.Deserialize<List<string>>(model.UserInfoForm.Locations);
+			var hasLocations = locations.Any();
+			var locationCount = locations.Count();
+
+			if (locations.Any() && locations.Count() > 0)
+			{
+				foreach (var location in locations)
+				{
+					var loc = _dbContext.Sites.FirstOrDefault(e => e.Id == Guid.Parse(location));
+					userInfo.Sites.Add(loc);
+				}
+			}
+		}
+		
 		await _dbContext.SaveChangesAsync();
 
 		TempData["SuccessMessage"] = "User information has been successfully updated.";
 
 		return RedirectToAction("Index", new { company });
+	}
+
+
+	[HttpPost("{company}/users/{id}/setpassword")]
+	[ValidateAntiForgeryToken]
+	public IActionResult SetPassword(Guid company, Guid id, ManageUserMainViewModel model)
+	{
+		ModelState.Remove("UserInfoForm");
+
+		if (!ModelState.IsValid)
+		{
+			return View(model);
+		}
+
+		return RedirectToAction("Edit", new { company, id });
+	}
+
+
+	[HttpPost("{company}/users/{id}/setpasswordadmin")]
+	[ValidateAntiForgeryToken]
+	public IActionResult SetPasswordAdmin(Guid company, Guid id, ManageUserMainViewModel model)
+	{
+		ModelState.Remove("UserInfoForm");
+		ModelState.Remove("UserPasswordForm");
+
+		if (!ModelState.IsValid)
+		{
+			return View(model);
+		}
+
+		return RedirectToAction("Edit", new { company, id });
 	}
 
 
@@ -191,7 +349,6 @@ public class UsersController : AppControllerBase
 
 		return View(model);
 	}
-
 
 
 	[HttpGet("{company}/users/grid")]
@@ -509,7 +666,7 @@ public class UsersController : AppControllerBase
 	}
 
 
-	[HttpPost("{company}/users/{id}/setpassword")]
+	[HttpPost("{company}/users/{id}/setpasswordX")]
 	public async Task<IActionResult> SetUserPassword(Guid company, [FromBody] AjaxUserPasswordModel request, string id)
 	{
 		try
@@ -646,23 +803,25 @@ public class UsersController : AppControllerBase
 		icons += "<div class=\"d-flex flex-row action-icons\">";
 		icons += $"<a href=\"/{company}/users/edit/{id}\"  class=\"no-loading text-secondary\"><i class=\"fa-solid fa-money-check-pen fa-lg\"></i></a>";
 		icons += $"<a href=\"javascript:;\" class=\"no-loading text-danger\" onclick=\"deleteUser('{id}')\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>";
-		icons += "<a href=\"javascript:;\" class=\"no-loading text-secondary menu-context dropdown-toggle\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\"><i class=\"fa-solid fa-gear fa-lg\"></i></a>";
-		icons += "<ul class=\"dropdown-menu\">";
+		
+		// icons += "<a href=\"javascript:;\" class=\"no-loading text-secondary menu-context dropdown-toggle\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\"><i class=\"fa-solid fa-gear fa-lg\"></i></a>";
+		// icons += "<ul class=\"dropdown-menu\">";
 
-		//if (isSecured)
-		//{
-		//	icons += "<li class=\"dropdown-item disabled\">";
-		//	icons += "Set password";
-		//}
-		//else
-		//{
-		//}
+		// //if (isSecured)
+		// //{
+		// //	icons += "<li class=\"dropdown-item disabled\">";
+		// //	icons += "Set password";
+		// //}
+		// //else
+		// //{
+		// //}
 
-		icons += "<li class=\"dropdown-item\">";
-		icons += $"<a href=\"javascript:;\" class=\"no-loading text-info\" onclick=\"setPassword(this)\" data-user-id=\"{id}\">Set password</a>";
+		// icons += "<li class=\"dropdown-item\">";
+		// icons += $"<a href=\"javascript:;\" class=\"no-loading text-info\" onclick=\"setPassword(this)\" data-user-id=\"{id}\">Set password</a>";
 
-		icons += "</li>";
-		icons += "</ul>";
+		// icons += "</li>";
+		// icons += "</ul>";
+
 		icons += "</div>";
 
 		return icons;

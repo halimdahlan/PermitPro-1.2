@@ -1,41 +1,174 @@
-﻿@{
-	ViewData["Title"] = "Settings / User";
+﻿@using Kendo.Mvc.UI;
+
+@{
+	ViewData["Title"] = "Settings / Users";
 	ViewData["SubTitle"] = "New user";
 }
 
-@model ManageUserViewNodel
+@model NewUserViewModel
 
-<div class="d-flex flex-column form-user">
-	<form method="post">
-		@Html.AntiForgeryToken()
-		<div class="card shadow-sm">
-			<div class="card-body">
-				<div class="row">
-					<div class="col-6">
-						<label class="form-label small fw-semibold">First Name <span class="text-danger">*</span></label>
-						<input asp-for="FirstName" class="form-control" placeholder="John"/>
-						<span asp-validation-for="FirstName" class="text-danger small"></span>
-					</div>
-					<div class="col-6">
-						<label class="form-label small fw-semibold">Last Name <span class="text-danger">*</span></label>
-						<input asp-for="LastName" class="form-control" placeholder="John"/>
-						<span asp-validation-for="LastName" class="text-danger small"></span>
-					</div>
+@if (Model.HasExceededLimit)
+{
+	<div class="d-flex flex-column align-items-center">
+		<div class="alert alert-warning" role="alert">
+			<div class="d-flex flex-column align-items-center">
+				<div class="my-3">
+					<i class="fa-regular fa-triangle-exclamation" style="font-size: 2.5rem;"></i>
 				</div>
-			</div>
-			<div class="card-footer text-body-secondary d-flex justify-content-between">
-				<a href="" role="button" class="btn btn-sm btn-outline-secondary"><span class="mx-3">Back</span></a>
-				<button type="button" class="btn btn-sm btn-primary"><span class="mx-3">Submit</span></button>
+				<h3 class="text-center">
+					You have reached the user creation limit of <strong>@Model.MaxNumOfUsers</strong> users.<br />
+					If you would like to increase this limit, please contact the system administrator.
+				</h3>
 			</div>
 		</div>
-	</form>
+	</div>
+}
+else
+{
+	<div class="row g-3">
+		<div class="d-flex flex-column col-12 col-lg-6">
+			<form method="post">
+				@Html.AntiForgeryToken()
+				<div class="card shadow-sm">
+					<div class="card-body">
+						<div class="row g-3 mb-3">
+							<div class="col-6">
+								<label class="form-label small fw-semibold">First Name <span class="text-danger">*</span></label>
+								<input asp-for="FirstName" class="form-control" placeholder="John"/>
+								<span asp-validation-for="FirstName" class="text-danger small"></span>
+							</div>
+							<div class="col-6">
+								<label class="form-label small fw-semibold">Last Name <span class="text-danger">*</span></label>
+								<input asp-for="LastName" class="form-control" placeholder="Doe"/>
+								<span asp-validation-for="LastName" class="text-danger small"></span>
+							</div>
+						</div>
+						<div class="row g-3 mb-3">
+							<div class="col">
+								<label class="form-label small fw-semibold">Email <span class="text-danger">*</span></label>
+								<input asp-for="Email" class="form-control" placeholder="i.e. john.doe@email.com"/>
+								<span asp-validation-for="Email" class="text-danger small"></span>
+							</div>
+						</div>
+						<div class="row g-3 mb-3">
+							<div class="col-6">
+								<label class="form-label small fw-semibold">Designation</label>
+								<input asp-for="Designation" class="form-control" />
+								<span asp-validation-for="Designation" class="text-danger small"></span>
+							</div>
+							<div class="col-6">
+								<label class="form-label">User role <span class="text-danger">*</span></label>
+								<select asp-for="UserRole" class="form-select" asp-items="@(new SelectList(Model.Roles, "Id", "Name"))">
+									<option value="">(select a role)</option>
+								</select>
+								<span asp-validation-for="UserRole" class="text-danger small"></span>
+							</div>
+						</div>
+						<div class="row g-3 mb-3">
+							<div class="col">
+								<label class="form-label">Locations</label>
+								@(Html
+									.Kendo()
+										.DropDownTree()
+											.Name("ddlLocations")
+											.DataValueField("id")
+											.DataTextField("name")
+											.Placeholder("(select locations)")
+											.Events(events => events.Change("onChangeSites"))
+											.FillMode(FillMode.Outline)
+											.Rounded(Rounded.Large)
+											.CheckAll(false)
+											.AutoClose(false)
+											.Checkboxes(checkboxes => checkboxes
+												.Name("checkedFiles")
+												.CheckChildren(true)
+											)
+											.DataSource(ds => ds
+												.Read(read => read
+													.Url($"/api/data/{Model.CompanyID}/sites/hierarchical").Type(HttpVerbs.Get)
+												)
+											)
+									)
+							</div>
+						</div>
+						<div class="row g-3 mb-3">
+							<div class="col">
+								<input asp-for="IsActive" class="form-check-input" type="checkbox"/>
+              	<label class="form-check-label" for="IsActive">Is Active?</label>
+							</div>
+						</div>
+						<div class="row g-3 my-3">
+							<div class="col">
+								<h3 class="mb-0 fw-bold">Set Password</h3>
+							</div>
+						</div>
+						<div class="row g-3">
+							<div class="col-6">
+								<label class="form-label small fw-semibold">New password <span class="text-danger">*</span></label>
+								<input type="password" asp-for="NewPassword" class="form-control"/>
+								<span asp-validation-for="NewPassword" class="text-danger small"></span>
+							</div>
+							<div class="col-6">
+								<label class="form-label small fw-semibold">Confirm password <span class="text-danger">*</span></label>
+								<input type="password" asp-for="ConfirmPassword" class="form-control"/>
+								<span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+							</div>
+						</div>
+					</div>
+					<div class="card-footer text-body-secondary d-flex justify-content-end">
+						<button type="submit" class="btn btn-sm btn-primary"><span class="mx-3">Save Changes</span></button>
+					</div>
+				</div>
+				<input id="hidLocations" type="hidden" asp-for="Locations" />
+			</form>
+		</div>
+	</div>
+
+@section Scripts {
+	<!-- Includes jQuery validation for instant client-side checks without reloading -->
+	<partial name="_ValidationScriptsPartial" />
+
+	<script>
+		var selectedLocations = @Html.Raw(Model.Locations)
+
+		$(document).ready(() => {
+			var dropDownTree = $('#ddlLocations').data('kendoDropDownTree');
+
+			dropDownTree.dataSource.filter({});
+			dropDownTree.value(selectedLocations);
+		});
+
+		const onChangeSites = () => {
+			var checkedNodes = [];
+			var dropDownTree = $('#ddlLocations').data('kendoDropDownTree');
+
+			checkedNodeIds(dropDownTree.dataSource.view(), checkedNodes);
+			$('#hidLocations').val(checkedNodes.join(','));
+		};
+
+		const checkedNodeIds = (nodes, checkedNodes) => {
+			for (var i = 0; i < nodes.length; i++) {
+				if (nodes[i].checked) {
+					checkedNodes.push(nodes[i].id);
+				}
+
+				if (nodes[i].hasChildren) {
+					checkedNodeIds(nodes[i].children.view(), checkedNodes);
+				}
+			}
+		};
+	</script>
+}
+
+}
+
+<div>
+	<a href="/@Model.CompanyID/users" role="button" class="btn btn-sm btn-outline-secondary">
+		<span class="mx-3"><i class="fa-solid fa-arrow-left me-3"></i> Cancel</span>
+	</a>
 </div>
 
-
 @section CustomCss {
-	<!-- DataTables -->
-	<link rel="stylesheet" href="~/lib/DataTables/datatables.min.css" />
-	<script src="~/lib/DataTables/datatables.min.js"></script>
-
 	<link rel="stylesheet" href="~/css/users.css" />
 }
+

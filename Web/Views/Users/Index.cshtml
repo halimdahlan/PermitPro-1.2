@@ -30,14 +30,7 @@
 		</div>
 	</div>
 	<div>
-		@if (Model.LimitReached)
-		{
-			<a href="#dlgLimitReached" class="btn btn-sm btn-primary no-loading" data-bs-toggle="modal" data-bs-target="#dlgLimitReached"><span class="px-2"><i class="fa-sharp fa-solid fa-plus me-2"></i> New user</span></a>
-		}
-		else
-		{
-			<a href="#dlgUser" class="btn btn-sm btn-primary no-loading" data-bs-toggle="modal" data-bs-target="#dlgUser"><span class="px-2"><i class="fa-sharp fa-solid fa-plus me-2"></i> New user</span></a>
-		}
+		<a href="/@Model.CompanyId/users/new" class="btn btn-sm btn-primary"><span class="px-2"><i class="fa-sharp fa-solid fa-plus me-2"></i> New user</span></a>
 		<a asp-controller="users" asp-action="userroles" class="btn btn-sm btn-primary"><span class="px-2">User roles</span></a>
 	</div>
 </div>
@@ -45,7 +38,8 @@
 @if (TempData["SuccessMessage"] != null)
 {
 	<div class="alert alert-success alert-dismissible fade show" role="alert mb-3">
-		@TempData["SuccessMessage"]
+		<i class="fa-solid fa-circle-check me-2"></i> @TempData["SuccessMessage"]
+		<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
 	</div>
 }
 
@@ -75,7 +69,7 @@
 		)
 		.Columns(c =>
 		{
-			c.Bound(f => f.Name).ClientTemplate("<a href=\"javascript:;\" onclick=\"editUser('#=Id#')\" class=\"text-info no-loading\">#=Name#</a>").Width(250);
+			c.Bound(f => f.Name).ClientTemplate($"<a href=\"/{Model.CompanyId}/users/edit/#=Id#\" class=\"text-info\">#=Name#</a>").Width(250);
 
 			c.Bound(f => f.Email);
 			//c.Bound(f => f.Location);

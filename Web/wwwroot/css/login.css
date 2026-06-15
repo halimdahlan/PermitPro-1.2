@@ -292,3 +292,7 @@ html, body {
         border-radius: 16px;
     }
 }
+
+.form-select {
+	background-image: var(--icon-caret), var(--icon-caret) !important;
+}

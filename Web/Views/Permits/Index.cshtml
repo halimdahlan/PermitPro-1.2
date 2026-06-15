@@ -186,8 +186,10 @@
 
 			$('#btnDelete').click(() => {
 				const id = $('#btnDelete').data('permitId');
-				const dlgConfirmDelete = new bootstrap.Modal('#dlgPermitConfirmDelete');
-				dlgConfirmDelete.hide();
+				//const dlgConfirmDelete = new bootstrap.Modal('#dlgPermitConfirmDelete');
+				//dlgConfirmDelete.hide();
+
+				$('#dlgPermitConfirmDelete').modal('hide');
 
 				deletePermit(id);
 			});
@@ -196,8 +198,10 @@
 
 
 		const confirmDelete = (id, permitNumber) => {
-			const dlgConfirmDelete = new bootstrap.Modal('#dlgPermitConfirmDelete');
-			dlgConfirmDelete.show();
+			//const dlgConfirmDelete = new bootstrap.Modal('#dlgPermitConfirmDelete');
+			//dlgConfirmDelete.show();
+
+			$('#dlgPermitConfirmDelete').modal('show');
 
 			$('#permitNumber').text(permitNumber);
 			$('#btnDelete').data('permitId', id);

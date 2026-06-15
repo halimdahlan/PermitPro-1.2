@@ -46,7 +46,7 @@ public class RecycleBinController : AppControllerBase
 			 {
 				 Id = p.Id,
 				 EntityType = "Permit",
-				 DisplayName = p.PermitNo,
+				 DisplayName = $"PTW{p.PermitNo}",
 				 Detail = p.Site != null ? p.Site.Name : "(no site)",
 				 CompanyId = p.Company != null ? p.Company.Id : Guid.Empty,
 				 CompanyName = p.Company != null ? p.Company.Name : "(none)",

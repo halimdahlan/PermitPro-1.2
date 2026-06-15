@@ -67,14 +67,18 @@
 						<i class="fa-solid fa-list-ul fa-fw me-3"></i> All Permits
 					</a>
 				</li>
-				<li class="nav-item">
-					<a href="/@companyId/sitemap" class="nav-link @navSitemap">
-						<i class="fa-solid fa-map-location-dot fa-fw me-3"></i> Site Map
-					</a>
-				</li>
+				@if (!User.IsInRole("Contractor"))
+				{
+					<li class="nav-item">
+						<a href="/@companyId/sitemap" class="nav-link @navSitemap">
+							<i class="fa-solid fa-map-location-dot fa-fw me-3"></i> Site Map
+						</a>
+					</li>
+				}
 			</ul>
 		</div>
 	</li>
+	
 	@if (User.IsInRole("Portal Admin") || User.IsInRole("Super User") || User.IsInRole("Contractor"))
 	{
 		<li class="nav-item">
@@ -83,11 +87,16 @@
 			</a>
 		</li>
 	}
-	<li class="nav-item">
-		<a href="/@companyId/reports" class="nav-link @navReports">
-			<i class="fa-sharp fa-regular fa-file-invoice fa-fw me-3"></i> Reports
-		</a>
-	</li>
+
+	@if (!User.IsInRole("Contractor"))
+	{
+		<li class="nav-item">
+			<a href="/@companyId/reports" class="nav-link @navReports">
+				<i class="fa-sharp fa-regular fa-file-invoice fa-fw me-3"></i> Reports
+			</a>
+		</li>
+	}
+	
 	<li class="nav-item">
 		<a href="/@companyId/notifications" class="nav-link @navNotifications">
 			<i class="fa-sharp fa-solid fa-envelope-open-text fa-fw me-3"></i> Notifications
