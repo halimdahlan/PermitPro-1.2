@@ -96,14 +96,15 @@
 	</div>
 </div>
 -->
+
 <!-- Modal -->
 <div class="modal fade" id="dlgNew" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="dlgNewLabel" aria-hidden="true">
 	<div class="modal-dialog modal-dialog-centered">
 		<div class="modal-content">
 			<form id="frmNew" method="post" class="needs-validation" onsubmit="return false" novalidate>
-				<div class="modal-header">
-					<h1 class="modal-title" id="dlgNewLabel">New workflow</h1>
-					<a href="#" class="no-loading text-dark" data-bs-dismiss="modal" aria-label="Close"><i class="fa-sharp fa-solid fa-xmark fa-xl"></i></a>
+				<div class="modal-header bg-dark text-white">
+					<h2 class="modal-title mb-0 fw-bold" id="dlgNewLabel">New workflow</h2>
+					<a href="#" class="no-loading text-secondary" data-bs-dismiss="modal" aria-label="Close"><i class="fa-sharp fa-solid fa-xmark fa-xl"></i></a>
 				</div>
 				<div class="modal-body">
 					<div class="form-group">
@@ -118,21 +119,21 @@
 					<div class="form-group mb-3">
 						<label class="form-label me-2" for="workflowActive">Is active?</label>
 						@(Html.Kendo().Switch()
-												.Name("workflowActive")
-												.Size(ComponentSize.Small)
-												.Messages(x => x.Checked("YES").Unchecked("NO")))
+							.Name("workflowActive")
+							.Size(ComponentSize.Small)
+							.Messages(x => x.Checked("YES").Unchecked("NO")))
 					</div>
 					<div class="form-group mb-3">
 						<label class="form-label me-2" for="workflowActive">For PTW with certificate?</label>
 						@(Html.Kendo().Switch()
-												.Name("workflowCertificate")
-												.Size(ComponentSize.Small)
-												.Messages(x => x.Checked("YES").Unchecked("NO")))
+							.Name("workflowCertificate")
+							.Size(ComponentSize.Small)
+							.Messages(x => x.Checked("YES").Unchecked("NO")))
 					</div>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-					<button type="button" class="btn btn-primary btn-save"><span class="mx-3">Save changes</span></button>
+					<button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-sm btn-primary btn-save"><span class="mx-3">Save changes</span></button>
 				</div>
 				<input type="hidden" id="companyId" value="@companyId" />
 			</form>
@@ -276,7 +277,7 @@
 
 				xhr.done((response, status) => {
 					if (status == 'success') {
-						if (response.data == 'OK') {
+						if (response.success) {
 							grid.dataSource.read();
 						}
 					}

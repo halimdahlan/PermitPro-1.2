@@ -532,7 +532,8 @@ public class WorkflowController : AppControllerBase
 
 			return Ok(new
 			{
-				HasError = false
+				HasError = false,
+				Success = true,
 			});
 		}
 		catch (Exception ex)
