@@ -13,7 +13,7 @@
 			@Html.AntiForgeryToken()
 			<div class="card shadow-sm">
 				<div class="card-header">
-					<h3 class="fw-bold mb-0 text-uppercase">General Info</h3>
+					<h4 class="fw-bold mb-0 text-uppercase">General Info</h4>
 				</div>
 				<div class="card-body">
 					<div class="row g-3 mb-3">
@@ -43,10 +43,19 @@
 						</div>
 						<div class="col-6">
 							<label class="form-label">User role <span class="text-danger">*</span></label>
-							<select asp-for="UserInfoForm.UserRole" class="form-select" asp-items="@(new SelectList(Model.UserInfoForm?.Roles, "Id", "Name"))">
-								<option value="">(select a role)</option>
-							</select>
-							<span asp-validation-for="UserInfoForm.UserRole" class="text-danger small"></span>
+							@if (Model.UserInfoForm!.OriginFromContractors)
+							{
+								<select id="ddlRoles" disabled class="form-select" asp-items="@(new SelectList(Model.UserInfoForm?.Roles, "Id", "Name"))">
+									<option value="">(select a role)</option>
+								</select>
+							}
+							else
+							{
+								<select asp-for="UserInfoForm.UserRole" class="form-select" asp-items="@(new SelectList(Model.UserInfoForm?.Roles, "Id", "Name"))">
+									<option value="">(select a role)</option>
+								</select>
+								<span asp-validation-for="UserInfoForm.UserRole" class="text-danger small"></span>
+							}
 						</div>
 					</div>
 					<div class="row g-3 mb-3">
@@ -88,14 +97,19 @@
 				</div>
 			</div>
 			<input id="hidLocations" type="hidden" asp-for="UserInfoForm.Locations" />
+			<input id="hidOriginFromContractors" type="hidden" asp-for="UserInfoForm.OriginFromContractors" />
+			@if (Model.UserInfoForm!.OriginFromContractors)
+			{
+				<input type="hidden" asp-for="UserInfoForm.UserRole" />
+			}
 		</form>
 	</div>
 
 	<div class="d-flex flex-column col-12 col-lg-6">
-		<form method="post" action="/@Model.UserInfoForm?.CompanyID/users/edit/@Model.UserInfoForm?.Id/setpasswrd">
+		<form method="post" action="/@Model.UserInfoForm?.CompanyID/password/@Model.UserInfoForm?.Id">
 			<div class="card shadow-sm">
 				<div class="card-header">
-					<h3 class="mb-0 fw-bold text-uppercase">Set Password</h3>
+					<h4 class="mb-0 fw-bold text-uppercase">Set Password</h4>
 				</div>
 				<div class="card-body">
 					<div class="row g-3 mb-3">
@@ -117,6 +131,7 @@
 						<button type="submit" class="btn btn-sm btn-primary"><span class="mx-3">Save Password</span></button>
 					</div>
 			</div>
+			<input type="hidden" asp-for="UserPasswordForm.IsContractors" />
 		</form>
 	</div>
 </div>
@@ -136,15 +151,26 @@
 	<partial name="_ValidationScriptsPartial" />
 
 	<script>
-		var selectedLocations = @Html.Raw(Model.UserInfoForm?.Locations)
-
-		console.log(selectedLocations);
+		var selectedLocations = @Html.Raw(Model.UserInfoForm?.Locations);
+		var isContractor = @Model.UserInfoForm!.OriginFromContractors.ToString().ToLower();
 
 		$(document).ready(() => {
 			var dropDownTree = $('#ddlLocations').data('kendoDropDownTree');
 
 			dropDownTree.dataSource.filter({});
 			dropDownTree.value(selectedLocations);
+
+			if (isContractor) {
+				const selectElement = document.getElementById('ddlRoles');
+				const textToFind = 'Permit Holder / Contractor';
+
+				for (let i = 0; i < selectElement.options.length; i++) {
+					if (selectElement.options[i].text === textToFind) {
+						selectElement.selectedIndex = i; // Selects the item by its index
+						break;
+					}
+				}
+			}
 		});
 
 		const onChangeSites = () => {

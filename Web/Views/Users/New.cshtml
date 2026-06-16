@@ -99,7 +99,7 @@ else
 						</div>
 						<div class="row g-3 my-3">
 							<div class="col">
-								<h3 class="mb-0 fw-bold">Set Password</h3>
+								<h4 class="mb-0 fw-bold">Set Password</h4>
 							</div>
 						</div>
 						<div class="row g-3">
@@ -120,50 +120,66 @@ else
 					</div>
 				</div>
 				<input id="hidLocations" type="hidden" asp-for="Locations" />
+				<input id="hidOriginFromContractors" type="hidden" asp-for="OriginFromContractors" />
 			</form>
 		</div>
 	</div>
 
-@section Scripts {
-	<!-- Includes jQuery validation for instant client-side checks without reloading -->
-	<partial name="_ValidationScriptsPartial" />
+	@section Scripts {
+		<!-- Includes jQuery validation for instant client-side checks without reloading -->
+		<partial name="_ValidationScriptsPartial" />
 
-	<script>
-		var selectedLocations = @Html.Raw(Model.Locations)
+		<script>
+			var selectedLocations = [];
+			var isContractor = @Model.OriginFromContractors.ToString().ToLower();
 
-		$(document).ready(() => {
-			var dropDownTree = $('#ddlLocations').data('kendoDropDownTree');
+			$(document).ready(() => {
+				var dropDownTree = $('#ddlLocations').data('kendoDropDownTree');
 
-			dropDownTree.dataSource.filter({});
-			dropDownTree.value(selectedLocations);
-		});
+				dropDownTree.dataSource.filter({});
+				dropDownTree.value(selectedLocations);
 
-		const onChangeSites = () => {
-			var checkedNodes = [];
-			var dropDownTree = $('#ddlLocations').data('kendoDropDownTree');
+				if (isContractor) {
+					const selectElement = document.getElementById('UserRole');
+					const textToFind = 'Permit Holder / Contractor';
 
-			checkedNodeIds(dropDownTree.dataSource.view(), checkedNodes);
-			$('#hidLocations').val(JSON.stringify(checkedNodes));
-		};
+					for (let i = 0; i < selectElement.options.length; i++) {
+						if (selectElement.options[i].text === textToFind) {
+							selectElement.selectedIndex = i; // Selects the item by its index
+							break;
+						}
+					}
 
-		const checkedNodeIds = (nodes, checkedNodes) => {
-			for (var i = 0; i < nodes.length; i++) {
-				if (nodes[i].checked) {
-					checkedNodes.push(nodes[i].id);
+					selectElement.disabled = true;
 				}
+			});
 
-				if (nodes[i].hasChildren) {
-					checkedNodeIds(nodes[i].children.view(), checkedNodes);
+			const onChangeSites = () => {
+				var checkedNodes = [];
+				var dropDownTree = $('#ddlLocations').data('kendoDropDownTree');
+
+				checkedNodeIds(dropDownTree.dataSource.view(), checkedNodes);
+				$('#hidLocations').val(JSON.stringify(checkedNodes));
+			};
+
+			const checkedNodeIds = (nodes, checkedNodes) => {
+				for (var i = 0; i < nodes.length; i++) {
+					if (nodes[i].checked) {
+						checkedNodes.push(nodes[i].id);
+					}
+
+					if (nodes[i].hasChildren) {
+						checkedNodeIds(nodes[i].children.view(), checkedNodes);
+					}
 				}
-			}
-		};
-	</script>
-}
+			};
+		</script>
+	}
 
 }
 
 <div>
-	<a href="/@Model.CompanyID/users" role="button" class="btn btn-sm btn-outline-secondary">
+	<a href="/@Model.CompanyID/@((Model.OriginFromContractors) ? "contractors" : "users")" role="button" class="btn btn-sm btn-outline-secondary">
 		<span class="mx-3"><i class="fa-solid fa-arrow-left me-3"></i> Cancel</span>
 	</a>
 </div>

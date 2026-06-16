@@ -1,6 +1,6 @@
-<h1 class="app-topbar-title">@ViewData["SubTitle"]</h1>
+<h1 class="app-topbar-title">@ViewData["Title"]</h1>
 <div class="app-topbar-breadcrumb">
-	<span>@ViewData["Title"]</span>
+	<span>@ViewData["SubTitle"]</span>
 	@if (ViewData["SubTitle"] != null && ViewData["SubTitle"]?.ToString() != ViewData["Title"]?.ToString())
 	{
 		<span class="sep">/</span>

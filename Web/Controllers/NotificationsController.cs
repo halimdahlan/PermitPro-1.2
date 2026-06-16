@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +13,7 @@ using PermitPro.Core.Interfaces;
 
 namespace PermitPro.App.Controllers;
 
+[Authorize]
 public class NotificationsController : AppControllerBase
 {
 	private readonly ApplicationDbContext _dbContext;

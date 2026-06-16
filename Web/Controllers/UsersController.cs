@@ -1,5 +1,6 @@
 ﻿#nullable disable
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +19,7 @@ using System.Text.Json;
 
 namespace PermitPro.App.Controllers;
 
+[Authorize]
 public class UsersController : AppControllerBase
 {
 	private readonly ApplicationDbContext _dbContext;
@@ -94,7 +96,7 @@ public class UsersController : AppControllerBase
 
 
 	[HttpGet("{company}/users/new")]
-	public IActionResult New(Guid company)
+	public IActionResult New(Guid company, string org)
 	{
 		var model = new NewUserViewModel
 		{
@@ -119,6 +121,7 @@ public class UsersController : AppControllerBase
 		model.Roles = userRoles;
 		model.MaxNumOfUsers = _systemConfiguration.UserCreateLimit;
 		model.HasExceededLimit = false; //totalUsers > _systemConfiguration.UserCreateLimit;
+		model.OriginFromContractors = !string.IsNullOrEmpty(org) && org == "c";
 
 		return View(model);
 	}
@@ -179,6 +182,9 @@ public class UsersController : AppControllerBase
 
 		TempData["SuccessMessage"] = $"User ({userInfo.Email}) has been successfully created.";
 
+		if (model.OriginFromContractors)
+			return Redirect($"/{company}/contractors");
+
 		return RedirectToAction("Index", new { company });
 	}
 
@@ -221,7 +227,13 @@ public class UsersController : AppControllerBase
 
 		var model = new ManageUserMainViewModel
 		{
-			UserInfoForm = user
+			UserInfoForm = user,
+			UserPasswordForm = new ManageUserPasswordViewModel
+			{
+				NewPassword = string.Empty,
+				ConfirmPassword = string.Empty,
+				IsContractors = !string.IsNullOrEmpty(org) && org == "c"
+      }
 		};
 
 		return View("Edit", model);
@@ -293,31 +305,18 @@ public class UsersController : AppControllerBase
 
 		TempData["SuccessMessage"] = "User information has been successfully updated.";
 
+		if (model.UserInfoForm.OriginFromContractors)
+			return Redirect($"/{company}/contractors");
+
 		return RedirectToAction("Index", new { company });
 	}
 
 
-	[HttpPost("{company}/users/{id}/setpassword")]
+	[HttpPost("{company}/users/setpassword/{id}/setpassword")]
 	[ValidateAntiForgeryToken]
 	public IActionResult SetPassword(Guid company, Guid id, ManageUserMainViewModel model)
 	{
 		ModelState.Remove("UserInfoForm");
-
-		if (!ModelState.IsValid)
-		{
-			return View(model);
-		}
-
-		return RedirectToAction("Edit", new { company, id });
-	}
-
-
-	[HttpPost("{company}/users/{id}/setpasswordadmin")]
-	[ValidateAntiForgeryToken]
-	public IActionResult SetPasswordAdmin(Guid company, Guid id, ManageUserMainViewModel model)
-	{
-		ModelState.Remove("UserInfoForm");
-		ModelState.Remove("UserPasswordForm");
 
 		if (!ModelState.IsValid)
 		{

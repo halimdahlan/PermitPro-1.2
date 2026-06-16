@@ -7,7 +7,7 @@
 
 @model ContractorsViewModel
 
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3">
 	<div class="d-flex flex-row align-items-center">
 		<div class="me-3">View by</div>
 		<button type="button" class="btn btn-sm btn-dark btn-filter rounded-pill me-2" data-search="">
@@ -21,11 +21,19 @@
 		</button>
 	</div>
 	<div>
-		<a href="#dlgUser" class="btn btn-sm btn-primary no-loading" data-bs-toggle="modal" data-bs-target="#dlgUser"><span class="px-2"><i class="fa-sharp fa-solid fa-plus me-2"></i> New contractor</span></a>
+		<a href="/@Model.CompanyId/users/new?org=c" class="btn btn-sm btn-primary no-loading"><span class="px-2"><i class="fa-sharp fa-solid fa-plus me-2"></i> New contractor</span></a>
 	</div>
 </div>
 
-<div class="mt-5">
+@if (TempData["SuccessMessage"] != null)
+{
+	<div class="alert alert-success alert-dismissible fade show" role="alert mb-3">
+		<i class="fa-solid fa-circle-check me-2"></i> @TempData["SuccessMessage"]
+		<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+	</div>
+}
+
+<div>
 	@(
 		Html.Kendo().Grid<ContractorListViewModel>()
 		.Name("grid")

@@ -1,5 +1,6 @@
 ﻿#nullable disable
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -21,6 +22,7 @@ using System.Text.RegularExpressions;
 
 namespace PermitPro.App.Controllers;
 
+[Authorize]
 public class PermitsController : AppControllerBase
 {
 	private readonly ApplicationDbContext _dbContext;

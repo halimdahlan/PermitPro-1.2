@@ -85,13 +85,15 @@ public class ManageUserPasswordViewModel
   [Required(ErrorMessage = "New password is required")]
   [MinLength(8, ErrorMessage = "Mininum length is 8 characters")]
   [DataType(DataType.Password)]
-  public string? NewPassword { get; set; } = string.Empty;
+  public required string NewPassword { get; set; } = string.Empty;
 
   [Required(ErrorMessage = "Confirm password is required")]
   [MinLength(8, ErrorMessage = "Mininum length is 8 characters")]
   [DataType(DataType.Password)]
   [Compare("NewPassword", ErrorMessage = "The passwords do not match.")]
-  public string? ConfirmPassword { get; set; } = string.Empty;
+  public required string ConfirmPassword { get; set; } = string.Empty;
+
+   public bool IsContractors { get; set; }
 }
 
 
@@ -100,11 +102,13 @@ public class ManageUserPasswordAdminViewModel
   [Required(ErrorMessage = "Password is required")]
   [MinLength(8, ErrorMessage = "Mininum length is 8 characters")]
   [DataType(DataType.Password)]
-  public string? Password { get; set; } = string.Empty;
+  public required string Password { get; set; }
 
   [Required(ErrorMessage = "Confirm password is required")]
   [MinLength(8, ErrorMessage = "Mininum length is 8 characters")]
   [DataType(DataType.Password)]
   [Compare("Password", ErrorMessage = "The passwords do not match.")]
-  public string? ConfirmPassword { get; set; } = string.Empty;
+  public required string ConfirmPassword { get; set; }
+
+  public bool OriginFromContractors { get; set; }
 }
