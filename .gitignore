@@ -374,8 +374,5 @@ IronPdf-2023.6/
 
 .DS_Store
 
-# Telerik components
-Telerik/
-
 # Project specific (PermitPro)
 Web/appsettings.Development.json
