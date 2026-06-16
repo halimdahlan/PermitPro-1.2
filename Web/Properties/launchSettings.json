@@ -1,0 +1,46 @@
+﻿{
+	"iisSettings": {
+		"windowsAuthentication": false,
+		"anonymousAuthentication": true,
+		"iisExpress": {
+			"applicationUrl": "http://localhost:61029",
+			"sslPort": 44354
+		}
+	},
+	"profiles": {
+		"http": {
+			"commandName": "Project",
+			"dotnetRunMessages": true,
+			"launchBrowser": true,
+			"applicationUrl": "http://localhost:5144",
+			"environmentVariables": {
+				"ASPNETCORE_ENVIRONMENT": "Development"
+			}
+		},
+		"https": {
+			"commandName": "Project",
+			"dotnetRunMessages": true,
+			"launchBrowser": true,
+			"applicationUrl": "https://localhost:7079;http://localhost:5144",
+			"environmentVariables": {
+				"ADD_HOURS": "0",
+				"APP_DOMAIN": "localhost:7079",
+				"ASPNETCORE_ENVIRONMENT": "Development",
+				"HANGFIRE_DB_CONNECTION": "Server=sql5111.site4now.net; Database=db_a9feb8_scheduleruat; User Id=db_a9feb8_scheduleruat_admin; Password=stlpajit#obr0Ka7;",
+				"RESERVED_ROLES": "SUPERUSER;PORTALADMIN;CONTRACTOR;PERMITISSUER;LEADPERMITISSUER;AUTHORIZEDGASTESTER",
+				"SUSPEND_AUTORESUME_DAYS": "10",
+				"UPLOAD_MAX_FILE_SIZE": "3145728",
+				"UPLOAD_MAX_FILE_COUNT": "5",
+				"UPLOAD_ALLOWED_FILE_TYPES": "pdf,docx,jpg,jpeg,png",
+				"USER_CREATE_LIMIT": "15"
+			}
+		},
+		"IIS Express": {
+			"commandName": "IISExpress",
+			"launchBrowser": true,
+			"environmentVariables": {
+				"ASPNETCORE_ENVIRONMENT": "Development"
+			}
+		}
+	}
+}
