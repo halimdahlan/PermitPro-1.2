@@ -1,0 +1,21 @@
+@using Kendo.Mvc.UI
+
+@using PermitPro.App.ViewModels
+
+@model MaintenanceViewModel
+
+@{
+	ViewData["Title"] = "Maintenance";
+	ViewData["SubTitle"] = "Data house-keeping and maintenance";
+
+	var companyId = ViewContext.RouteData.Values["company"] as string;
+}
+
+<div class="row">
+  <div class="col-12 col-lg-6">
+    <div class="alert alert-@((Model.HasError) ? "danger" : "success") alert-dismissible fade show" role="alert mb-3">
+      <i class="fa-solid fa-circle-check me-2"></i> @Model.ResultMessage
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  </div>
+</div>

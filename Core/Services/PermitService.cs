@@ -164,6 +164,7 @@ public class PermitService : IPermitService
 				{
 					workflowStep = _dbContext.WorkflowSteps
 						.Include(wfs => wfs.Approvers)
+						.Include(wf => wf.WorkflowStepWorkflow)
 						.Where(wfs => wfs.WorkflowStepWorkflow == workflow && wfs.Name != "Draft" && wfs.Name != "Completed")
 						.OrderBy(wfs => wfs.StepOrder)
 						.FirstOrDefault();
@@ -172,6 +173,7 @@ public class PermitService : IPermitService
 				{
 					workflowStep = _dbContext.WorkflowSteps
 						.Include(wfs => wfs.Approvers)
+						.Include(wf => wf.WorkflowStepWorkflow)
 						.Where(wfs => wfs.WorkflowStepWorkflow == workflow && wfs.Name == "Draft")
 						.OrderBy(wfs => wfs.StepOrder)
 						.FirstOrDefault();
@@ -225,6 +227,7 @@ public class PermitService : IPermitService
 
 
 				// Update workflow step in permit
+				if (workflowStep.WorkflowStepWorkflow != null) permit.PermitWorkflow = workflowStep.WorkflowStepWorkflow;
 				permit.PermitWorkflowStep = workflowStep;
 				_dbContext.Permits.Update(permit);
 

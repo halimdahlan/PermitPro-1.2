@@ -25,4 +25,6 @@ public class WorkflowGridViewModel
 
 	[Display(Name = "ACTION")]
 	public string ActionIcons { get; set; }
+
+	public bool IsWorkflowUsed { get; set; }
 }

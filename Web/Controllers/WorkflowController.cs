@@ -190,6 +190,7 @@ public class WorkflowController : AppControllerBase
 	{
 		var workflows = _dbContext.Workflows
 			.Include(e => e.WorkflowCompany)
+			.Include(e => e.WorkflowPermits)
 			.Where(e => e.WorkflowCompany.Id == company)
 			.OrderByDescending(e => e.CreatedWhen)
 			.Select(e => new WorkflowGridViewModel

@@ -108,7 +108,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 	{
 		if (context.Properties.IsPersistent)
 		{
-			//context.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddDays(30);
+			context.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddDays(30);
 		}
 		return Task.CompletedTask;
 	};

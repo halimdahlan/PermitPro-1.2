@@ -352,9 +352,12 @@ public class UsersController : AppControllerBase
 
 
 	[HttpGet("{company}/users/grid")]
-	public JsonResult GetUsersGrid(Guid company)
+	public async Task<JsonResult> GetUsersGrid(Guid company)
 	{
+		var permits = _dbContext.Permits.AsNoTracking().ToList();
+
 		var siteUsers = _dbContext.Users
+			.AsNoTracking()
 			.Include(e => e.UserCompany)
 			.Include(e => e.UserRoles)
 			.ThenInclude(e => e.Role)
@@ -371,7 +374,8 @@ public class UsersController : AppControllerBase
 				Roles = string.Join(", ", e.UserRoles.Select(role => role.Role.Name).ToList()),
 				Designation = e.Designation,
 				CreatedWhen = GeneralHelper.GetDateInTimeZone(e.CreatedWhen),
-				ActionIcons = UsersGridActionIcons(company, e.Id, e.PasswordHash != null)
+				//UserHasPermits = permits.Any(permit => permit.CreatedBy == Guid.Parse(e.Id)),
+				ActionIcons = UsersGridActionIcons(company, e.Id, e.PasswordHash != null),
 			})
 			.ToList();
 
