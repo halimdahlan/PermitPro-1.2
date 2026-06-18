@@ -180,12 +180,56 @@
 						<i class="fa-regular fa-close fa-2x"></i>
 					</button>
 				</div>
-				<div class="modal-body mb-0">
+				<div class="modal-body mb-0 fs-4">
 					You are about to delete this item. Are you sure?
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
-					<button id="btnDeleteItem" type="button" class="btn btn-outline-danger" data-company-id="" data-controller="" data-entity="" data-item-id="" data-bs-dismiss="modal">Yes, please proceed</button>
+					<button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">No</button>
+					<button id="btnDeleteItem" type="button" class="btn btn-sm btn-outline-danger" data-company-id="" data-controller="" data-entity="" data-item-id="" data-bs-dismiss="modal">Yes, please proceed</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Delete warning modal: Workflow -->
+	<div class="modal fade" id="dlgDeleteWarnWorkflow" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="dlgDeleteWarnWorkflowLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header bg-warning">
+					<h2 class="modal-title" id="dlgDeleteWarnWorkflowLabel" style="font-weight:600;">Delete Warning</h2>
+					<button type="button" class="btn btn-sm btn-clear" data-bs-dismiss="modal" aria-label="Close">
+						<i class="fa-regular fa-close fa-2x"></i>
+					</button>
+				</div>
+				<div class="modal-body mb-0 fs-4">
+					WARNING! There are one or more permits attached to this workflow. Consider deactivating the workflow instead of deleting it.
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal">
+						<span class="mx-3">OK</span>
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Delete warning modal: User -->
+	<div class="modal fade" id="dlgDeleteWarnUser" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="dlgDeleteWarnUserLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header bg-warning">
+					<h2 class="modal-title" id="dlgDeleteWarnUserLabel" style="font-weight:600;">Delete Warning</h2>
+					<button type="button" class="btn btn-sm btn-clear" data-bs-dismiss="modal" aria-label="Close">
+						<i class="fa-regular fa-close fa-2x"></i>
+					</button>
+				</div>
+				<div class="modal-body mb-0 fs-4">
+					WARNING! There are one or more permits attached to this user. Consider deactivating the user instead of deleting it.
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal">
+						<span class="mx-3">OK</span>
+					</button>
 				</div>
 			</div>
 		</div>

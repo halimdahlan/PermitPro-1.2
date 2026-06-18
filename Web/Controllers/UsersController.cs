@@ -354,30 +354,45 @@ public class UsersController : AppControllerBase
 	[HttpGet("{company}/users/grid")]
 	public async Task<JsonResult> GetUsersGrid(Guid company)
 	{
-		var permits = _dbContext.Permits.AsNoTracking().ToList();
-
-		var siteUsers = _dbContext.Users
+		var users = await _dbContext.Users
 			.AsNoTracking()
 			.Include(e => e.UserCompany)
 			.Include(e => e.UserRoles)
 			.ThenInclude(e => e.Role)
-			.Where(e => e.UserRoles.Any(e => e.Role.NormalizedName != "SUPERUSER") && e.UserCompany.Id == company)
+			.Include(e => e.Sites)
+			.Where(e => e.UserCompany.Id == company && e.UserRoles.Any(r => r.Role.NormalizedName != "SUPERUSER"))
 			.OrderByDescending(e => e.CreatedWhen)
-			.Select(e => new UsersGridViewModel
+			.ToListAsync();
+
+		var userIds = users.Select(u => Guid.Parse(u.Id)).ToHashSet();
+
+		var usersWithPermits = await _dbContext.Permits
+			.AsNoTracking()
+			.Where(p => p.CreatedBy.HasValue && userIds.Contains(p.CreatedBy.Value))
+			.Select(p => p.CreatedBy.Value)
+			.Distinct()
+			.ToListAsync();
+
+		var permitSet = usersWithPermits.ToHashSet();
+
+		var siteUsers = users.Select(e =>
+		{
+			var userId = Guid.Parse(e.Id);
+			return new UsersGridViewModel
 			{
 				Id = e.Id,
-				Name = string.Format("{0} {1}", e.FirstName, e.LastName).Trim(),
+				Name = $"{e.FirstName} {e.LastName}".Trim(),
 				Email = e.Email,
 				IsSecured = e.PasswordHash != null,
 				IsActive = e.IsActive,
-				Sites = string.Join(", ", _dbContext.Sites.Include(site => site.Users).Where(site => site.Users.Select(user => user.Id).Contains(e.Id)).Select(x => x.Name).ToList()),
-				Roles = string.Join(", ", e.UserRoles.Select(role => role.Role.Name).ToList()),
+				Sites = string.Join(", ", e.Sites.Select(s => s.Name)),
+				Roles = string.Join(", ", e.UserRoles.Select(r => r.Role.Name)),
 				Designation = e.Designation,
 				CreatedWhen = GeneralHelper.GetDateInTimeZone(e.CreatedWhen),
-				//UserHasPermits = permits.Any(permit => permit.CreatedBy == Guid.Parse(e.Id)),
-				ActionIcons = UsersGridActionIcons(company, e.Id, e.PasswordHash != null),
-			})
-			.ToList();
+				HasPermits = permitSet.Contains(userId),
+				ActionIcons = UsersGridActionIcons(company, e.Id, e.PasswordHash != null, permitSet.Contains(userId)),
+			};
+		}).ToList();
 
 		return new JsonResult(siteUsers, new JsonSerializerOptions
 		{
@@ -800,13 +815,22 @@ public class UsersController : AppControllerBase
 
 	#region "Private static functions"
 
-	private static string UsersGridActionIcons(Guid company, string id, bool isSecured)
+	private static string UsersGridActionIcons(Guid company, string id, bool isSecured, bool hasPermits)
 	{
 		var icons = string.Empty;
 
 		icons += "<div class=\"d-flex flex-row action-icons\">";
 		icons += $"<a href=\"/{company}/users/edit/{id}\" class=\"no-loading text-secondary\"><i class=\"fa-solid fa-money-check-pen fa-lg\"></i></a>";
-		icons += $"<a href=\"javascript:;\" class=\"no-loading text-danger\" onclick=\"deleteUser('{id}')\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>";
+		
+		if (hasPermits)
+		{
+			icons += $"<a href=\"javascript:;\" class=\"no-loading text-danger\" data-bs-toggle=\"modal\" data-bs-target=\"#dlgDeleteWarnUser\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>";
+		}
+		else
+		{
+			icons += $"<a href=\"javascript:;\" class=\"no-loading text-danger\" onclick=\"deleteUser('{id}')\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>";
+		}
+		
 		
 		// icons += "<a href=\"javascript:;\" class=\"no-loading text-secondary menu-context dropdown-toggle\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\"><i class=\"fa-solid fa-gear fa-lg\"></i></a>";
 		// icons += "<ul class=\"dropdown-menu\">";

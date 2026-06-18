@@ -189,6 +189,7 @@ public class WorkflowController : AppControllerBase
 	public JsonResult GetWorkflowsGrid(Guid company)
 	{
 		var workflows = _dbContext.Workflows
+			.AsNoTracking()
 			.Include(e => e.WorkflowCompany)
 			.Include(e => e.WorkflowPermits)
 			.Where(e => e.WorkflowCompany.Id == company)
@@ -201,7 +202,8 @@ public class WorkflowController : AppControllerBase
 				IsActive = e.IsActive,
 				HasCertificates = e.HasCertificate,
 				CreatedWhen = GeneralHelper.GetDateInTimeZone(e.CreatedWhen),
-				ActionIcons = WorkflowsGridActionIcons(e.Id.ToString(), company),
+				ActionIcons = WorkflowsGridActionIcons(e.Id.ToString(), company, e.WorkflowPermits.Any()),
+				HasPermits = e.WorkflowPermits.Any()
 			})
 			.ToList();
 
@@ -621,13 +623,22 @@ public class WorkflowController : AppControllerBase
 
 	#region "Private static functions/methods"
 
-	private static string WorkflowsGridActionIcons(string id, Guid companyId)
+	private static string WorkflowsGridActionIcons(string id, Guid companyId, bool hasPermits)
 	{
 		var icons = string.Empty;
 
 		icons += "<div class=\"d-flex flex-row action-icons justify-content-center\">";
 		icons += $"<a href=\"/{companyId}/workflow/edit/{id}\" class=\"no-loading text-secondary\"><i class=\"fa-solid fa-money-check-pen fa-lg\"></i></a>";
-		icons += $"<a href=\"javascript:;\" class=\"no-loading text-danger\" onclick=\"deleteItem('{id}')\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>";
+
+		if (hasPermits)
+		{
+			icons += $"<a href=\"javascript:;\" class=\"no-loading text-danger\" data-bs-toggle=\"modal\" data-bs-target=\"#dlgDeleteWarnWorkflow\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>";
+		}
+		else
+		{
+			icons += $"<a href=\"javascript:;\" class=\"no-loading text-danger\" onclick=\"deleteItem('{id}')\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>";
+		}
+
 		icons += "</div>";
 
 		return icons;

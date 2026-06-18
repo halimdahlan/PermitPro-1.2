@@ -38,5 +38,5 @@ public class UsersGridViewModel
 	[Display(Name = "ACTION")]
 	public string ActionIcons { get; set; }
 
-	public bool UserHasPermits { get; set; }
+	public bool HasPermits { get; set; }
 }

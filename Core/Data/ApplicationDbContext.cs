@@ -178,6 +178,10 @@ public class ApplicationDbContext
 			options.HasMany(x => x.WorkflowHistories)
 					.WithOne(x => x.HistoryWorkflow)
 					.OnDelete(DeleteBehavior.Cascade);
+
+			options.HasMany(x => x.WorkflowPermits)
+				.WithOne(x => x.PermitWorkflow)
+				.OnDelete(DeleteBehavior.NoAction);
 		});
 
 		builder.Entity<SystemMenu>(options =>
