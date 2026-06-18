@@ -150,29 +150,41 @@ public class SitesController : AppControllerBase
 
 
 	[HttpGet("{company}/sites/grid/{parentId?}")]
-	public JsonResult GetLocationGridView(Guid company, Guid parentId)
+	public async Task<JsonResult> GetLocationGridView(Guid company, Guid parentId)
 	{
-		var data = _dbContext.Sites
-			.Include(e => e.SiteCompany)
-			.Where(e => e.SiteType == SiteTypeEnum.Site && e.SiteCompany.Id == company && e.ParentId == parentId);
-
-		//if (parentId != Guid.Empty)
-		//{
-		//	data = data.Where(e => e.ParentId == parentId);
-		//}
-
-		var sites = data
-			.Select(e => new SitesGridViewModel
+		var rows = await _dbContext.Sites
+			.AsNoTracking()
+			.Include(e => e.Permits)
+			.Include(e => e.Users)
+			.Where(e => e.SiteType == SiteTypeEnum.Site && e.SiteCompany.Id == company && e.ParentId == parentId)
+			.Select(e => new
 			{
-				Id = e.Id,
-				Name = e.Name,
-				Description = e.Description,
-				ContactName = e.ContactName,
-				ContactEmail = e.ContactEmail,
-				IsActive = e.IsActive,
-				ParentId = e.ParentId,
-			});
+				e.Id,
+				e.Name,
+				e.Description,
+				e.ContactName,
+				e.ContactEmail,
+				e.IsActive,
+				e.ParentId,
+				e.SiteType,
+				CompanyId = e.SiteCompany.Id,
+				HasPermits = e.Permits.Any(),
+				HasUsers = e.Users.Any(),
+			})
+			.ToListAsync();
 
+		var sites = rows.Select(e => new SitesGridViewModel
+		{
+			Id = e.Id,
+			Name = e.Name,
+			Description = e.Description,
+			ContactName = e.ContactName,
+			ContactEmail = e.ContactEmail,
+			IsActive = e.IsActive,
+			ParentId = e.ParentId,
+			SiteType = e.SiteType,
+			ActionIcons = GetActionIcons(e.Id, e.CompanyId, e.ParentId, e.HasPermits, e.HasUsers),
+		}).ToList();
 
 		return new JsonResult(sites, new JsonSerializerOptions
 		{
@@ -476,6 +488,27 @@ public class SitesController : AppControllerBase
 			var errorMessage = ex.Message;
 			return Json(null);
 		}
+	}
+
+	#endregion
+
+
+	#region Private methods/functions
+
+	public static string GetActionIcons(Guid id, Guid company, Guid parentId, bool hasPermits, bool hasUsers)
+	{
+		var icons = $"<a href=\"/{company}/sites/{parentId}/edit/{id}\" class=\"no-loading text-secondary me-3\"><i class=\"fa-solid fa-money-check-pen fa-lg\"></i></a>";
+
+		if (hasPermits || hasUsers)
+		{
+			icons += "<a href=\"javascript:;\" class=\"no-loading text-danger\" data-bs-toggle=\"modal\" data-bs-target=\"#dlgDeleteWarnLoc\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>";
+		}
+		else
+		{
+			icons += $"<a href=\"javascript:;\" onclick=\"deleteItem('{id}')\" class=\"no-loading text-danger\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>";
+		}
+
+		return icons;
 	}
 
 	#endregion

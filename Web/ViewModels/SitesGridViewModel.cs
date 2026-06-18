@@ -1,6 +1,7 @@
 ﻿#nullable disable
 
 using System.ComponentModel.DataAnnotations;
+using PermitPro.Core.Enums;
 
 namespace PermitPro.App.ViewModels;
 
@@ -24,5 +25,9 @@ public class SitesGridViewModel
 
 	[Display(Name = "IS ACTIVE?")]
 	public bool IsActive { get; set; }
+
+	public SiteTypeEnum SiteType { get; set; }
+
+	public string ActionIcons { get; set; }
 
 }

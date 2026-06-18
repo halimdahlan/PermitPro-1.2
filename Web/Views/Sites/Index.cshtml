@@ -47,26 +47,33 @@
 				.Sortable()
 				.Columns(c =>
 				{
+
 					c.Bound(p => p.Name).ClientTemplate(
-					$"<a class=\"text-info\" href=\"/{Model.CompanyId}/sites/#= Id #\">#= Name #</a>"
-					).Width(250);
+						$"<a class=\"text-info\" href=\"/{Model.CompanyId}/sites/#= Id #\">#= Name #</a>"
+						).Width(250);
 
 					c.Bound(p => p.Description);
 					c.Bound(p => p.ContactName).Width(250);
 					c.Bound(p => p.ContactEmail).Width(250);
 
 					c.Bound(p => p.IsActive).ClientTemplate(
-					"# if (IsActive) { #" +
-					"    <i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-success\"></i>" +
-					"# } else { #" +
-					"    <i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-warning\"></i>" +
-					"# } #"
-					).HeaderHtmlAttributes(new { @class = "grid-header text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(120);
+						"# if (IsActive) { #" +
+						"    <i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-success\"></i>" +
+						"# } else { #" +
+						"    <i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-warning\"></i>" +
+						"# } #")
+						.HeaderHtmlAttributes(new { @class = "grid-header text-center" })
+						.HtmlAttributes(new { @class = "text-center" })
+						.Width(120);
 
-					c.Template(
-					$"<a href=\"/{Model.CompanyId}/sites/{Model.ParentId}/edit/#=Id#\" class=\"no-loading text-secondary me-3\"><i class=\"fa-solid fa-money-check-pen fa-lg\"></i></a>" +
-					"<a href=\"javascript:;\" onclick=\"deleteItem('#=Id#')\" class=\"no-loading text-danger\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>"
-					).Title("ACTION").HeaderHtmlAttributes(new { @class = "text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(100);
+					c.Bound(p => p.ActionIcons)
+						.Title("ACTION")
+						.Sortable(false)
+						.Encoded(false)
+						.HeaderHtmlAttributes(new { @class = "text-center" })
+						.HtmlAttributes(new { @class = "text-center" })
+						.Width(100);
+
 				})
 				.DataSource(ds => ds
 				.Custom()

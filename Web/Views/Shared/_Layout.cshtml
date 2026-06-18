@@ -235,6 +235,28 @@
 		</div>
 	</div>
 
+	<!-- Delete warning modal: Location -->
+	<div class="modal fade" id="dlgDeleteWarnLoc" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="dlgDeleteWarnLocLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header bg-warning">
+					<h2 class="modal-title" id="dlgDeleteWarnLocLabel" style="font-weight:600;">Delete Warning</h2>
+					<button type="button" class="btn btn-sm btn-clear" data-bs-dismiss="modal" aria-label="Close">
+						<i class="fa-regular fa-close fa-2x"></i>
+					</button>
+				</div>
+				<div class="modal-body mb-0 fs-3">
+					WARNING! There are one or more permits and/or users attached to this location. Consider deactivating the location instead of deleting it.
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">
+						<span class="mx-4">OK</span>
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<script nonce="3xecut3" src="~/js/loader.js"></script>
 
 	@await RenderSectionAsync("Scripts", required: false)
