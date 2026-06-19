@@ -82,33 +82,44 @@ public class ContractorsController : AppControllerBase
 
 
 	[HttpGet("{company}/contractors/grid")]
-	public JsonResult ContractorsGridView(Guid company)
+	public async Task<JsonResult> ContractorsGridView(Guid company)
 	{
-		var contractors = _dbContext.Users
-			.Include(e => e.UserCompany)
-			.Include(e => e.UserRoles)
-			.ThenInclude(e => e.Role)
-			.Include(e => e.Sites)
+		var contractors = await _dbContext.Users
+			.AsNoTracking()
 			.Where(e => e.UserCompany.Id == company && e.UserRoles.Any(ur => ur.Role.NormalizedName == "CONTRACTOR"))
 			.OrderByDescending(e => e.CreatedWhen)
-			.Select(e => new ContractorListViewModel
+			.Select(e => new
 			{
-				Id = e.Id,
-				Name = string.Format("{0} {1}", e.FirstName.Trim(), e.LastName.Trim()),
-				Email = e.Email,
-				Location = string.Join(", ", e.Sites.Select(s => s.Name).ToList()),
-				IsSecured = e.PasswordHash != null ? "<i class=\"fa-regular fa-user-lock fa-lg\"></i>" : "<i class=\"fa-regular fa-user-unlock fa-lg\"></i>",
-				IsActiveIcons = e.IsActive ? "<i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-success\"></i>" : "<i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-warning\"></i>",
-				IsActive = e.IsActive,
-				CreatedWhen = GeneralHelper.GetDateInTimeZone(e.CreatedWhen),
-				ActionIcons = ContractorsGridActions(company, e.Id, e.PasswordHash != null),
-			});
+				e.Id,
+				FirstName = e.FirstName ?? "",
+				LastName = e.LastName ?? "",
+				e.Email,
+				SiteNames = e.Sites.Select(s => s.Name),
+				e.PasswordHash,
+				e.IsActive,
+				e.CreatedWhen
+			})
+			.ToListAsync();
 
-		return new JsonResult(contractors, new JsonSerializerOptions
+		var viewModelList = contractors.Select(e => new ContractorListViewModel
+		{
+			Id = e.Id,
+			Name = $"{e.FirstName.Trim()} {e.LastName.Trim()}".Trim(),
+			Email = e.Email,
+			Location = string.Join(", ", e.SiteNames),
+			IsSecured = e.PasswordHash != null ? "<i class=\"fa-regular fa-user-lock fa-lg\"></i>" : "<i class=\"fa-regular fa-user-unlock fa-lg\"></i>",
+			IsActiveIcons = e.IsActive ? "<i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-success\"></i>" : "<i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-warning\"></i>",
+			IsActive = e.IsActive,
+			CreatedWhen = GeneralHelper.GetDateInTimeZone(e.CreatedWhen),
+			ActionIcons = ContractorsGridActions(company, e.Id, e.PasswordHash != null),
+		}).ToList();
+
+		return new JsonResult(viewModelList, new JsonSerializerOptions
 		{
 			PropertyNamingPolicy = null,
 		});
 	}
+
 
 
 	[HttpGet("{company}/contractors/sites/hierarchical")]
