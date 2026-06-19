@@ -204,5 +204,36 @@
 				showToast('All notifications cleared.', 'success');
 			}).fail(() => showToast('Could not clear notifications.', 'error'));
 		});
+
+		// live push: prepend arriving notification without page reload
+		window.addEventListener('notifReceived', function (e) {
+			const data = e.detail;
+			const emptyState = document.getElementById('emptyState');
+			if (emptyState) emptyState.remove();
+
+			const id = 'notif-live-' + Date.now();
+			const html = `
+				<div class="notif-item d-flex flex-row is-unread" id="${id}" data-id="">
+					<div class="notif-icon-col"><div class="notif-dot dot-unread"></div></div>
+					<div class="notif-body-col">
+						<div class="notif-header-row">
+							<span class="notif-title">${data.title || ''}</span>
+							<span class="notif-time">just now</span>
+						</div>
+						<div class="notif-message">${data.message || ''}</div>
+					</div>
+					<div class="notif-actions-col d-flex flex-row align-items-center">
+						<button class="notif-action-btn notif-dismiss-btn no-loading" title="Dismiss"
+							onclick="this.closest('.notif-item').remove(); updatePageBadge(); checkEmptyState();">
+							<i class="fa-regular fa-xmark"></i>
+						</button>
+					</div>
+				</div>`;
+
+			document.getElementById('notifList').insertAdjacentHTML('afterbegin', html);
+			updatePageBadge();
+			document.getElementById('btnDismissAll').disabled = false;
+			showToast((data.title || 'New notification') + ': ' + (data.message || ''), 'success');
+		});
 	</script>
 }

@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -32,6 +32,7 @@ public class PermitService : IPermitService
 	private readonly IHttpContextAccessor _httpContextAccessor;
 	private readonly ICurrentUserService _currentUserService;
 	private readonly ILogService _logService;
+	private readonly INotificationPushService _pushService;
 
 	public PermitService(
 		ApplicationDbContext context
@@ -40,7 +41,8 @@ public class PermitService : IPermitService
 		, IMessageService messageService
 		, IHttpContextAccessor httpContextAccessor
 		, ICurrentUserService currentUserService
-		, ILogService logService)
+		, ILogService logService
+		, INotificationPushService pushService)
 	{
 		_dbContext = context;
 		_ptwSettings = ptwSettings;
@@ -49,6 +51,7 @@ public class PermitService : IPermitService
 		_httpContextAccessor = httpContextAccessor;
 		_currentUserService = currentUserService;
 		_logService = logService;
+		_pushService = pushService;
 	}
 
 
@@ -192,6 +195,7 @@ public class PermitService : IPermitService
 					{
 						var approverName = $"{approver.FirstName} {approver.LastName}";
 						var approvalLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host.Value}/account/login?company={company}&entity=permits&id={permitId}&origin=email";
+						var notifLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host.Value}/{company}/permits/edit/{permitId}";
 
 						var templateData = new
 						{
@@ -215,11 +219,12 @@ public class PermitService : IPermitService
 						{
 							Title = "Approval Required",
 							Message = $"You have a pending approval task for {permitNoCreate}.",
-							Url = approvalLink,
+							Url = notifLink,
 							IsRead = false,
 							IsArchived = false,
 							NotificationUser = approver,
 						});
+						await _pushService.PushAsync(approver.Id, "Approval Required", $"You have a pending approval task for {permitNoCreate}.");
 					}
 				}
 
@@ -386,6 +391,7 @@ public class PermitService : IPermitService
 					{
 						var approverName = $"{approver.FirstName} {approver.LastName}";
 						var approvalLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host.Value}/account/login?company={companyId}&entity=permits&id={permitId}&origin=email";
+						var notifLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host.Value}/{companyId}/permits/edit/{permitId}";
 
 						var templateData = new
 						{
@@ -409,11 +415,12 @@ public class PermitService : IPermitService
 						{
 							Title = "Approval Required",
 							Message = $"You have a pending approval task for {permitNoUpdate}.",
-							Url = approvalLink,
+							Url = notifLink,
 							IsRead = false,
 							IsArchived = false,
 							NotificationUser = approver,
 						});
+						await _pushService.PushAsync(approver.Id, "Approval Required", $"You have a pending approval task for {permitNoUpdate}.");
 					}
 				}
 
@@ -616,6 +623,7 @@ public class PermitService : IPermitService
 							IsArchived = false,
 							NotificationUser = nextApprover,
 						});
+						await _pushService.PushAsync(nextApprover.Id, "Approval Required", $"You have a pending approval task for {permitNoNext}.");
 					}
 				}
 			}
@@ -658,6 +666,7 @@ public class PermitService : IPermitService
 						IsArchived = false,
 						NotificationUser = creator,
 					});
+					await _pushService.PushAsync(creator.Id, "Permit Approved", $"{approvedPermitNo} has been fully approved.");
 				}
 			}
 
@@ -703,6 +712,7 @@ public class PermitService : IPermitService
 						IsArchived = false,
 						NotificationUser = rejCreator,
 					});
+					await _pushService.PushAsync(rejCreator.Id, "Permit Rejected", $"{rejPermitNo} has been rejected.");
 				}
 
 			logMessage = $"Permit [PTW{permit.PermitNo}] has been rejected by {fullName.Trim()} ({currentUser.Email}) on {dateRejected:dd/MM/yyy hh:mm tt}.";

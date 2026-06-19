@@ -258,6 +258,7 @@
 	</div>
 
 	<script nonce="3xecut3" src="~/js/loader.js"></script>
+	<script nonce="3xecut3" src="~/lib/signalr/signalr.min.js"></script>
 
 	@await RenderSectionAsync("Scripts", required: false)
 
@@ -269,16 +270,37 @@
 			<script>
 				(function () {
 					const badge = document.getElementById('bellBadge');
-					if (!badge) return;
+
+					// initial count on page load
 					fetch('/@_companyIdForBadge/notifications/count')
 						.then(r => r.json())
 						.then(d => {
-							if (d.count > 0) {
+							if (badge && d.count > 0) {
 								badge.textContent = d.count > 99 ? '99+' : d.count;
 								badge.style.display = '';
 							}
 						})
 						.catch(() => { });
+
+					// SignalR real-time push
+					const notifConn = new signalR.HubConnectionBuilder()
+						.withUrl('/@_companyIdForBadge/notificationHub')
+						.withAutomaticReconnect()
+						.build();
+
+					notifConn.on('ReceiveNotification', function (data) {
+						if (badge) {
+							const current = parseInt(badge.textContent) || 0;
+							const next = current + 1;
+							badge.textContent = next > 99 ? '99+' : next;
+							badge.style.display = '';
+						}
+						// let the notifications page react live if open
+						window.dispatchEvent(new CustomEvent('notifReceived', { detail: data }));
+					});
+
+					notifConn.start().catch(function () { });
+					window._notifConn = notifConn;
 				})();
 			</script>
 		}

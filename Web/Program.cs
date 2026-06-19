@@ -3,11 +3,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
+using PermitPro.App.Hubs;
+using PermitPro.App.Services;
 using PermitPro.Core.Data;
 using PermitPro.Core.Entities;
 using PermitPro.Core.Extensions;
 using PermitPro.Core.Helpers;
 using PermitPro.Core.Interceptors;
+using PermitPro.Core.Interfaces;
 
 using System.Text;
 
@@ -66,6 +69,7 @@ builder.Services.AddAuthentication()
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddKendo();
+builder.Services.AddSignalR();
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
@@ -137,6 +141,7 @@ builder.Services.AddSingleton(jwtSettings!);
 
 // Add PermitPro custom services
 builder.Services.AddPermitProServices();
+builder.Services.AddScoped<INotificationPushService, NotificationPushService>();
 
 // Add Hangfire
 // builder.Services.AddHangfire(config =>
@@ -195,6 +200,8 @@ app.MapControllerRoute(
 	name: "default",
 	pattern: "{company}/{controller}/{action}/{id?}",
 	defaults: new { company = Guid.Empty, controller = "landing", action = "index" });
+
+app.MapHub<NotificationHub>("/{company}/notificationHub");
 
 app.MapRazorPages();
 
