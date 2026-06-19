@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -55,20 +55,18 @@ public class DashboardController : AppControllerBase
 			.Where(e => e.Company.Id == company && e.Site != null)
 			.ToList();
 
-		var allCount = permits.Count();
+		var allCount = permits.Count;
 
-		var activePermits = permits
-			.Where(e =>
-				e.PermitStatus != PermitStatusEnum.KIV &&
-				e.PermitStatus != PermitStatusEnum.Closed &&
-				e.PermitStatus != PermitStatusEnum.Suspended &&
-				e.PermitStatus != PermitStatusEnum.Draft)
-			.Count();
+		var activePermits = permits.Count(e =>
+			e.PermitStatus != PermitStatusEnum.KIV &&
+			e.PermitStatus != PermitStatusEnum.Closed &&
+			e.PermitStatus != PermitStatusEnum.Suspended &&
+			e.PermitStatus != PermitStatusEnum.Draft);
 
-		var pendingPermits = permits.Where(e => e.PermitStatus == PermitStatusEnum.Pending).Count();
-		var approvedPermits = permits.Where(e => e.PermitStatus == PermitStatusEnum.Approved).Count();
-		var rejectedPermits = permits.Where(e => e.PermitStatus == PermitStatusEnum.Rejected).Count();
-		var closedPermits = permits.Where(e => e.PermitStatus == PermitStatusEnum.Closed).Count();
+		var pendingPermits  = permits.Count(e => e.PermitStatus == PermitStatusEnum.Pending);
+		var approvedPermits = permits.Count(e => e.PermitStatus == PermitStatusEnum.Approved);
+		var rejectedPermits = permits.Count(e => e.PermitStatus == PermitStatusEnum.Rejected);
+		var closedPermits   = permits.Count(e => e.PermitStatus == PermitStatusEnum.Closed);
 
 		// Status breakdown for chart
 		var statusBreakdown = permits
@@ -95,17 +93,26 @@ public class DashboardController : AppControllerBase
 			.Take(7)
 			.ToList();
 
-		// Recent permits (last 5)
-		var recentPermits = permits
+		// Recent permits (last 5) — pre-fetch creator names to avoid N+1 queries
+		var recentPermitsRaw = permits
 			.OrderByDescending(e => e.CreatedWhen)
 			.Take(5)
+			.ToList();
+
+		var creatorIds = recentPermitsRaw.Select(e => e.CreatedBy.ToString()).ToHashSet();
+		var userNames = _dbContext.Users
+			.IgnoreQueryFilters()
+			.Where(u => creatorIds.Contains(u.Id))
+			.ToDictionary(u => u.Id, u => $"{u.FirstName} {u.LastName}");
+
+		var recentPermits = recentPermitsRaw
 			.Select(e => new DashboardRecentPermit
 			{
 				Id = e.Id,
-				PermitNumber = $"PTW{e.PermitNo}" ?? "—",
+				PermitNumber = $"PTW{e.PermitNo}",
 				PermitDescription = GetDescriptionFromJson(e.PermitForm),
 				SiteName = e.Site?.Name ?? "—",
-				RequestedByName = _dbContext.Users.IgnoreQueryFilters().Select(u => new { Id = u.Id, FullName = $"{u.FirstName} {u.LastName}" }).FirstOrDefault(u => u.Id == e.CreatedBy.ToString()).FullName,
+				RequestedByName = userNames.TryGetValue(e.CreatedBy.ToString(), out var name) ? name : "—",
 				Status = e.PermitStatus,
 				CreatedWhen = e.CreatedWhen
 			})
@@ -154,45 +161,28 @@ public class DashboardController : AppControllerBase
 
 	public IActionResult GetDonutChartModels(Guid company)
 	{
-		var allPermits = _dbContext.Permits
+		// Single query: group by status and count in one round-trip
+		var statusCounts = _dbContext.Permits
+			.AsNoTracking()
 			.Where(e => e.Company.Id == company)
-			.Count();
+			.GroupBy(e => e.PermitStatus)
+			.Select(g => new { Status = g.Key, Count = g.Count() })
+			.ToList();
 
-		var activePermits = _dbContext.Permits
-			.Where(e =>
-				e.Company.Id == company && (
-				e.PermitStatus != PermitStatusEnum.KIV &&
-				e.PermitStatus != PermitStatusEnum.Closed &&
-				e.PermitStatus != PermitStatusEnum.Suspended)
-			).Count();
+		var allPermits      = statusCounts.Sum(x => x.Count);
+		var pendingPermits  = statusCounts.FirstOrDefault(x => x.Status == PermitStatusEnum.Pending)?.Count  ?? 0;
+		var approvedPermits = statusCounts.FirstOrDefault(x => x.Status == PermitStatusEnum.Approved)?.Count ?? 0;
+		var closedPermits   = statusCounts.FirstOrDefault(x => x.Status == PermitStatusEnum.Closed)?.Count   ?? 0;
 
-		var pendingPermits = _dbContext.Permits
-			.Where(e =>
-				e.Company.Id == company &&
-				e.PermitStatus == PermitStatusEnum.Pending
-		).Count();
-
-		var approvedPermits = _dbContext.Permits
-			.Where(e =>
-				e.Company.Id == company &&
-				e.PermitStatus == PermitStatusEnum.Approved
-			).Count();
-
-		var closedPermits = _dbContext.Permits
-			.Where(e =>
-				e.Company.Id == company &&
-				e.PermitStatus == PermitStatusEnum.Closed
-			).Count();
-
-		float pendingPercentage = allPermits > 0 ? (float)pendingPermits / allPermits * 100f : 0f;
+		float pendingPercentage  = allPermits > 0 ? (float)pendingPermits  / allPermits * 100f : 0f;
 		float approvedPercentage = allPermits > 0 ? (float)approvedPermits / allPermits * 100f : 0f;
-		float closedPercentage = allPermits > 0 ? (float)closedPermits / allPermits * 100f : 0f;
+		float closedPercentage   = allPermits > 0 ? (float)closedPermits   / allPermits * 100f : 0f;
 
 		var data = new DonutChartModel[]
 		{
-			new DonutChartModel(null, null, null) { Category = "Pending", Value = pendingPercentage, Color = "#f6c343" },
+			new DonutChartModel(null, null, null) { Category = "Pending",  Value = pendingPercentage,  Color = "#f6c343" },
 			new DonutChartModel(null, null, null) { Category = "Approved", Value = approvedPercentage, Color = "#00d97e" },
-			new DonutChartModel(null, null, null) { Category = "Closed", Value = closedPercentage, Color = "#39afd1" },
+			new DonutChartModel(null, null, null) { Category = "Closed",   Value = closedPercentage,   Color = "#39afd1" },
 		};
 
 		return new JsonResult(data);
@@ -209,33 +199,21 @@ public class DashboardController : AppControllerBase
 	{
 		try
 		{
-			var allPermits = _dbContext.Permits
-				.Include(e => e.Site)
-				.Where(e => e.Company.Id == company && e.Site != null)
-				.Count();
-
-			var chartData = _dbContext.Permits
+			var query = _dbContext.Permits
+				.AsNoTracking()
 				.Include(e => e.Site)
 				.Where(e => e.Company.Id == company && e.Site != null);
 
 			if (startDate != null && endDate != null)
 			{
 				var rangeStart = DateTime.Parse(startDate);
-				var rangeEnd = DateTime.Parse(endDate);
-
-				allPermits = _dbContext.Permits
-					.Include(e => e.Site)
-					.Where(e => e.Company.Id == company && e.Site != null && (e.CreatedWhen >= rangeStart && e.CreatedWhen <= rangeEnd))
-					.Count();
-
-				chartData = _dbContext.Permits
-					.Include(e => e.Site)
-					.Where(e => e.Company.Id == company && e.Site != null && (e.CreatedWhen >= rangeStart && e.CreatedWhen <= rangeEnd));
+				var rangeEnd   = DateTime.Parse(endDate);
+				query = query.Where(e => e.CreatedWhen >= rangeStart && e.CreatedWhen <= rangeEnd);
 			}
 
-			var countDonut = chartData.Count();
+			var allPermits = query.Count();
 
-			var groups = chartData
+			var groups = query
 				.GroupBy(e => e.PermitStatus)
 				.Select(e => new
 				{
@@ -260,39 +238,26 @@ public class DashboardController : AppControllerBase
 	{
 		try
 		{
-			var allPermits = _dbContext.Permits
-				.Include(e => e.Site)
-				.Where(e => e.Company.Id == company && e.Site != null)
-				.Count();
-
-			var chartData = _dbContext.Permits
+			var query = _dbContext.Permits
+				.AsNoTracking()
 				.Include(e => e.Site)
 				.Where(e => e.Company.Id == company && e.Site != null);
 
 			if (startDate != null && endDate != null)
 			{
 				var rangeStart = DateTime.Parse(startDate);
-				var rangeEnd = DateTime.Parse(endDate);
-
-				// allPermits = _dbContext.Permits
-				// .Where(e => e.Company.Id == company && (e.CreatedWhen >= rangeStart && e.CreatedWhen <= rangeEnd))
-				// .Count();
-
-				chartData = _dbContext.Permits
-					.Include(e => e.Site)
-					.Where(e => e.Company.Id == company && e.Site != null && (e.CreatedWhen >= rangeStart && e.CreatedWhen <= rangeEnd));
+				var rangeEnd   = DateTime.Parse(endDate);
+				query = query.Where(e => e.CreatedWhen >= rangeStart && e.CreatedWhen <= rangeEnd);
 			}
 
-			var countBar = chartData.Count();
-
-			var groups = chartData
+			var groups = query
 				.GroupBy(e => e.Site.Name)
 				.Select(e => new BarChartModel
 				{
-					Category = e.Key.ToString(),
-					TotalClosed = e.Where(f => f.PermitStatus == PermitStatusEnum.Closed).Count(),
-					TotalPending = e.Where(f => f.PermitStatus == PermitStatusEnum.Pending).Count(),
-					TotalActive = e.Where(f => f.PermitStatus != PermitStatusEnum.Draft && f.PermitStatus != PermitStatusEnum.KIV && f.PermitStatus != PermitStatusEnum.Closed && f.PermitStatus != PermitStatusEnum.Suspended).Count(),
+					Category    = e.Key.ToString(),
+					TotalClosed  = e.Count(f => f.PermitStatus == PermitStatusEnum.Closed),
+					TotalPending = e.Count(f => f.PermitStatus == PermitStatusEnum.Pending),
+					TotalActive  = e.Count(f => f.PermitStatus != PermitStatusEnum.Draft && f.PermitStatus != PermitStatusEnum.KIV && f.PermitStatus != PermitStatusEnum.Closed && f.PermitStatus != PermitStatusEnum.Suspended),
 				})
 				.ToList();
 
