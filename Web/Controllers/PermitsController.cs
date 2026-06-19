@@ -255,14 +255,13 @@ public class PermitsController : AppControllerBase
 				e.CreatedWhen,
 				e.CreatedBy,
 				SubmittedBy = _dbContext.Users
-					.IgnoreQueryFilters()
 					.Select(p => new 
 					{ 
 						UserId = p.Id, 
 						FullName = $"{p.FirstName} {p.LastName}"
 					})
 					.SingleOrDefault(u => u.UserId == e.CreatedBy.ToString().ToLower())
-					.FullName,
+					.FullName ?? "Unknown",
 			});
 
 		if (isContractor)

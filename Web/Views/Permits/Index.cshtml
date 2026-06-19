@@ -106,17 +106,17 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header bg-warning">
-        <h2 class="modal-title" id="dlgPermitConfirmDeleteLabel">Confirm Delete <span class="mb-2 text-danger" id="permitNumber"></span></h2>
+        <h2 class="modal-title" id="dlgPermitConfirmDeleteLabel" style="font-weight:600;">Confirm Delete <span class="mb-2 text-danger" id="permitNumber"></span></h2>
         <button type="button" class="btn btn-clear" data-bs-dismiss="modal" aria-label="Close">
 					<i class="fa-regular fa-close fa-2x"></i>
 				</button>
       </div>
-      <div class="modal-body h3">
+      <div class="modal-body mb-0 fs-4">
 				You are about to delete this permit. Are you sure?
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
-        <button id="btnDelete" type="button" class="btn btn-outline-danger" data-permit-id="" data-bs-dismiss="modal">Yes, please proceed</button>
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">No</button>
+        <button id="btnDelete" type="button" class="btn btn-sm btn-outline-danger" data-permit-id="" data-bs-dismiss="modal">Yes, please proceed</button>
       </div>
     </div>
   </div>
@@ -181,14 +181,12 @@
 
 			$('#dlgPermitConfirmDelete').on('hide.bs.modal', event => {
 				$('#permitNumber').text('');
+				//$('#btnDelete').data('permitId', '');
 			});
 
 
 			$('#btnDelete').click(() => {
 				const id = $('#btnDelete').data('permitId');
-				//const dlgConfirmDelete = new bootstrap.Modal('#dlgPermitConfirmDelete');
-				//dlgConfirmDelete.hide();
-
 				$('#dlgPermitConfirmDelete').modal('hide');
 
 				deletePermit(id);
