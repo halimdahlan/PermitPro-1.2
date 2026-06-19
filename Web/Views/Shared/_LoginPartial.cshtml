@@ -30,8 +30,13 @@
 {
     <!-- Notifications -->
     <a asp-controller="notifications" asp-action="index"
-       class="topbar-icon-btn no-loading" title="Notifications">
+       class="topbar-icon-btn no-loading" title="Notifications" style="position:relative;">
         <i class="fa-solid fa-bell fa-sm"></i>
+        <span id="bellBadge"
+              style="display:none;position:absolute;top:2px;right:2px;min-width:16px;height:16px;
+                     padding:0 4px;border-radius:10px;background:#e74c3c;color:#fff;
+                     font-size:.6rem;font-weight:700;line-height:16px;text-align:center;
+                     pointer-events:none;"></span>
     </a>
 
     <div class="topbar-vdivider"></div>

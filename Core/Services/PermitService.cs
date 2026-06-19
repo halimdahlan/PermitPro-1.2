@@ -186,18 +186,18 @@ public class PermitService : IPermitService
 					var htmlTemplate = File.ReadAllText(Path.Combine(_webHostEnvironment.WebRootPath, "templates", "html", "wf-pending-approval.html"));
 					var template = Template.Parse(htmlTemplate);
 
-					// Generate email to be sent to approvers
+					// Generate email + internal notification for each approver
+					var permitNoCreate = string.Format("PTW{0:000000}", permit.RunningNumber);
 					foreach (var approver in workflowStep.Approvers)
 					{
 						var approverName = $"{approver.FirstName} {approver.LastName}";
-						var approverEmail = approver.Email;
 						var approvalLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host.Value}/account/login?company={company}&entity=permits&id={permitId}&origin=email";
 
 						var templateData = new
 						{
 							RecipientName = approverName,
 							WorkflowName = workflow.Name,
-							PermitNo = string.Format("PTW{0:000000}", permit.RunningNumber),
+							PermitNo = permitNoCreate,
 							DateSubmitted = GeneralHelper.GetDateInTimeZone(permit.CreatedWhen).ToString("dd/MM/yyyy hh:mm tt"),
 							ApprovalLink = approvalLink,
 						};
@@ -206,22 +206,20 @@ public class PermitService : IPermitService
 						await _messageService.SendEmailAsync(new EmailInfo
 						{
 							Name = approverName,
-							Email = approverEmail,
-							Subject = string.Format("Pending approval task for Permit No: PTW{0:000000}", permit.RunningNumber),
+							Email = approver.Email,
+							Subject = $"Pending approval task for {permitNoCreate}",
 							Body = renderedHtml
 						});
 
-						// Create a notification entry for each approver
-						var notification = new Notification
+						_dbContext.Notifications.Add(new Notification
 						{
-							Message = string.Format("You have a pending approval task for Permit No: PTW{0:000000}", permit.RunningNumber),
+							Title = "Approval Required",
+							Message = $"You have a pending approval task for {permitNoCreate}.",
 							Url = approvalLink,
 							IsRead = false,
 							IsArchived = false,
 							NotificationUser = approver,
-						};
-
-						_dbContext.Notifications.Add(notification);
+						});
 					}
 				}
 
@@ -382,18 +380,18 @@ public class PermitService : IPermitService
 					var htmlTemplate = File.ReadAllText(Path.Combine(_webHostEnvironment.WebRootPath, "templates", "html", "wf-pending-approval.html"));
 					var template = Template.Parse(htmlTemplate);
 
-					// Generate email to be sent to approvers
+					// Generate email + internal notification for each approver
+					var permitNoUpdate = string.Format("PTW{0:000000}", permit.RunningNumber);
 					foreach (var approver in workflowStep.Approvers)
 					{
-						var approverName = string.Format("{0} {1}", approver.FirstName, approver.LastName);
-						var approverEmail = approver.Email;
+						var approverName = $"{approver.FirstName} {approver.LastName}";
 						var approvalLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host.Value}/account/login?company={companyId}&entity=permits&id={permitId}&origin=email";
 
 						var templateData = new
 						{
 							RecipientName = approverName,
 							WorkflowName = workflow.Name,
-							PermitNo = string.Format("PTW{0:000000}", permit.RunningNumber),
+							PermitNo = permitNoUpdate,
 							DateSubmitted = GeneralHelper.GetDateInTimeZone(permit.CreatedWhen).ToString("dd/MM/yyyy hh:mm tt"),
 							ApprovalLink = approvalLink,
 						};
@@ -402,22 +400,20 @@ public class PermitService : IPermitService
 						await _messageService.SendEmailAsync(new EmailInfo
 						{
 							Name = approverName,
-							Email = approverEmail,
-							Subject = string.Format("Pending approval task for Permit No: PTW{0:000000}", permit.RunningNumber),
+							Email = approver.Email,
+							Subject = $"Pending approval task for {permitNoUpdate}",
 							Body = renderedHtml
 						});
 
-						// Create a notification entry for each approver
-						var notification = new Notification
+						_dbContext.Notifications.Add(new Notification
 						{
-							Message = string.Format("You have a pending approval task for Permit No: PTW{0:000000}", permit.RunningNumber),
+							Title = "Approval Required",
+							Message = $"You have a pending approval task for {permitNoUpdate}.",
 							Url = approvalLink,
 							IsRead = false,
 							IsArchived = false,
 							NotificationUser = approver,
-						};
-
-						_dbContext.Notifications.Add(notification);
+						});
 					}
 				}
 
@@ -599,8 +595,29 @@ public class PermitService : IPermitService
 					Status = WorkflowStatusEnum.Approved,
 					ApprovedWhen = dateApproved,
 				};
-
 				_dbContext.WorkflowHistories.Add(wfh);
+
+				// Notify next-step approvers
+				if (nextWfs != null)
+				{
+					var nextApprovers = _dbContext.WorkflowSteps
+						.Include(s => s.Approvers)
+						.FirstOrDefault(s => s.Id == nextWfs.Id)?.Approvers ?? new();
+					var permitNoNext = string.Format("PTW{0:000000}", permit.RunningNumber);
+					foreach (var nextApprover in nextApprovers)
+					{
+						var nextLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host.Value}/{permit.Company?.Id}/permits/{permit.Id}/edit";
+						_dbContext.Notifications.Add(new Notification
+						{
+							Title = "Approval Required",
+							Message = $"You have a pending approval task for {permitNoNext}.",
+							Url = nextLink,
+							IsRead = false,
+							IsArchived = false,
+							NotificationUser = nextApprover,
+						});
+					}
+				}
 			}
 			else
 			{
@@ -624,8 +641,24 @@ public class PermitService : IPermitService
 					Status = WorkflowStatusEnum.Approved,
 					ApprovedWhen = dateApproved,
 				};
-
 				_dbContext.WorkflowHistories.Add(wfh);
+
+				// Notify permit creator: fully approved
+				var creator = _dbContext.Users.FirstOrDefault(u => u.Id == permit.CreatedBy.ToString());
+				if (creator != null)
+				{
+					var approvedPermitNo = string.Format("PTW{0:000000}", permit.RunningNumber);
+					var approvedLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host.Value}/{permit.Company?.Id}/permits/{permit.Id}/edit";
+					_dbContext.Notifications.Add(new Notification
+					{
+						Title = "Permit Approved",
+						Message = $"{approvedPermitNo} has been fully approved.",
+						Url = approvedLink,
+						IsRead = false,
+						IsArchived = false,
+						NotificationUser = creator,
+					});
+				}
 			}
 
 			logMessage = $"Permit [PTW{permit.PermitNo}] has been approved by {fullName.Trim()} ({currentUser.Email}) on {dateApproved:dd/MM/yyy hh:mm tt}.";
@@ -653,8 +686,24 @@ public class PermitService : IPermitService
 				Status = WorkflowStatusEnum.Rejected,
 				RejectedWhen = dateRejected,
 			};
-
 			_dbContext.WorkflowHistories.Add(wfh);
+
+				// Notify permit creator: rejected
+				var rejCreator = _dbContext.Users.FirstOrDefault(u => u.Id == permit.CreatedBy.ToString());
+				if (rejCreator != null)
+				{
+					var rejPermitNo = string.Format("PTW{0:000000}", permit.RunningNumber);
+					var rejLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host.Value}/{permit.Company?.Id}/permits/{permit.Id}/edit";
+					_dbContext.Notifications.Add(new Notification
+					{
+						Title = "Permit Rejected",
+						Message = $"{rejPermitNo} has been rejected.",
+						Url = rejLink,
+						IsRead = false,
+						IsArchived = false,
+						NotificationUser = rejCreator,
+					});
+				}
 
 			logMessage = $"Permit [PTW{permit.PermitNo}] has been rejected by {fullName.Trim()} ({currentUser.Email}) on {dateRejected:dd/MM/yyy hh:mm tt}.";
 		}

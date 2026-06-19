@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+#nullable disable
+
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 using PermitPro.App.Controllers.Base;
-using PermitPro.App.Models.Ajax;
 using PermitPro.App.ViewModels;
 using PermitPro.Core.Data;
 using PermitPro.Core.Entities;
@@ -18,7 +19,6 @@ public class NotificationsController : AppControllerBase
 {
 	private readonly ApplicationDbContext _dbContext;
 	private readonly ICurrentUserService _currentUserService;
-
 
 	public NotificationsController(
 		ApplicationDbContext dbContext
@@ -38,60 +38,132 @@ public class NotificationsController : AppControllerBase
 		var currentUser = _currentUserService.GetCurrentUser();
 
 		var notifications = _dbContext.Notifications
+			.AsNoTracking()
 			.Include(e => e.NotificationUser)
-			.Where(e => e.IsRead == false && e.NotificationUser == currentUser)
+			.Where(e => e.NotificationUser.Id == currentUser.Id && !e.IsArchived)
 			.OrderByDescending(e => e.CreatedWhen)
-			.Take(5)
+			.Take(50)
 			.Select(e => new NotificationViewModel
 			{
 				Id = e.Id,
+				Title = e.Title,
 				Message = e.Message,
-				Url = e.Url,
+				Url = e.Url ?? string.Empty,
 				IsRead = e.IsRead,
-				CreatedWhen = string.Format("{0} at {1}", GeneralHelper.GetDateInTimeZone(e.CreatedWhen).ToString("dd MMM, yyyy"), GeneralHelper.GetDateInTimeZone(e.CreatedWhen).ToString("hh:mm tt")),
+				CreatedWhen = string.Format("{0} at {1}",
+					GeneralHelper.GetDateInTimeZone(e.CreatedWhen).ToString("dd MMM, yyyy"),
+					GeneralHelper.GetDateInTimeZone(e.CreatedWhen).ToString("hh:mm tt")),
 			})
-			.AsEnumerable();
+			.ToList();
 
-		return View(notifications);
+		var model = new NotificationsPageViewModel
+		{
+			Notifications = notifications,
+			UnreadCount = notifications.Count(n => !n.IsRead),
+		};
+
+		return View(model);
 	}
 
 
-	public IActionResult ListAll()
+	[HttpGet("{company}/notifications/count")]
+	public IActionResult GetUnreadCount(Guid company)
 	{
-		return View();
+		var currentUser = _currentUserService.GetCurrentUser();
+		if (currentUser == null) return Ok(new { count = 0 });
+
+		var count = _dbContext.Notifications
+			.Include(e => e.NotificationUser)
+			.Count(e => e.NotificationUser.Id == currentUser.Id && !e.IsRead && !e.IsArchived);
+
+		return Ok(new { count });
 	}
 
 
 	[HttpPut("{company}/notifications/read")]
-	public async Task<IActionResult> UpdateNotificationAsRead(AjaxNotificationRequest request)
+	public async Task<IActionResult> MarkAsRead(Guid company, [FromBody] NotificationIdsRequest request)
 	{
-		if (request.Selected != null && request.Selected != string.Empty)
+		if (request?.Ids == null || request.Ids.Count == 0)
+			return BadRequest();
+
+		var currentUser = _currentUserService.GetCurrentUser();
+
+		var notifications = await _dbContext.Notifications
+			.Include(e => e.NotificationUser)
+			.Where(e => request.Ids.Contains(e.Id) && e.NotificationUser.Id == currentUser.Id)
+			.ToListAsync();
+
+		foreach (var n in notifications)
+			n.IsRead = true;
+
+		await _dbContext.SaveChangesAsync();
+
+		return Ok(new { success = true, ids = request.Ids });
+	}
+
+
+	[HttpPut("{company}/notifications/read/all")]
+	public async Task<IActionResult> MarkAllAsRead(Guid company)
+	{
+		var currentUser = _currentUserService.GetCurrentUser();
+
+		var notifications = await _dbContext.Notifications
+			.Include(e => e.NotificationUser)
+			.Where(e => e.NotificationUser.Id == currentUser.Id && !e.IsRead && !e.IsArchived)
+			.ToListAsync();
+
+		foreach (var n in notifications)
+			n.IsRead = true;
+
+		await _dbContext.SaveChangesAsync();
+
+		return Ok(new { success = true });
+	}
+
+
+	[HttpDelete("{company}/notifications/dismiss/{id}")]
+	public async Task<IActionResult> Dismiss(Guid company, Guid id)
+	{
+		var currentUser = _currentUserService.GetCurrentUser();
+
+		var notification = await _dbContext.Notifications
+			.Include(e => e.NotificationUser)
+			.FirstOrDefaultAsync(e => e.Id == id && e.NotificationUser.Id == currentUser.Id);
+
+		if (notification == null)
+			return NotFound();
+
+		notification.IsArchived = true;
+		notification.IsRead = true;
+		await _dbContext.SaveChangesAsync();
+
+		return Ok(new { success = true });
+	}
+
+
+	[HttpDelete("{company}/notifications/dismiss/all")]
+	public async Task<IActionResult> DismissAll(Guid company)
+	{
+		var currentUser = _currentUserService.GetCurrentUser();
+
+		var notifications = await _dbContext.Notifications
+			.Include(e => e.NotificationUser)
+			.Where(e => e.NotificationUser.Id == currentUser.Id && !e.IsArchived)
+			.ToListAsync();
+
+		foreach (var n in notifications)
 		{
-			var tmp = request.Selected.Split(";");
-
-			List<Notification> markAsRead = new();
-			List<string> markSuccess = new();
-
-			foreach (var item in tmp)
-			{
-				var notification = _dbContext.Notifications.SingleOrDefault(e => e.Id.ToString().ToLower() == item.ToLower());
-				notification!.IsRead = true;
-
-				markAsRead.Add(notification);
-
-				markSuccess.Add(item);
-			}
-
-			_dbContext.Notifications.UpdateRange(markAsRead);
-			await _dbContext.SaveChangesAsync();
-
-			return Ok(new
-			{
-				Data = "OK",
-				MarkedItems = string.Join(";", markSuccess),
-			});
+			n.IsArchived = true;
+			n.IsRead = true;
 		}
 
-		return BadRequest();
+		await _dbContext.SaveChangesAsync();
+
+		return Ok(new { success = true });
 	}
+}
+
+public class NotificationIdsRequest
+{
+	public List<Guid> Ids { get; set; } = [];
 }

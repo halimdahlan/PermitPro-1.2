@@ -261,6 +261,29 @@
 
 	@await RenderSectionAsync("Scripts", required: false)
 
+	@if (User.Identity?.IsAuthenticated == true)
+	{
+		var _companyIdForBadge = ViewContext.RouteData.Values["company"] as string;
+		if (!string.IsNullOrEmpty(_companyIdForBadge))
+		{
+			<script>
+				(function () {
+					const badge = document.getElementById('bellBadge');
+					if (!badge) return;
+					fetch('/@_companyIdForBadge/notifications/count')
+						.then(r => r.json())
+						.then(d => {
+							if (d.count > 0) {
+								badge.textContent = d.count > 99 ? '99+' : d.count;
+								badge.style.display = '';
+							}
+						})
+						.catch(() => { });
+				})();
+			</script>
+		}
+	}
+
 	<script>
 		$(document).ready(() => {
 			$('#userDropdown').click((e) => {

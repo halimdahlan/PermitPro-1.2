@@ -4,6 +4,8 @@ namespace PermitPro.Core.Entities;
 
 public class Notification : EntityBase
 {
+	public required string Title { get; set; }
+
 	public required string Message { get; set; }
 
 	public string? Url { get; set; }
