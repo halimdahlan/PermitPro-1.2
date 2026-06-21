@@ -19,7 +19,6 @@ var appConfig = builder.Configuration;
 
 // Add services to the container.
 var connectionString = appConfig.GetConnectionString(builder.Environment.EnvironmentName);
-var hangfireConnectionString = Environment.GetEnvironmentVariable("HANGFIRE_DB_CONNECTION");
 var emailSettings = appConfig.GetSection("EmailSettings").Get<EmailSettings>();
 var ptwSettings = appConfig.GetSection("PTWSettings").Get<PTWSettings>();
 var jwtSettings = appConfig.GetSection("JwtSettings").Get<JwtSettings>();
@@ -138,32 +137,11 @@ builder.Services.AddSingleton(emailSettings!);
 builder.Services.AddSingleton(ptwSettings!);
 builder.Services.AddSingleton(jwtSettings!);
 
-
 // Add PermitPro custom services
 builder.Services.AddPermitProServices();
 builder.Services.AddScoped<INotificationPushService, NotificationPushService>();
 
-// Add Hangfire
-// builder.Services.AddHangfire(config =>
-// {
-// 	config
-// 		.UseSimpleAssemblyNameTypeSerializer()
-// 		.UseRecommendedSerializerSettings()
-// 		.UseSqlServerStorage(hangfireConnectionString);
-// });
-
-// builder.Services.AddHangfireServer();
-
-//builder.Services.AddTransient<IGeneralHelper, GeneralHelper>();
-
 var app = builder.Build();
-
-// Hangfire
-//app.UseHangfireDashboard();
-
-//AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
-
-//app.UseExceptionHandler("/home/error");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
