@@ -6,7 +6,7 @@ public static class GeneralHelper
 {
 	public static DateTime GetDateInTimeZone(DateTime date)
 	{
-		TimeZoneInfo _tzi = TimeZoneInfo.FindSystemTimeZoneById("Singapore Standard Time");
+		TimeZoneInfo _tzi = TimeZoneInfo.FindSystemTimeZoneById("Asia/Kuala_Lumpur");
 		return TimeZoneInfo.ConvertTimeFromUtc(date, _tzi);
 	}
 

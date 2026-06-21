@@ -1,4 +1,4 @@
-# PermitPro
+# PermitPro - Permit-to-Work (PTW)
 
 A multi-tenant, enterprise web application for managing **Permit-to-Work (PTW)** systems and workplace safety permits. Built on ASP.NET Core 10.0 with role-based access control, workflow automation, real-time notifications, and full audit logging.
 
