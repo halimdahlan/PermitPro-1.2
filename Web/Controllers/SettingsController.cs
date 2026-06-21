@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Identity;
+#nullable disable
+
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 using PermitPro.App.Controllers.Base;
+using PermitPro.App.Models.Ajax;
 using PermitPro.Core.Data;
 using PermitPro.Core.Entities;
 using PermitPro.Core.Interfaces;
@@ -11,23 +14,137 @@ namespace PermitPro.App.Controllers;
 public class SettingsController : AppControllerBase
 {
 	private readonly ApplicationDbContext _dbContext;
+	private readonly IAppSettingsService _appSettings;
 
 	public SettingsController(
 		ApplicationDbContext dbContext
 		, IHttpContextAccessor httpContextAccessor
 		, SignInManager<UserInfo> signInManager
 		, ISystemConfigurationService systemConfigurationService
+		, IAppSettingsService appSettings
 	) : base(dbContext, httpContextAccessor, signInManager, systemConfigurationService)
 	{
 		_dbContext = dbContext;
+		_appSettings = appSettings;
 	}
 
 
-	public IActionResult Index()
+	public async Task<IActionResult> Index()
 	{
-		return View();
+		var categories = await _appSettings.GetCategoriesAsync(CompanyID);
+		ViewData["Title"] = "Settings";
+		ViewData["SubTitle"] = "Summary";
+		return View(categories);
 	}
 
+
+	// -------------------------------------------------------------------------
+	// Categories
+	// -------------------------------------------------------------------------
+
+	[HttpGet]
+	public async Task<JsonResult> GetCategories()
+	{
+		var categories = await _appSettings.GetCategoriesAsync(CompanyID);
+		var result = categories.Select(c => new AjaxAppSettingCategoryModel
+		{
+			Id = c.Id,
+			CompanyId = c.CompanyId,
+			Name = c.Name,
+			DisplayName = c.DisplayName,
+			Description = c.Description,
+			Icon = c.Icon,
+			SortOrder = c.SortOrder
+		});
+		return Json(result);
+	}
+
+	[HttpPost]
+	public async Task<IActionResult> SaveCategory([FromBody] AjaxAppSettingCategoryModel model)
+	{
+		if (!ModelState.IsValid)
+			return BadRequest(ModelState);
+
+		var category = new AppSettingCategory
+		{
+			Id = model.Id == Guid.Empty ? Guid.NewGuid() : model.Id,
+			CompanyId = CompanyID,
+			Name = model.Name.Trim().ToLowerInvariant(),
+			DisplayName = model.DisplayName.Trim(),
+			Description = model.Description,
+			Icon = model.Icon,
+			SortOrder = model.SortOrder
+		};
+
+		await _appSettings.UpsertCategoryAsync(category);
+		return Ok(new { id = category.Id });
+	}
+
+	[HttpDelete]
+	public async Task<IActionResult> DeleteCategory(Guid id)
+	{
+		await _appSettings.DeleteCategoryAsync(id);
+		return Ok();
+	}
+
+
+	// -------------------------------------------------------------------------
+	// Settings
+	// -------------------------------------------------------------------------
+
+	[HttpGet]
+	public async Task<JsonResult> GetSettings(Guid categoryId)
+	{
+		var settings = await _appSettings.GetSettingsAsync(CompanyID, categoryId);
+		var result = settings.Select(s => new AjaxAppSettingModel
+		{
+			Id = s.Id,
+			CategoryId = s.CategoryId,
+			CompanyId = s.CompanyId,
+			Key = s.Key,
+			DisplayName = s.DisplayName,
+			Value = s.IsEncrypted ? null : s.Value,
+			DataType = s.DataType,
+			IsEncrypted = s.IsEncrypted,
+			SortOrder = s.SortOrder
+		});
+		return Json(result);
+	}
+
+	[HttpPost]
+	public async Task<IActionResult> SaveSetting([FromBody] AjaxAppSettingModel model)
+	{
+		if (!ModelState.IsValid)
+			return BadRequest(ModelState);
+
+		var setting = new AppSetting
+		{
+			Id = model.Id == Guid.Empty ? Guid.NewGuid() : model.Id,
+			CategoryId = model.CategoryId,
+			CompanyId = CompanyID,
+			Key = model.Key.Trim().ToLowerInvariant(),
+			DisplayName = model.DisplayName.Trim(),
+			Value = model.Value,
+			DataType = model.DataType,
+			IsEncrypted = model.IsEncrypted,
+			SortOrder = model.SortOrder
+		};
+
+		await _appSettings.UpsertSettingAsync(setting);
+		return Ok(new { id = setting.Id });
+	}
+
+	[HttpDelete]
+	public async Task<IActionResult> DeleteSetting(Guid id)
+	{
+		await _appSettings.DeleteSettingAsync(id);
+		return Ok();
+	}
+
+
+	// -------------------------------------------------------------------------
+	// Existing
+	// -------------------------------------------------------------------------
 
 	public JsonResult GetLocations(Guid? id)
 	{
@@ -46,6 +163,6 @@ public class SettingsController : AppControllerBase
 			})
 			.ToList();
 
-		return Json(locations.ToList());
+		return Json(locations);
 	}
 }

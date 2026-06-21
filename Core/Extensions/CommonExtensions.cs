@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.DependencyInjection;
 
 using PermitPro.Core.Interceptors;
 using PermitPro.Core.Interfaces;
@@ -10,6 +11,8 @@ public static class CommonExtensions
 {
 	public static void AddPermitProServices(this IServiceCollection services)
 	{
+		services.AddMemoryCache();
+		services.AddDataProtection();
 		services.AddSingleton<UpdateAuditableEntitiesInterceptor>();
 		services.AddScoped<ICurrentUserService, CurrentUserService>();
 		services.AddScoped<ISystemConfigurationService, SystemConfigurationService>();
@@ -18,5 +21,6 @@ public static class CommonExtensions
 		services.AddScoped<IUserService, UserService>();
 		services.AddScoped<IMessageService, MessageService>();
 		services.AddScoped<ILogService, LogService>();
+		services.AddScoped<IAppSettingsService, AppSettingsService>();
 	}
 }

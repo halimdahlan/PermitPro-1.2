@@ -1,9 +1,8 @@
-﻿using MailKit.Net.Smtp;
+using MailKit.Net.Smtp;
 
 using MimeKit;
 
 using PermitPro.Core.Data;
-using PermitPro.Core.Helpers;
 using PermitPro.Core.Interfaces;
 using PermitPro.Core.Models;
 
@@ -12,14 +11,14 @@ namespace PermitPro.Core.Services;
 public class MessageService : IMessageService
 {
 	private readonly ApplicationDbContext _dbContext;
-	private readonly EmailSettings _emailSettings;
+	private readonly IAppSettingsService _appSettings;
 	private readonly ILogService _logService;
 	private readonly ICurrentUserService _currentUserService;
 
-	public MessageService(ApplicationDbContext dbContext, EmailSettings emailSettings, ILogService logService, ICurrentUserService currentUserService)
+	public MessageService(ApplicationDbContext dbContext, IAppSettingsService appSettings, ILogService logService, ICurrentUserService currentUserService)
 	{
 		_dbContext = dbContext;
-		_emailSettings = emailSettings;
+		_appSettings = appSettings;
 		_logService = logService;
 		_currentUserService = currentUserService;
 	}
@@ -27,6 +26,17 @@ public class MessageService : IMessageService
 	public async Task SendEmailAsync(EmailInfo emailInfo)
 	{
 		var currentUser = _currentUserService.GetCurrentUser();
+		var companyId = currentUser?.UserCompany?.Id ?? Guid.Empty;
+
+		var server = await _appSettings.GetValueAsync(companyId, "email", "server");
+		var portStr = await _appSettings.GetValueAsync(companyId, "email", "port");
+		var senderName = await _appSettings.GetValueAsync(companyId, "email", "senderName");
+		var senderEmail = await _appSettings.GetValueAsync(companyId, "email", "senderEmail");
+		var userName = await _appSettings.GetValueAsync(companyId, "email", "userName");
+		var password = await _appSettings.GetValueAsync(companyId, "email", "password");
+
+		_ = int.TryParse(portStr, out var port);
+
 		var recipientName = emailInfo.Name;
 		var recipientEmail = emailInfo.Email;
 
@@ -34,7 +44,7 @@ public class MessageService : IMessageService
 		bodyBuilder.HtmlBody = emailInfo.Body;
 
 		var mailMessage = new MimeMessage();
-		mailMessage.From.Add(new MailboxAddress(_emailSettings.SenderName, _emailSettings.SenderEmail));
+		mailMessage.From.Add(new MailboxAddress(senderName, senderEmail));
 
 		if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
 		{
@@ -51,8 +61,8 @@ public class MessageService : IMessageService
 
 		try
 		{
-			await client.ConnectAsync(_emailSettings.Server, _emailSettings.Port, false);
-			await client.AuthenticateAsync(_emailSettings.UserName, _emailSettings.Password);
+			await client.ConnectAsync(server, port, false);
+			await client.AuthenticateAsync(userName, password);
 
 			await client.SendAsync(mailMessage);
 			await client.DisconnectAsync(true);

@@ -19,7 +19,6 @@ var appConfig = builder.Configuration;
 
 // Add services to the container.
 var connectionString = appConfig.GetConnectionString(builder.Environment.EnvironmentName);
-var emailSettings = appConfig.GetSection("EmailSettings").Get<EmailSettings>();
 var ptwSettings = appConfig.GetSection("PTWSettings").Get<PTWSettings>();
 var jwtSettings = appConfig.GetSection("JwtSettings").Get<JwtSettings>();
 
@@ -133,7 +132,6 @@ builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
 #endregion
 
 
-builder.Services.AddSingleton(emailSettings!);
 builder.Services.AddSingleton(ptwSettings!);
 builder.Services.AddSingleton(jwtSettings!);
 
@@ -142,6 +140,8 @@ builder.Services.AddPermitProServices();
 builder.Services.AddScoped<INotificationPushService, NotificationPushService>();
 
 var app = builder.Build();
+
+await PermitPro.Core.Services.AppSettingsSeed.SeedDefaultsAsync(app.Services, appConfig);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

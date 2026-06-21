@@ -1,6 +1,317 @@
-﻿@{
+@using Kendo.Mvc.UI
+@using PermitPro.Core.Entities
+@using PermitPro.App.Models.Ajax
+
+@{
 	ViewData["Title"] = "Settings";
-	ViewData["SubTitle"] = "Summary";
+	ViewData["SubTitle"] = "Configuration";
+	var companyId = ViewData["CompanyIdStr"] as string;
 }
 
-<h1>SETTINGS</h1>
+@model IEnumerable<AppSettingCategory>
+
+@Html.AntiForgeryToken()
+
+<div class="row g-3">
+
+	@* Left panel: Categories *@
+	<div class="col-md-4">
+		<div class="card h-100">
+			<div class="card-header d-flex justify-content-between align-items-center">
+				<span class="fw-semibold">Categories</span>
+				<button class="btn btn-sm btn-primary" onclick="addCategory()">
+					<i class="fa-solid fa-plus me-1"></i> New
+				</button>
+			</div>
+			<div class="card-body p-0">
+			</div>
+		</div>
+	</div>
+
+	@* Right panel: Settings *@
+	<div class="col-md-8">
+		<div class="card h-100">
+			<div class="card-header d-flex justify-content-between align-items-center">
+				<span class="fw-semibold" id="settingsPanelTitle">Select a category</span>
+				<button class="btn btn-sm btn-primary" id="btnNewSetting" onclick="addSetting()" disabled>
+					<i class="fa-solid fa-plus me-1"></i> New Setting
+				</button>
+			</div>
+			<div class="card-body p-0">
+			</div>
+		</div>
+	</div>
+</div>
+
+@* ── Category modal ─────────────────────────────────────────────────── *@
+<div class="modal fade" id="categoryModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="categoryModalTitle" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header bg-dark text-white">
+				<h3 class="modal-title fw-bold" id="categoryModalTitle">Category</h3>
+				<button type="button" class="btn btn-sm btn-clear" data-bs-dismiss="modal" aria-label="Close">
+					<i class="fa-regular fa-close fa-2x"></i>
+				</button>
+			</div>
+			<div class="modal-body">
+				<input type="hidden" id="catId" />
+				<div class="mb-3">
+					<label class="form-label">Display Name <span class="text-danger">*</span></label>
+					<input type="text" class="form-control" id="catDisplayName" />
+				</div>
+				<div class="mb-3">
+					<label class="form-label">Name / Slug <span class="text-danger">*</span></label>
+					<input type="text" class="form-control" id="catName" placeholder="e.g. email, notifications" />
+					<div class="form-text">Lowercase, no spaces. Used as the lookup key in code.</div>
+				</div>
+				<div class="mb-3">
+					<label class="form-label">Description</label>
+					<input type="text" class="form-control" id="catDescription" />
+				</div>
+				<div class="row">
+					<div class="col-md-8 mb-3">
+						<label class="form-label">Icon <span class="text-muted">(Font Awesome class)</span></label>
+						<input type="text" class="form-control" id="catIcon" placeholder="fa-envelope" />
+					</div>
+					<div class="col-md-4 mb-3">
+						<label class="form-label">Sort Order</label>
+						<input type="number" class="form-control" id="catSortOrder" value="0" />
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+				<button type="button" class="btn btn-sm btn-primary" onclick="saveCategory()">Save</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+@* ── Setting modal ──────────────────────────────────────────────────── *@
+<div class="modal fade" id="settingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="settingModalTitle" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header bg-dark text-white">
+				<h3 class="modal-title fw-bold" id="settingModalTitle">Setting</h3>
+				<button type="button" class="btn btn-sm btn-clear" data-bs-dismiss="modal" aria-label="Close">
+					<i class="fa-regular fa-close fa-2x"></i>
+				</button>
+			</div>
+			<div class="modal-body">
+				<input type="hidden" id="stgId" />
+				<div class="mb-3">
+					<label class="form-label">Display Name <span class="text-danger">*</span></label>
+					<input type="text" class="form-control" id="stgDisplayName" />
+				</div>
+				<div class="mb-3">
+					<label class="form-label">Key <span class="text-danger">*</span></label>
+					<input type="text" class="form-control" id="stgKey" placeholder="e.g. server, port, password" />
+					<div class="form-text">Lowercase, no spaces.</div>
+				</div>
+				<div class="row">
+					<div class="col-md-6 mb-3">
+						<label class="form-label">Data Type</label>
+						<select class="form-select" id="stgDataType" onchange="onDataTypeChange()">
+							<option value="text">text</option>
+							<option value="password">password</option>
+							<option value="number">number</option>
+							<option value="email">email</option>
+							<option value="boolean">boolean</option>
+						</select>
+					</div>
+					<div class="col-md-6 mb-3 d-flex align-items-end">
+						<div class="form-check mb-2">
+							<input class="form-check-input" type="checkbox" id="stgIsEncrypted" />
+							<label class="form-check-label" for="stgIsEncrypted">Store encrypted</label>
+						</div>
+					</div>
+				</div>
+				<div class="mb-3">
+					<label class="form-label">Value</label>
+					<input type="text" class="form-control" id="stgValue" />
+					<div class="form-text text-muted" id="stgValueHint" style="display:none">
+						Leave blank to keep the existing encrypted value unchanged.
+					</div>
+				</div>
+				<div class="mb-3">
+					<label class="form-label">Sort Order</label>
+					<input type="number" class="form-control" id="stgSortOrder" value="0" />
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+				<button type="button" class="btn btn-sm btn-primary" onclick="saveSetting()">Save</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section CustomCss {
+	<link rel="stylesheet" href="~/css/settings.css" />
+}
+
+@section Scripts {
+	<script>
+		const companyId = '@companyId';
+		const antiForgeryToken = $('input[name="__RequestVerificationToken"]').val();
+		let selectedCategoryId = null;
+
+		// -------------------------------------------------------------------------
+		// Category selection → load settings on the right
+		// -------------------------------------------------------------------------
+		function onCategorySelect() {
+			const grid = $('#categoryGrid').data('kendoGrid');
+			const dataItem = grid.dataItem(grid.select());
+			if (!dataItem) return;
+
+			selectedCategoryId = dataItem.Id;
+			$('#settingsPanelTitle').text(dataItem.DisplayName + ' Settings');
+			$('#btnNewSetting').prop('disabled', false);
+
+			const sg = $('#settingsGrid').data('kendoGrid');
+			sg.dataSource.transport.options.read.url = `/${companyId}/settings/getsettings?categoryId=${selectedCategoryId}`;
+			sg.dataSource.read();
+		}
+
+		// -------------------------------------------------------------------------
+		// Category CRUD
+		// -------------------------------------------------------------------------
+		function addCategory() {
+			$('#categoryModalTitle').text('New Category');
+			$('#catId,#catDisplayName,#catName,#catDescription,#catIcon').val('');
+			$('#catSortOrder').val('0');
+			//new bootstrap.Modal(document.getElementById('categoryModal')).show();
+			$('#categoryModal').modal('show');
+		}
+
+		function editCategory(e) {
+			e.preventDefault();
+			const dataItem = $('#categoryGrid').data('kendoGrid').dataItem($(e.currentTarget).closest('tr'));
+			$('#categoryModalTitle').text('Edit Category');
+			$('#catId').val(dataItem.Id);
+			$('#catDisplayName').val(dataItem.DisplayName);
+			$('#catName').val(dataItem.Name);
+			$('#catDescription').val(dataItem.Description || '');
+			$('#catIcon').val(dataItem.Icon || '');
+			$('#catSortOrder').val(dataItem.SortOrder);
+			//new bootstrap.Modal(document.getElementById('categoryModal')).show();
+			$('#categoryModal').modal('show');
+		}
+
+		function saveCategory() {
+			const payload = {
+				id: $('#catId').val() || '00000000-0000-0000-0000-000000000000',
+				name: $('#catName').val().trim(),
+				displayName: $('#catDisplayName').val().trim(),
+				description: $('#catDescription').val().trim(),
+				icon: $('#catIcon').val().trim(),
+				sortOrder: parseInt($('#catSortOrder').val()) || 0
+			};
+			if (!payload.name || !payload.displayName) { alert('Name and Display Name are required.'); return; }
+			$.ajax({
+				url: `/${companyId}/settings/savecategory`,
+				type: 'POST',
+				contentType: 'application/json',
+				data: JSON.stringify(payload),
+				headers: { 'RequestVerificationToken': antiForgeryToken },
+				success: () => { $('#categoryModal').modal('hide'); $('#categoryGrid').data('kendoGrid').dataSource.read(); },
+				error: xhr => alert('Error: ' + xhr.responseText)
+			});
+		}
+
+		function deleteCategory(e) {
+			e.preventDefault();
+			if (!confirm('Delete this category and all its settings? This cannot be undone.')) return;
+			const dataItem = $('#categoryGrid').data('kendoGrid').dataItem($(e.currentTarget).closest('tr'));
+			$.ajax({
+				url: `/${companyId}/settings/deletecategory?id=${dataItem.Id}`,
+				type: 'DELETE',
+				headers: { 'RequestVerificationToken': antiForgeryToken },
+				success: () => {
+					$('#categoryGrid').data('kendoGrid').dataSource.read();
+					if (selectedCategoryId === dataItem.Id) {
+						selectedCategoryId = null;
+						$('#settingsPanelTitle').text('Select a category');
+						$('#btnNewSetting').prop('disabled', true);
+						$('#settingsGrid').data('kendoGrid').dataSource.data([]);
+					}
+				},
+				error: xhr => alert('Error: ' + xhr.responseText)
+			});
+		}
+
+		// -------------------------------------------------------------------------
+		// Setting CRUD
+		// -------------------------------------------------------------------------
+		function addSetting() {
+			if (!selectedCategoryId) return;
+			$('#settingModalTitle').text('New Setting');
+			$('#stgId,#stgDisplayName,#stgKey,#stgValue').val('');
+			$('#stgDataType').val('text');
+			$('#stgIsEncrypted').prop('checked', false);
+			$('#stgSortOrder').val('0');
+			$('#stgValue').attr('type', 'text');
+			$('#stgValueHint').hide();
+			//new bootstrap.Modal(document.getElementById('settingModal')).show();
+			$('#settingModal').modal('show');
+		}
+
+		function editSetting(e) {
+			e.preventDefault();
+			const dataItem = $('#settingsGrid').data('kendoGrid').dataItem($(e.currentTarget).closest('tr'));
+			$('#settingModalTitle').text('Edit Setting');
+			$('#stgId').val(dataItem.Id);
+			$('#stgDisplayName').val(dataItem.DisplayName);
+			$('#stgKey').val(dataItem.Key);
+			$('#stgDataType').val(dataItem.DataType);
+			$('#stgIsEncrypted').prop('checked', dataItem.IsEncrypted);
+			$('#stgValue').val(dataItem.IsEncrypted ? '' : (dataItem.Value || ''))
+				.attr('type', dataItem.DataType === 'password' ? 'password' : 'text');
+			$('#stgSortOrder').val(dataItem.SortOrder);
+			$('#stgValueHint').toggle(dataItem.IsEncrypted);
+			//new bootstrap.Modal(document.getElementById('settingModal')).show();
+			$('#settingModal').modal('show');
+		}
+
+		function onDataTypeChange() {
+			const t = $('#stgDataType').val();
+			$('#stgValue').attr('type', t === 'password' ? 'password' : 'text');
+		}
+
+		function saveSetting() {
+			const payload = {
+				id: $('#stgId').val() || '00000000-0000-0000-0000-000000000000',
+				categoryId: selectedCategoryId,
+				key: $('#stgKey').val().trim(),
+				displayName: $('#stgDisplayName').val().trim(),
+				value: $('#stgValue').val(),
+				dataType: $('#stgDataType').val(),
+				isEncrypted: $('#stgIsEncrypted').prop('checked'),
+				sortOrder: parseInt($('#stgSortOrder').val()) || 0
+			};
+			if (!payload.key || !payload.displayName) { alert('Key and Display Name are required.'); return; }
+			$.ajax({
+				url: `/${companyId}/settings/savesetting`,
+				type: 'POST',
+				contentType: 'application/json',
+				data: JSON.stringify(payload),
+				headers: { 'RequestVerificationToken': antiForgeryToken },
+				success: () => { $('#settingModal').modal('hide'); $('#settingsGrid').data('kendoGrid').dataSource.read(); },
+				error: xhr => alert('Error: ' + xhr.responseText)
+			});
+		}
+
+		function deleteSetting(e) {
+			e.preventDefault();
+			if (!confirm('Delete this setting permanently?')) return;
+			const dataItem = $('#settingsGrid').data('kendoGrid').dataItem($(e.currentTarget).closest('tr'));
+			$.ajax({
+				url: `/${companyId}/settings/deletesetting?id=${dataItem.Id}`,
+				type: 'DELETE',
+				headers: { 'RequestVerificationToken': antiForgeryToken },
+				success: () => $('#settingsGrid').data('kendoGrid').dataSource.read(),
+				error: xhr => alert('Error: ' + xhr.responseText)
+			});
+		}
+	</script>
+}

@@ -82,6 +82,10 @@ public class ApplicationDbContext
 
 	public DbSet<SystemMenu> SystemMenus { get; set; }
 
+	public DbSet<AppSettingCategory> AppSettingCategories { get; set; }
+
+	public DbSet<AppSetting> AppSettings { get; set; }
+
 	/// <summary>
 	/// Flag to control delete behavior. When TRUE (default), soft-deletes are used.
 	/// When FALSE, hard deletes (permanent removal) are performed.
@@ -206,6 +210,20 @@ public class ApplicationDbContext
 		builder.Entity<Address>();
 
 		builder.Entity<Contact>();
+
+		builder.Entity<AppSettingCategory>(options =>
+		{
+			options.HasIndex(x => new { x.CompanyId, x.Name }).IsUnique();
+			options.HasMany(x => x.Settings)
+				   .WithOne(x => x.Category)
+				   .HasForeignKey(x => x.CategoryId)
+				   .OnDelete(DeleteBehavior.Cascade);
+		});
+
+		builder.Entity<AppSetting>(options =>
+		{
+			options.HasIndex(x => new { x.CompanyId, x.CategoryId, x.Key }).IsUnique();
+		});
 
 		// UserRole is the required dependent end of UserInfo; it must share the same IsDeleted
 		// filter so that Identity role queries automatically exclude soft-deleted users.

@@ -39,7 +39,7 @@ public class AccountController : Controller
 	private readonly ApplicationDbContext _context;
 	private readonly ICurrentUserService _currentUserService;
 	private readonly IWebHostEnvironment _webHostEnvironment;
-	private readonly EmailSettings _emailSettings;
+	private readonly IAppSettingsService _appSettings;
 	private readonly ILogService _logService;
 	private readonly JwtSettings _jwtSettings;
 
@@ -55,7 +55,7 @@ public class AccountController : Controller
 		, ICurrentUserService currentUserService
 		, IWebHostEnvironment webHostEnvironment
 		, ISystemConfigurationService systemConfigurationService
-		, EmailSettings emailSettings
+		, IAppSettingsService appSettings
 		, ILogService logService
 		, JwtSettings jwtSettings)
 	{
@@ -69,7 +69,7 @@ public class AccountController : Controller
 		_context = context;
 		_currentUserService = currentUserService;
 		_webHostEnvironment = webHostEnvironment;
-		_emailSettings = emailSettings;
+		_appSettings = appSettings;
 		_logService = logService;
 		_jwtSettings = jwtSettings;
 
@@ -274,19 +274,26 @@ public class AccountController : Controller
 		var bodyBuilder = new BodyBuilder();
 		bodyBuilder.HtmlBody = renderedHtml;
 
+		var smtpServer = await _appSettings.GetValueAsync(Guid.Empty, "email", "server");
+		var smtpPort = int.TryParse(await _appSettings.GetValueAsync(Guid.Empty, "email", "port"), out var p) ? p : 25;
+		var senderName = await _appSettings.GetValueAsync(Guid.Empty, "email", "senderName");
+		var senderEmail = await _appSettings.GetValueAsync(Guid.Empty, "email", "senderEmail");
+		var smtpUser = await _appSettings.GetValueAsync(Guid.Empty, "email", "userName");
+		var smtpPass = await _appSettings.GetValueAsync(Guid.Empty, "email", "password");
+
 		var message = new MimeMessage();
-		message.From.Add(new MailboxAddress(_emailSettings.SenderName, _emailSettings.SenderEmail));
+		message.From.Add(new MailboxAddress(senderName, senderEmail));
 		message.To.Add(new MailboxAddress($"{user.FirstName} {user.LastName}", user.Email));
 		message.Subject = "Request for password reset";
 		message.Body = bodyBuilder.ToMessageBody();
 
 		using var client = new SmtpClient();
 
-		client.Connect(_emailSettings.Server, _emailSettings.Port, false);
-		client.Authenticate(_emailSettings.UserName, _emailSettings.Password);
+		await client.ConnectAsync(smtpServer, smtpPort, false);
+		await client.AuthenticateAsync(smtpUser, smtpPass);
 
-		client.Send(message);
-		client.Disconnect(true);
+		await client.SendAsync(message);
+		await client.DisconnectAsync(true);
 
 		model.Email = string.Empty;
 		model.ErrorMessage = string.Empty;

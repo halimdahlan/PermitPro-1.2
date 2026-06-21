@@ -24,7 +24,6 @@ public class ScheduledTaskController : Controller
 	private readonly IHttpContextAccessor _httpContextAccessor;
 	private readonly ApplicationDbContext _dbContext;
 	private readonly IWebHostEnvironment _webHostEnvironment;
-	private readonly EmailSettings _emailSettings;
 	private readonly PTWSettings _ptwSettings;
 	private readonly ITemplateService _templateService;
 	private readonly JsonSerializerOptions _jsonOptions;
@@ -40,7 +39,6 @@ public class ScheduledTaskController : Controller
 		, IHttpContextAccessor httpContextAccessor
 		, ApplicationDbContext dbContext
 		, IWebHostEnvironment webHostEnvironment
-		, EmailSettings emailSettings
 		, PTWSettings ptwSettings
 		, ITemplateService templateService
 		, ICurrentUserService currentUserService
@@ -54,7 +52,6 @@ public class ScheduledTaskController : Controller
 		_httpContextAccessor = httpContextAccessor;
 		_dbContext = dbContext;
 		_webHostEnvironment = webHostEnvironment;
-		_emailSettings = emailSettings;
 		_ptwSettings = ptwSettings;
 		_templateService = templateService;
 		_currentUserService = currentUserService;

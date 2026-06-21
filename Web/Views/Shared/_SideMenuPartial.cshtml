@@ -133,10 +133,6 @@
 			</a>
 		</li>
 	</ul>
-}
-
-@if (isPortalAdmin || isSuperUser)
-{
 	<h5 class="sidebar-heading text-uppercase text-white" style="opacity: 0.3;">Admin</h5>
 	<ul class="navbar-nav mt-2">
 		<li class="nav-item">
@@ -144,5 +140,13 @@
 				<i class="fa-solid fa-trash-can-arrow-up fa-fw me-3"></i> Recycle Bin
 			</a>
 		</li>
+		@if (isSuperUser)
+		{
+			<li class="nav-item">
+				<a href="/@companyId/settings" class="nav-link @navSettings">
+					<i class="fa-solid fa-cog fa-fw me-3"></i> System Settings
+				</a>
+			</li>
+		}
 	</ul>
 }
