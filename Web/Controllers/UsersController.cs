@@ -907,9 +907,16 @@ public class UsersController : AppControllerBase
 		var icons = "<div class=\"d-flex flex-row action-icons justify-content-center\">";
 		icons += $"<a href=\"/{company}/users/roles/{id}/edit\" class=\"no-loading text-secondary\"><i class=\"fa-solid fa-money-check-pen fa-lg\"></i></a>";
 
-		if (!isSystemRole && numOfUsers == 0)
+		if (!isSystemRole)
 		{
-			icons += $"<a href=\"javascript:;\" class=\"no-loading text-danger\" onclick=\"deleteRole('{id}')\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>";
+			if (numOfUsers > 0)
+			{
+				icons += $"<a href=\"#\" class=\"no-loading text-danger\" data-bs-toggle=\"modal\" data-bs-target=\"#dlgDeleteWarnRole\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>";
+			}
+			else
+			{
+				icons += $"<a href=\"javascript:;\" class=\"no-loading text-danger\" onclick=\"deleteRole('{id}')\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>";
+			}
 		}
 
 		icons += "</div>";

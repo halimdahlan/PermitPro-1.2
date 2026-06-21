@@ -128,9 +128,26 @@ public class RecycleBinController : AppControllerBase
 			 })
 			 .ToListAsync();
 
+		var roles = await _dbContext.Roles
+			 .IgnoreQueryFilters()
+			 .Where(r => r.IsDeleted)
+			 .OrderByDescending(r => r.DeletedWhen)
+			 .Select(r => new DeletedItem
+			 {
+				 Id = Guid.Parse(r.Id),
+				 EntityType = "Role",
+				 DisplayName = r.Name,
+				 Detail = r.Description,
+				 CompanyId = Guid.Empty,
+				 CompanyName = "(global)",
+				 DeletedWhen = r.DeletedWhen,
+				 DeletedBy = r.DeletedBy,
+			 })
+			 .ToListAsync();
+
 		// Resolve DeletedBy user names in a single query
 		var allDeletedByIds = permits.Concat(sites).Concat(workflows)
-			 .Concat(workflowSteps).Concat(users)
+			 .Concat(workflowSteps).Concat(users).Concat(roles)
 			 .Where(x => x.DeletedBy.HasValue)
 			 .Select(x => x.DeletedBy!.Value.ToString())
 			 .Distinct()
@@ -141,7 +158,7 @@ public class RecycleBinController : AppControllerBase
 			 .Where(u => allDeletedByIds.Contains(u.Id))
 			 .ToDictionaryAsync(u => Guid.Parse(u.Id), u => $"{u.FirstName} {u.LastName}".Trim());
 
-		foreach (var item in permits.Concat(sites).Concat(workflows).Concat(workflowSteps).Concat(users))
+		foreach (var item in permits.Concat(sites).Concat(workflows).Concat(workflowSteps).Concat(users).Concat(roles))
 		{
 			if (item.DeletedBy.HasValue && deletedByNames.TryGetValue(item.DeletedBy.Value, out var name))
 				item.DeletedByName = name;
@@ -174,6 +191,7 @@ public class RecycleBinController : AppControllerBase
 		ViewBag.Workflows = workflows;
 		ViewBag.WorkflowSteps = workflowSteps;
 		ViewBag.Users = users;
+		ViewBag.Roles = roles;
 		ViewBag.Companies = companies;
 		ViewBag.IsSuperUser = isSuperUser;
 
@@ -193,6 +211,7 @@ public class RecycleBinController : AppControllerBase
 			"WorkflowStep" => await _dbContext.WorkflowSteps.IgnoreQueryFilters().FirstOrDefaultAsync(e => e.Id == id),
 			"Company" when User.IsInRole("Super User") => await _dbContext.Companies.IgnoreQueryFilters().FirstOrDefaultAsync(e => e.Id == id),
 			"User" => await _dbContext.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == id.ToString()),
+			"Role" => await _dbContext.Roles.IgnoreQueryFilters().FirstOrDefaultAsync(r => r.Id == id.ToString()),
 			_ => null
 		};
 
@@ -219,6 +238,7 @@ public class RecycleBinController : AppControllerBase
 			"WorkflowStep" => await _dbContext.WorkflowSteps.IgnoreQueryFilters().FirstOrDefaultAsync(e => e.Id == id),
 			"Company" => await _dbContext.Companies.IgnoreQueryFilters().FirstOrDefaultAsync(e => e.Id == id),
 			"User" => await _dbContext.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == id.ToString()),
+			"Role" => await _dbContext.Roles.IgnoreQueryFilters().FirstOrDefaultAsync(r => r.Id == id.ToString()),
 			_ => null
 		};
 

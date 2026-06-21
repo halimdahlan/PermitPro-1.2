@@ -10,6 +10,7 @@
 	var workflows = (List<DeletedItem>)ViewBag.Workflows;
 	var workflowSteps = (List<DeletedItem>)ViewBag.WorkflowSteps;
 	var users = (List<DeletedItem>)ViewBag.Users;
+	var roles = (List<DeletedItem>)ViewBag.Roles;
 	var companies = (List<DeletedItem>)ViewBag.Companies;
 	var isSuperUser = (bool)ViewBag.IsSuperUser;
 }
@@ -53,6 +54,21 @@
 						Users <span class="badge bg-secondary ms-1">@users.Count</span>
 					</button>
 				</li>
+				<li class="nav-item" role="presentation">
+					<button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-roles" type="button" role="tab">
+						Roles <span class="badge bg-secondary ms-1">@roles.Count</span>
+					</button>
+				</li>
+				@if (isSuperUser)
+				{
+					<!--
+					<li class="nav-item" role="presentation">
+						<button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-companies" type="button" role="tab">
+							Companies <span class="badge bg-secondary ms-1">@companies.Count</span>
+						</button>
+					</li>
+					-->
+				}
 			</ul>
 
 			<div class="tab-content" id="recycleTabContent">
@@ -99,6 +115,15 @@
 			{
 				{ "Items", users },
 				{ "Columns", new[] { "Name", "Email", "Company" } },
+			})
+				</div>
+
+				<!-- Roles -->
+				<div class="tab-pane fade" id="tab-roles" role="tabpanel">
+					@await Html.PartialAsync("_RecycleBinTable", new ViewDataDictionary(ViewData)
+			{
+				{ "Items", roles },
+				{ "Columns", new[] { "Name", "Description", "Company" } },
 			})
 				</div>
 

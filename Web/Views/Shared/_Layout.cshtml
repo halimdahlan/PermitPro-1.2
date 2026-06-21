@@ -257,6 +257,28 @@
 		</div>
 	</div>
 
+	<!-- Delete warning modal: Role -->
+	<div class="modal fade" id="dlgDeleteWarnRole" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="dlgDeleteWarnRoleabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header bg-warning">
+					<h2 class="modal-title" id="dlgDeleteWarnRoleLabel" style="font-weight:600;">Delete Warning</h2>
+					<button type="button" class="btn btn-sm btn-clear" data-bs-dismiss="modal" aria-label="Close">
+						<i class="fa-regular fa-close fa-2x"></i>
+					</button>
+				</div>
+				<div class="modal-body mb-0 fs-3">
+					WARNING! There are one or more users attached to this role.
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">
+						<span class="mx-4">OK</span>
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<script nonce="3xecut3" src="~/js/loader.js"></script>
 	<script nonce="3xecut3" src="~/lib/signalr/signalr.min.js"></script>
 

@@ -69,32 +69,56 @@
 		)
 		.Columns(c =>
 		{
-			c.Bound(f => f.Name).ClientTemplate($"<a href=\"/{Model.CompanyId}/users/edit/#=Id#\" class=\"text-info\">#=Name#</a>").Width(250);
+			c.Bound(f => f.Name)
+				.ClientTemplate(
+					$"<a href=\"/{Model.CompanyId}/users/edit/#=Id#\" class=\"text-info\">#=Name#</a>"
+				)
+				.Width(250);
 
 			c.Bound(f => f.Email);
-			//c.Bound(f => f.Location);
-			c.Bound(f => f.Designation).Width(250);
-			c.Bound(f => f.Roles).Width(250);
 
-			c.Bound(f => f.IsSecured).Sortable(false).ClientTemplate(
-				"# if (IsSecured) { #" +
-				"    <i class=\"fa-regular fa-user-lock fa-lg\"></i>" +
-				"# } else { #" +
-				"    <i class=\"fa-regular fa-user-unlock fa-lg\"></i>" +
-				"# } #"
-				).HeaderHtmlAttributes(new { @class = "grid-header text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(120);
+			c.Bound(f => f.Designation)
+				.Width(250);
 
-			c.Bound(f => f.IsActive).Sortable(false).ClientTemplate(
-				"# if (IsActive) { #" +
-				"    <i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-success\"></i>" +
-				"# } else { #" +
-				"    <i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-warning\"></i>" +
-				"# } #"
-				).HeaderHtmlAttributes(new { @class = "grid-header text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(120);
+			c.Bound(f => f.Roles)
+				.Width(250);
 
-			c.Bound(f => f.CreatedWhen).Format("{0:dd MMM, yyyy}").Width(150);
+			c.Bound(f => f.IsSecured)
+				.Sortable(false)
+				.ClientTemplate(
+					"# if (IsSecured) { #" +
+					"    <i class=\"fa-regular fa-user-lock fa-lg\"></i>" +
+					"# } else { #" +
+					"    <i class=\"fa-regular fa-user-unlock fa-lg\"></i>" +
+					"# } #"
+				)
+				.HeaderHtmlAttributes(new { @class = "grid-header text-center" })
+				.HtmlAttributes(new { @class = "text-center" })
+				.Width(120);
 
-			c.Bound(f => f.ActionIcons).Sortable(false).Encoded(false).HeaderHtmlAttributes(new { @class = "grid-header text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(80);
+			c.Bound(f => f.IsActive)
+				.Sortable(false)
+				.ClientTemplate(
+					"# if (IsActive) { #" +
+					"    <i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-success\"></i>" +
+					"# } else { #" +
+					"    <i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-warning\"></i>" +
+					"# } #"
+				)
+				.HeaderHtmlAttributes(new { @class = "grid-header text-center" })
+				.HtmlAttributes(new { @class = "text-center" })
+				.Width(120);
+
+			c.Bound(f => f.CreatedWhen)
+				.Format("{0:dd MMM, yyyy}")
+				.Width(150);
+
+			c.Bound(f => f.ActionIcons)
+				.Sortable(false)
+				.Encoded(false)
+				.HeaderHtmlAttributes(new { @class = "grid-header text-center" })
+				.HtmlAttributes(new { @class = "text-center" })
+				.Width(80);
 		})
 		.Events(ev => ev.DataBound("onGridDataBound"))
 		)
