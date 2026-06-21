@@ -375,4 +375,7 @@ IronPdf-2023.6/
 .DS_Store
 
 # Project specific (PermitPro)
-Web/appsettings.Development.json
+**/appsettings.Development.json
+**/appsettings.Staging.json
+**/appsettings.Uat.json
+**/appsettings.Production.json
