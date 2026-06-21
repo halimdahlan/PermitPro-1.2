@@ -642,6 +642,7 @@ public class UsersController : AppControllerBase
 
 		role.Name = model.Name.Trim();
 		role.Description = model.Description;
+		role.IsSystemRole = model.IsSystemRole;
 		role.UpdatedBy = currentUserId;
 		role.UpdatedWhen = DateTime.UtcNow;
 
