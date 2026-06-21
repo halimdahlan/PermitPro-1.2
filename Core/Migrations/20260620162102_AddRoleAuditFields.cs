@@ -82,6 +82,10 @@ namespace PermitPro.Core.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
+                name: "Description",
+                table: "AspNetRoles");
+
+            migrationBuilder.DropColumn(
                 name: "CreatedBy",
                 table: "AspNetRoles");
 

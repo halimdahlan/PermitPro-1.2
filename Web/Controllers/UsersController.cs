@@ -120,7 +120,7 @@ public class UsersController : AppControllerBase
 
 		model.Roles = userRoles;
 		model.MaxNumOfUsers = _systemConfiguration.UserCreateLimit;
-		model.HasExceededLimit = false; //totalUsers > _systemConfiguration.UserCreateLimit;
+		model.HasExceededLimit = totalUsers > _systemConfiguration.UserCreateLimit;
 		model.OriginFromContractors = !string.IsNullOrEmpty(org) && org == "c";
 
 		return View(model);
@@ -327,19 +327,21 @@ public class UsersController : AppControllerBase
 	}
 
 
+	[HttpGet("{company}/users/roles")]
 	public IActionResult UserRoles()
 	{
 		return View(new UsersViewModel());
 	}
 
 
-	[HttpGet("users/roles/grid")]
-	public IActionResult GetRolesGrid()
+	[HttpGet("{company}/users/roles/grid")]
+	public IActionResult GetRolesGrid(Guid company)
 	{
 		var roles = _dbContext.Roles
 			.Include(e => e.UserRoles)
 			.ThenInclude(e => e.User)
-			.OrderBy(e => e.Name)
+			.OrderByDescending(e => e.CreatedWhen)
+			.ThenBy(e => e.Name)
 			.ToList()
 			.Select(e => new RolesGridViewModel
 			{
@@ -349,7 +351,7 @@ public class UsersController : AppControllerBase
 				NumOfUsers = e.UserRoles?.Count ?? 0,
 				IsSystemRole = e.IsSystemRole,
 				CreatedWhen = GeneralHelper.GetDateInTimeZone(e.CreatedWhen),
-				ActionIcons = RolesGridActionIcons(e.Id, e.IsSystemRole, e.UserRoles?.Count ?? 0),
+				ActionIcons = RolesGridActionIcons(company, e.Id, e.IsSystemRole, e.UserRoles?.Count ?? 0),
 			})
 			.ToList();
 
@@ -548,21 +550,106 @@ public class UsersController : AppControllerBase
 	}
 
 
-	[HttpGet("users/roles/{id?}")]
-	public async Task<IActionResult> GetRoleById(string id)
+	[HttpGet("{company}/users/roles/new")]
+	public IActionResult NewRole()
 	{
+		return View("ManageRole", new ManageRoleViewModel { Name = string.Empty, IsEdit = false });
+	}
+
+
+	[HttpPost("{company}/users/roles/new")]
+	[ValidateAntiForgeryToken]
+	public async Task<IActionResult> CreateRole(Guid company, ManageRoleViewModel model)
+	{
+		model.IsEdit = false;
+
+		if (!ModelState.IsValid)
+			return View("ManageRole", model);
+
+		var normalizedName = model.Name.Trim().ToUpper();
+		var existingRole = await _dbContext.Roles.FirstOrDefaultAsync(e => e.NormalizedName == normalizedName);
+
+		if (existingRole != null)
+		{
+			ModelState.AddModelError(nameof(model.Name), "A role with this name already exists.");
+			return View("ManageRole", model);
+		}
+
+		var currentUserId = Guid.Parse(_httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier));
+
+		var role = new Role
+		{
+			Name = model.Name.Trim(),
+			Description = model.Description,
+			ConcurrencyStamp = Guid.NewGuid().ToString(),
+			IsSystemRole = false,
+			CreatedBy = currentUserId,
+			CreatedWhen = DateTime.UtcNow,
+		};
+
+		await _roleManager.CreateAsync(role);
+
+		TempData["SuccessMessage"] = $"Role '{role.Name}' has been successfully created.";
+
+		return RedirectToAction("UserRoles", new { company });
+	}
+
+
+	[HttpGet("{company}/users/roles/{id}/edit")]
+	public async Task<IActionResult> EditRole(string id)
+	{
+		var role = await _dbContext.Roles
+			.Include(e => e.UserRoles)
+			.ThenInclude(e => e.User)
+			.FirstOrDefaultAsync(e => e.Id == id);
+
+		if (role == null)
+			return NotFound();
+
+		var usersInRole = role.UserRoles?
+			.Select(ur => $"{ur.User?.FirstName} {ur.User?.LastName}".Trim())
+			.Where(name => !string.IsNullOrEmpty(name))
+			.OrderBy(name => name)
+			.ToList() ?? [];
+
+		return View("ManageRole", new ManageRoleViewModel
+		{
+			Id = role.Id,
+			Name = role.Name,
+			Description = role.Description,
+			IsSystemRole = role.IsSystemRole,
+			IsEdit = true,
+			UsersInRole = usersInRole,
+		});
+	}
+
+
+	[HttpPost("{company}/users/roles/{id}/edit")]
+	[ValidateAntiForgeryToken]
+	public async Task<IActionResult> EditRole(Guid company, string id, ManageRoleViewModel model)
+	{
+		model.IsEdit = true;
+
+		if (!ModelState.IsValid)
+			return View("ManageRole", model);
+
 		var role = await _dbContext.Roles.FirstOrDefaultAsync(e => e.Id == id);
 
 		if (role == null)
-		{
 			return NotFound();
-		}
 
-		return Ok(new
-		{
-			role.Name,
-			Description = ""
-		});
+		var currentUserId = Guid.Parse(_httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier));
+
+		role.Name = model.Name.Trim();
+		role.Description = model.Description;
+		role.UpdatedBy = currentUserId;
+		role.UpdatedWhen = DateTime.UtcNow;
+
+		await _roleManager.UpdateAsync(role);
+
+		TempData["SuccessMessage"] = $"Role '{role.Name}' has been successfully updated.";
+
+		return RedirectToAction("UserRoles", new { company });
 	}
 
 
@@ -733,75 +820,6 @@ public class UsersController : AppControllerBase
 	}
 
 
-	[HttpPost("users/roles/{mode?}")]
-	public async Task<IActionResult> ManageRole(string mode = "new")
-	{
-		try
-		{
-			var req = Request.Form;
-			var currentUserId = Guid.Parse(_httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier));
-
-			if (mode == "new")
-			{
-				var normalizedName = req["Name"].ToString().ToUpper();
-				var existingRole = await _dbContext.Roles.FirstOrDefaultAsync(e => e.NormalizedName == normalizedName);
-
-				if (existingRole == null)
-				{
-					var role = new Role
-					{
-						Name = req["Name"].ToString(),
-						ConcurrencyStamp = Guid.NewGuid().ToString(),
-						IsSystemRole = false,
-						CreatedBy = currentUserId,
-						CreatedWhen = DateTime.UtcNow,
-					};
-
-					await _roleManager.CreateAsync(role);
-
-					return Ok(new
-					{
-						Message = "Successfully created role."
-					});
-				}
-				else
-				{
-					return BadRequest(new
-					{
-						ErrorMessage = "Found existing role. Unable to proceed."
-					});
-				}
-			}
-			else
-			{
-				var role = await _dbContext.Roles.FirstOrDefaultAsync(e => e.Id == req["Id"].ToString());
-
-				if (role == null)
-				{
-					return NotFound();
-				}
-
-				role.Name = req["Name"].ToString();
-				role.UpdatedBy = currentUserId;
-				role.UpdatedWhen = DateTime.UtcNow;
-				await _roleManager.UpdateAsync(role);
-
-				return Ok(new
-				{
-					Message = "Successfully updated role."
-				});
-			}
-		}
-		catch (Exception ex)
-		{
-			return BadRequest(new
-			{
-				ErrorMessage = ex.Message
-			});
-		}
-	}
-
-
 	[HttpDelete("users/roles/{id}")]
 	public async Task<IActionResult> DeleteRole(string id)
 	{
@@ -878,36 +896,16 @@ public class UsersController : AppControllerBase
 		{
 			icons += $"<a href=\"javascript:;\" class=\"no-loading text-danger\" onclick=\"deleteUser('{id}')\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>";
 		}
-		
-		
-		// icons += "<a href=\"javascript:;\" class=\"no-loading text-secondary menu-context dropdown-toggle\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\"><i class=\"fa-solid fa-gear fa-lg\"></i></a>";
-		// icons += "<ul class=\"dropdown-menu\">";
-
-		// //if (isSecured)
-		// //{
-		// //	icons += "<li class=\"dropdown-item disabled\">";
-		// //	icons += "Set password";
-		// //}
-		// //else
-		// //{
-		// //}
-
-		// icons += "<li class=\"dropdown-item\">";
-		// icons += $"<a href=\"javascript:;\" class=\"no-loading text-info\" onclick=\"setPassword(this)\" data-user-id=\"{id}\">Set password</a>";
-
-		// icons += "</li>";
-		// icons += "</ul>";
 
 		icons += "</div>";
-
 		return icons;
 	}
 
 
-	private static string RolesGridActionIcons(string id, bool isSystemRole, int numOfUsers)
+	private static string RolesGridActionIcons(Guid company, string id, bool isSystemRole, int numOfUsers)
 	{
 		var icons = "<div class=\"d-flex flex-row action-icons justify-content-center\">";
-		icons += $"<a href=\"javascript:;\" class=\"no-loading text-secondary\" onclick=\"editRole('{id}')\"><i class=\"fa-solid fa-money-check-pen fa-lg\"></i></a>";
+		icons += $"<a href=\"/{company}/users/roles/{id}/edit\" class=\"no-loading text-secondary\"><i class=\"fa-solid fa-money-check-pen fa-lg\"></i></a>";
 
 		if (!isSystemRole && numOfUsers == 0)
 		{

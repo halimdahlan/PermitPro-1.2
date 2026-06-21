@@ -1,6 +1,23 @@
-﻿using PermitPro.Core.Data;
+﻿using System.ComponentModel.DataAnnotations;
+using PermitPro.Core.Data;
 
 namespace PermitPro.App.ViewModels;
+
+public class ManageRoleViewModel
+{
+	public string? Id { get; set; }
+
+	[Required(ErrorMessage = "Role name is required")]
+	public required string Name { get; set; }
+
+	public string? Description { get; set; }
+
+	public bool IsSystemRole { get; set; }
+
+	public bool IsEdit { get; set; }
+
+	public List<string>? UsersInRole { get; set; } = new();
+}
 
 public class UsersViewModel : BaseViewModel
 {

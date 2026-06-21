@@ -15,12 +15,16 @@
 				<div class="my-3">
 					<i class="fa-regular fa-triangle-exclamation" style="font-size: 2.5rem;"></i>
 				</div>
-				<h3 class="text-center">
+				<div class="text-center p-3 fs-3" style="font-family: 'Poppins';">
 					You have reached the user creation limit of <strong>@Model.MaxNumOfUsers</strong> users.<br />
 					If you would like to increase this limit, please contact the system administrator.
-				</h3>
+				</div>
 			</div>
 		</div>
+
+		<a asp-controller="users" asp-action="index">
+			<span class="mx-3"><i class="fa-solid fa-arrow-left me-3"></i> Back</span>
+		</a>
 	</div>
 }
 else
@@ -94,7 +98,7 @@ else
 						<div class="row g-3 mb-3">
 							<div class="col">
 								<input asp-for="IsActive" class="form-check-input" type="checkbox"/>
-              	<label class="form-check-label" for="IsActive">Is Active?</label>
+              					<label class="form-check-label" for="IsActive">Is Active?</label>
 							</div>
 						</div>
 						<div class="row g-3 my-3">
@@ -115,7 +119,10 @@ else
 							</div>
 						</div>
 					</div>
-					<div class="card-footer text-body-secondary d-flex justify-content-end">
+					<div class="card-footer text-body-secondary d-flex justify-content-between">
+						<a href="/@Model.CompanyID/@((Model.OriginFromContractors) ? "contractors" : "users")" role="button" class="btn btn-sm btn-outline-secondary">
+							<span class="mx-3"><i class="fa-solid fa-arrow-left me-3"></i> Cancel</span>
+						</a>
 						<button type="submit" class="btn btn-sm btn-primary"><span class="mx-3">Save Changes</span></button>
 					</div>
 				</div>
@@ -177,12 +184,6 @@ else
 	}
 
 }
-
-<div>
-	<a href="/@Model.CompanyID/@((Model.OriginFromContractors) ? "contractors" : "users")" role="button" class="btn btn-sm btn-outline-secondary">
-		<span class="mx-3"><i class="fa-solid fa-arrow-left me-3"></i> Cancel</span>
-	</a>
-</div>
 
 @section CustomCss {
 	<link rel="stylesheet" href="~/css/users.css" />

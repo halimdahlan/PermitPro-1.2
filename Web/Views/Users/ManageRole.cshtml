@@ -1,0 +1,101 @@
+@{
+	ViewData["Title"] = "Settings / Users / Roles";
+	ViewData["SubTitle"] = Model.IsEdit ? "Edit Role" : "New Role";
+
+	var companyId = ViewContext.RouteData.Values["company"] as string;
+}
+
+@model ManageRoleViewModel
+
+<div class="row g-3">
+	<div class="d-flex flex-column col-12 col-lg-6">
+		<form method="post" action="/@companyId/users/roles/@((Model.IsEdit) ? $"{Model.Id}/edit" : "new")">
+			@Html.AntiForgeryToken()
+			<div class="card shadow-sm h-100">
+				<div class="card-body">
+
+					@if (Model.IsEdit && Model.IsSystemRole)
+					{
+						<div class="alert alert-warning d-flex align-items-center mb-3" role="alert">
+							<i class="fa-solid fa-lock me-2"></i>
+							This is a <strong class="ms-1 me-1">system role</strong>. It can be edited but cannot be deleted.
+						</div>
+					}
+
+					<div class="row g-3 mb-3">
+						<div class="col">
+							<label class="form-label small fw-semibold">Role Name <span class="text-danger">*</span></label>
+							<input asp-for="Name" class="form-control" placeholder="i.e. SUPERVISOR" />
+							<span asp-validation-for="Name" class="text-danger small"></span>
+						</div>
+					</div>
+
+					<div class="row g-3 mb-3">
+						<div class="col">
+							<label class="form-label small fw-semibold">Description</label>
+							<textarea asp-for="Description" class="form-control" rows="3" placeholder="(optional)"></textarea>
+							<span asp-validation-for="Description" class="text-danger small"></span>
+						</div>
+					</div>
+
+					<div class="row g-3">
+						<div class="col">
+							<input asp-for="IsSystemRole" class="form-check-input" type="checkbox"/>
+							<label class="form-check-label" for="IsActive">Is system role?</label>
+						</div>
+					</div>
+
+				</div>
+				<div class="card-footer d-flex align-items-center justify-content-between">
+					<a href="/@companyId/users/roles" role="button" class="btn btn-sm btn-outline-secondary">
+						<span class="mx-3"><i class="fa-solid fa-arrow-left me-3"></i> Cancel</span>
+					</a>
+					<button type="submit" class="btn btn-sm btn-primary">
+						<span class="mx-3">Save Changes</span>
+					</button>
+				</div>
+			</div>
+		</form>
+	</div>
+
+	@if (Model.IsEdit)
+	{
+		<div class="col-12 col-lg-6">
+			<div class="card shadow-sm h-100">
+				<div class="card-header fs-4 fw-bold text-uppercase">
+					List of users in this role
+				</div>
+				<div class="card-body">
+					<div style="overflow-y: auto;height: 100%;max-height: 287px;">
+						<table class="table table-bordered table-striped">
+							<thead>
+								<th>NAME</th>
+							</thead>
+							<tbody>
+								@if (Model.UsersInRole?.Any() == true)
+								{
+									@foreach (var name in Model.UsersInRole)
+									{
+										<tr><td>@name</td></tr>
+									}
+								}
+								else
+								{
+									<tr><td class="text-center text-muted fst-italic">No users assigned to this role.</td></tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+
+</div>
+
+
+@section Scripts {
+	@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial");
+	}
+}
