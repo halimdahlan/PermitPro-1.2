@@ -40,9 +40,9 @@ input[type="text"].form-control {
 	opacity: 1;
 }
 
-#grid, #grid .k-input-inner {
-	font-family: 'Poppins';
-	font-size: 14px;
+#grid, #grid .k-input-inner, .table-grid {
+	font-family: 'Poppins', sans-serif !important;
+	font-size: 14px !important;
 }
 
 	#grid table thead th {

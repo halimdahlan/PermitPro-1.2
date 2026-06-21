@@ -9,6 +9,8 @@ using PermitPro.Core.Data;
 using PermitPro.Core.Entities;
 using PermitPro.Core.Interfaces;
 
+using System.Text.Json;
+
 namespace PermitPro.App.Controllers;
 
 public class SettingsController : AppControllerBase
@@ -56,7 +58,11 @@ public class SettingsController : AppControllerBase
 			Icon = c.Icon,
 			SortOrder = c.SortOrder
 		});
-		return Json(result);
+
+		return new JsonResult(result, new JsonSerializerOptions
+		{
+			PropertyNamingPolicy = null,
+		});
 	}
 
 	[HttpPost]
@@ -108,7 +114,11 @@ public class SettingsController : AppControllerBase
 			IsEncrypted = s.IsEncrypted,
 			SortOrder = s.SortOrder
 		});
-		return Json(result);
+		
+		return new JsonResult(result, new JsonSerializerOptions
+		{
+			PropertyNamingPolicy = null,
+		});
 	}
 
 	[HttpPost]
