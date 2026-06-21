@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+
 using PermitPro.Core.Data;
 using PermitPro.Core.Interfaces;
 
@@ -43,6 +44,6 @@ public class UserInfo : IdentityUser, ISoftDeletable
 	public List<WorkflowStep> WorkflowSteps { get; set; } = new();
 
 	public List<AuditLog> AuditLogs { get; set; } = new();
-	
+
 	//public List<Permit> Permits { get; set; } = new();
 }

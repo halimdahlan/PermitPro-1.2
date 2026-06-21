@@ -1,19 +1,13 @@
-using DocumentFormat.OpenXml.Office2010.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 using PermitPro.App.Controllers.Base;
-using PermitPro.App.Models.Ajax;
 using PermitPro.App.ViewModels;
 using PermitPro.Core.Data;
 using PermitPro.Core.Entities;
-using PermitPro.Core.Enums;
-using PermitPro.Core.Helpers;
 using PermitPro.Core.Interfaces;
-
-using System.Text.Json;
 
 namespace PermitPro.App.Controllers;
 
@@ -39,56 +33,56 @@ public class MaintenanceController : AppControllerBase
 	}
 
 
-  [HttpGet("/{company}/maintenance")]
-  public async Task<IActionResult> Index(Guid company)
-  {
-    var permits = _dbContext.Permits
-      .Include(e => e.PermitWorkflowStep)
-      .Where(e => e.PermitWorkflowStep != null)
-      .OrderByDescending(e => e.CreatedWhen);
+	[HttpGet("/{company}/maintenance")]
+	public async Task<IActionResult> Index(Guid company)
+	{
+		var permits = _dbContext.Permits
+		  .Include(e => e.PermitWorkflowStep)
+		  .Where(e => e.PermitWorkflowStep != null)
+		  .OrderByDescending(e => e.CreatedWhen);
 
-    var workflowSteps = _dbContext.WorkflowSteps
-      .Include(e => e.WorkflowStepWorkflow)
-      .Where(e => e.WorkflowStepWorkflow != null)
-      .Select(e => new
-      {
-        StepID = e.Id,
-        Workflow = e.WorkflowStepWorkflow,
-      })
-      .ToList();
+		var workflowSteps = _dbContext.WorkflowSteps
+		  .Include(e => e.WorkflowStepWorkflow)
+		  .Where(e => e.WorkflowStepWorkflow != null)
+		  .Select(e => new
+		  {
+			  StepID = e.Id,
+			  Workflow = e.WorkflowStepWorkflow,
+		  })
+		  .ToList();
 
-    try
-    {
-      foreach (Permit permit in permits)
-      {
-        var workflowStep = workflowSteps.FirstOrDefault(e => e.StepID == permit.PermitWorkflowStep!.Id);
+		try
+		{
+			foreach (Permit permit in permits)
+			{
+				var workflowStep = workflowSteps.FirstOrDefault(e => e.StepID == permit.PermitWorkflowStep!.Id);
 
-        if (workflowStep != null)
-        {
-          if (workflowStep.Workflow != null)
-          {
-            permit.PermitWorkflow = workflowStep.Workflow;
-            _dbContext.Permits.Update(permit);
-          }
-        }
-      }
+				if (workflowStep != null)
+				{
+					if (workflowStep.Workflow != null)
+					{
+						permit.PermitWorkflow = workflowStep.Workflow;
+						_dbContext.Permits.Update(permit);
+					}
+				}
+			}
 
-      await _dbContext.SaveChangesAsync();
+			await _dbContext.SaveChangesAsync();
 
-      return View(new MaintenanceViewModel
-      {
-        HasError = false,
-        ResultMessage = "Successfully updated permits."
-      });      
-    }
-    catch (Exception ex)
-    {
-      return View(new MaintenanceViewModel
-      {
-        HasError = true,
-        ResultMessage = ex.Message
-      });      
-    }
+			return View(new MaintenanceViewModel
+			{
+				HasError = false,
+				ResultMessage = "Successfully updated permits."
+			});
+		}
+		catch (Exception ex)
+		{
+			return View(new MaintenanceViewModel
+			{
+				HasError = true,
+				ResultMessage = ex.Message
+			});
+		}
 
-  }
+	}
 }

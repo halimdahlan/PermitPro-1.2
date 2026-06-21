@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+
 using PermitPro.Core.Data;
 using PermitPro.Core.Data.DTO;
 using PermitPro.Core.Entities;

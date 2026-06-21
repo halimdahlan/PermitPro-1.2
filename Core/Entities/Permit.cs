@@ -1,5 +1,6 @@
 ﻿using PermitPro.Core.Enums;
 using PermitPro.Core.Interfaces;
+
 using System.ComponentModel.DataAnnotations;
 
 namespace PermitPro.Core.Entities;

@@ -91,7 +91,7 @@ public class SitesController : AppControllerBase
 
 		return RedirectToAction("Index", new { company = model.CompanyId, parentId = model.ParentId });
 	}
-	
+
 
 	public IActionResult Site2()
 	{

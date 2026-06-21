@@ -1,18 +1,23 @@
 ﻿#nullable disable
 
 using MailKit.Net.Smtp;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+
 using MimeKit;
+
 using PermitPro.App.ViewModels;
 using PermitPro.Core.Data;
 using PermitPro.Core.Entities;
 using PermitPro.Core.Helpers;
 using PermitPro.Core.Interfaces;
+
 using Scriban;
+
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http.Headers;
@@ -349,7 +354,7 @@ public class AccountController : Controller
 
 		return View(model);
 	}
-	
+
 
 	[Authorize()]
 	[HttpGet("{company}/account/profile")]

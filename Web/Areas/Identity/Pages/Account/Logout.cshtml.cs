@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+
 using PermitPro.Core.Entities;
 
 namespace PermitPro.App.Areas.Identity.Pages.Account

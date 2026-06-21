@@ -63,10 +63,10 @@ public class DashboardController : AppControllerBase
 			e.PermitStatus != PermitStatusEnum.Suspended &&
 			e.PermitStatus != PermitStatusEnum.Draft);
 
-		var pendingPermits  = permits.Count(e => e.PermitStatus == PermitStatusEnum.Pending);
+		var pendingPermits = permits.Count(e => e.PermitStatus == PermitStatusEnum.Pending);
 		var approvedPermits = permits.Count(e => e.PermitStatus == PermitStatusEnum.Approved);
 		var rejectedPermits = permits.Count(e => e.PermitStatus == PermitStatusEnum.Rejected);
-		var closedPermits   = permits.Count(e => e.PermitStatus == PermitStatusEnum.Closed);
+		var closedPermits = permits.Count(e => e.PermitStatus == PermitStatusEnum.Closed);
 
 		// Status breakdown for chart
 		var statusBreakdown = permits
@@ -169,14 +169,14 @@ public class DashboardController : AppControllerBase
 			.Select(g => new { Status = g.Key, Count = g.Count() })
 			.ToList();
 
-		var allPermits      = statusCounts.Sum(x => x.Count);
-		var pendingPermits  = statusCounts.FirstOrDefault(x => x.Status == PermitStatusEnum.Pending)?.Count  ?? 0;
+		var allPermits = statusCounts.Sum(x => x.Count);
+		var pendingPermits = statusCounts.FirstOrDefault(x => x.Status == PermitStatusEnum.Pending)?.Count ?? 0;
 		var approvedPermits = statusCounts.FirstOrDefault(x => x.Status == PermitStatusEnum.Approved)?.Count ?? 0;
-		var closedPermits   = statusCounts.FirstOrDefault(x => x.Status == PermitStatusEnum.Closed)?.Count   ?? 0;
+		var closedPermits = statusCounts.FirstOrDefault(x => x.Status == PermitStatusEnum.Closed)?.Count ?? 0;
 
-		float pendingPercentage  = allPermits > 0 ? (float)pendingPermits  / allPermits * 100f : 0f;
+		float pendingPercentage = allPermits > 0 ? (float)pendingPermits / allPermits * 100f : 0f;
 		float approvedPercentage = allPermits > 0 ? (float)approvedPermits / allPermits * 100f : 0f;
-		float closedPercentage   = allPermits > 0 ? (float)closedPermits   / allPermits * 100f : 0f;
+		float closedPercentage = allPermits > 0 ? (float)closedPermits / allPermits * 100f : 0f;
 
 		var data = new DonutChartModel[]
 		{
@@ -207,7 +207,7 @@ public class DashboardController : AppControllerBase
 			if (startDate != null && endDate != null)
 			{
 				var rangeStart = DateTime.Parse(startDate);
-				var rangeEnd   = DateTime.Parse(endDate);
+				var rangeEnd = DateTime.Parse(endDate);
 				query = query.Where(e => e.CreatedWhen >= rangeStart && e.CreatedWhen <= rangeEnd);
 			}
 
@@ -246,7 +246,7 @@ public class DashboardController : AppControllerBase
 			if (startDate != null && endDate != null)
 			{
 				var rangeStart = DateTime.Parse(startDate);
-				var rangeEnd   = DateTime.Parse(endDate);
+				var rangeEnd = DateTime.Parse(endDate);
 				query = query.Where(e => e.CreatedWhen >= rangeStart && e.CreatedWhen <= rangeEnd);
 			}
 
@@ -254,10 +254,10 @@ public class DashboardController : AppControllerBase
 				.GroupBy(e => e.Site.Name)
 				.Select(e => new BarChartModel
 				{
-					Category    = e.Key.ToString(),
-					TotalClosed  = e.Count(f => f.PermitStatus == PermitStatusEnum.Closed),
+					Category = e.Key.ToString(),
+					TotalClosed = e.Count(f => f.PermitStatus == PermitStatusEnum.Closed),
 					TotalPending = e.Count(f => f.PermitStatus == PermitStatusEnum.Pending),
-					TotalActive  = e.Count(f => f.PermitStatus != PermitStatusEnum.Draft && f.PermitStatus != PermitStatusEnum.KIV && f.PermitStatus != PermitStatusEnum.Closed && f.PermitStatus != PermitStatusEnum.Suspended),
+					TotalActive = e.Count(f => f.PermitStatus != PermitStatusEnum.Draft && f.PermitStatus != PermitStatusEnum.KIV && f.PermitStatus != PermitStatusEnum.Closed && f.PermitStatus != PermitStatusEnum.Suspended),
 				})
 				.ToList();
 
@@ -292,33 +292,33 @@ public class DashboardController : AppControllerBase
 
 		return category?.ToUpperInvariant() switch
 		{
-			"SIGN_IN"         => "fa-solid fa-arrow-right-to-bracket",
-			"CREATE_PERMIT"   => "fa-solid fa-circle-plus",
-			"UPDATE_PERMIT"   => "fa-solid fa-pen",
-			"DELETE_PERMIT"   => "fa-solid fa-trash",
+			"SIGN_IN" => "fa-solid fa-arrow-right-to-bracket",
+			"CREATE_PERMIT" => "fa-solid fa-circle-plus",
+			"UPDATE_PERMIT" => "fa-solid fa-pen",
+			"DELETE_PERMIT" => "fa-solid fa-trash",
 			"PERMIT_APPROVAL" => "fa-solid fa-check",
-			"PERMIT_CLOSED"   => "fa-solid fa-lock",
-			"PERMIT_SUSPEND"  => "fa-solid fa-pause",
+			"PERMIT_CLOSED" => "fa-solid fa-lock",
+			"PERMIT_SUSPEND" => "fa-solid fa-pause",
 			"FORGOT_PASSWORD" => "fa-solid fa-key",
-			"RESET_PASSWORD"  => "fa-solid fa-key",
-			"SENDEMAIL"       => "fa-solid fa-envelope",
-			"TOKEN"           => "fa-solid fa-shield",
-			_                 => "fa-solid fa-circle-info",
+			"RESET_PASSWORD" => "fa-solid fa-key",
+			"SENDEMAIL" => "fa-solid fa-envelope",
+			"TOKEN" => "fa-solid fa-shield",
+			_ => "fa-solid fa-circle-info",
 		};
 	}
 
 	private static string GetActivityBackground(LogTypeEnum logType) => logType switch
 	{
-		LogTypeEnum.Error   => "#fdeaea",
+		LogTypeEnum.Error => "#fdeaea",
 		LogTypeEnum.Warning => "#fff8e1",
-		_                   => "#e8f0fb",
+		_ => "#e8f0fb",
 	};
 
 	private static string GetActivityIconColor(LogTypeEnum logType) => logType switch
 	{
-		LogTypeEnum.Error   => "#e74c3c",
+		LogTypeEnum.Error => "#e74c3c",
 		LogTypeEnum.Warning => "#e67e22",
-		_                   => "#2c7be5",
+		_ => "#2c7be5",
 	};
 
 	private static string GetActivityTitle(string category, LogTypeEnum logType)
@@ -327,28 +327,28 @@ public class DashboardController : AppControllerBase
 		{
 			return category?.ToUpperInvariant() switch
 			{
-				"SIGN_IN"         => "Sign In Failed",
+				"SIGN_IN" => "Sign In Failed",
 				"FORGOT_PASSWORD" => "Password Reset Error",
-				"RESET_PASSWORD"  => "Password Reset Error",
-				"PERMIT_SUSPEND"  => "Permit Suspend Failed",
-				_                 => "Error",
+				"RESET_PASSWORD" => "Password Reset Error",
+				"PERMIT_SUSPEND" => "Permit Suspend Failed",
+				_ => "Error",
 			};
 		}
 
 		return category?.ToUpperInvariant() switch
 		{
-			"SIGN_IN"         => "User Signed In",
-			"CREATE_PERMIT"   => "Permit Created",
-			"UPDATE_PERMIT"   => "Permit Updated",
-			"DELETE_PERMIT"   => "Permit Deleted",
+			"SIGN_IN" => "User Signed In",
+			"CREATE_PERMIT" => "Permit Created",
+			"UPDATE_PERMIT" => "Permit Updated",
+			"DELETE_PERMIT" => "Permit Deleted",
 			"PERMIT_APPROVAL" => "Permit Approved",
-			"PERMIT_CLOSED"   => "Permit Closed",
-			"PERMIT_SUSPEND"  => "Permit Suspended",
+			"PERMIT_CLOSED" => "Permit Closed",
+			"PERMIT_SUSPEND" => "Permit Suspended",
 			"FORGOT_PASSWORD" => "Password Reset Requested",
-			"RESET_PASSWORD"  => "Password Reset",
-			"SENDEMAIL"       => "Email Sent",
-			"TOKEN"           => "API Token Issued",
-			_                 => category ?? "Activity",
+			"RESET_PASSWORD" => "Password Reset",
+			"SENDEMAIL" => "Email Sent",
+			"TOKEN" => "API Token Issued",
+			_ => category ?? "Activity",
 		};
 	}
 
@@ -356,11 +356,11 @@ public class DashboardController : AppControllerBase
 	{
 		var diff = DateTime.UtcNow - createdWhen;
 
-		if (diff.TotalMinutes < 1)  return "Just now";
+		if (diff.TotalMinutes < 1) return "Just now";
 		if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes} min{((int)diff.TotalMinutes > 1 ? "s" : "")} ago";
-		if (diff.TotalHours < 24)   return $"{(int)diff.TotalHours} hour{((int)diff.TotalHours > 1 ? "s" : "")} ago";
-		if (diff.TotalDays < 2)     return "Yesterday";
-		if (diff.TotalDays < 7)     return $"{(int)diff.TotalDays} days ago";
+		if (diff.TotalHours < 24) return $"{(int)diff.TotalHours} hour{((int)diff.TotalHours > 1 ? "s" : "")} ago";
+		if (diff.TotalDays < 2) return "Yesterday";
+		if (diff.TotalDays < 7) return $"{(int)diff.TotalDays} days ago";
 		return createdWhen.ToLocalTime().ToString("dd MMM yyyy");
 	}
 

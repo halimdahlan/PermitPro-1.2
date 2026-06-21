@@ -43,34 +43,34 @@ public class PasswordController : AppControllerBase
 	}
 
 
-  [HttpGet("/{company}/password/{id}")]
-  public IActionResult Index()
-  {
-    return View();
-  }
+	[HttpGet("/{company}/password/{id}")]
+	public IActionResult Index()
+	{
+		return View();
+	}
 
 
-  [HttpPost("/{company}/password/{id}")]
-  public async Task<IActionResult> Index(Guid company, Guid id, ManageUserPasswordViewModel model)
-  {
-    var actionName = "users";
+	[HttpPost("/{company}/password/{id}")]
+	public async Task<IActionResult> Index(Guid company, Guid id, ManageUserPasswordViewModel model)
+	{
+		var actionName = "users";
 
-    if (!ModelState.IsValid)
-      return View(model);
+		if (!ModelState.IsValid)
+			return View(model);
 
-    var user = await _userManager.FindByIdAsync(id.ToString());
+		var user = await _userManager.FindByIdAsync(id.ToString());
 
-    if (user == null)
-      return NotFound("User not found!");
+		if (user == null)
+			return NotFound("User not found!");
 
-    user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, model.ConfirmPassword!);
-    await _userManager.UpdateAsync(user);
+		user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, model.ConfirmPassword!);
+		await _userManager.UpdateAsync(user);
 
-    TempData["SuccessMessage"] = "User password has been successfully updated.";
+		TempData["SuccessMessage"] = "User password has been successfully updated.";
 
-    if (model.IsContractors) actionName = "contractors";
+		if (model.IsContractors) actionName = "contractors";
 
-    return Redirect($"/{company}/{actionName}");
-  }
+		return Redirect($"/{company}/{actionName}");
+	}
 
 }

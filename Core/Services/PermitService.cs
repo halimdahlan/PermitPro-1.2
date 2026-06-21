@@ -697,23 +697,23 @@ public class PermitService : IPermitService
 			};
 			_dbContext.WorkflowHistories.Add(wfh);
 
-				// Notify permit creator: rejected
-				var rejCreator = _dbContext.Users.FirstOrDefault(u => u.Id == permit.CreatedBy.ToString());
-				if (rejCreator != null)
+			// Notify permit creator: rejected
+			var rejCreator = _dbContext.Users.FirstOrDefault(u => u.Id == permit.CreatedBy.ToString());
+			if (rejCreator != null)
+			{
+				var rejPermitNo = string.Format("PTW{0:000000}", permit.RunningNumber);
+				var rejLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host.Value}/{permit.Company?.Id}/permits/{permit.Id}/edit";
+				_dbContext.Notifications.Add(new Notification
 				{
-					var rejPermitNo = string.Format("PTW{0:000000}", permit.RunningNumber);
-					var rejLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host.Value}/{permit.Company?.Id}/permits/{permit.Id}/edit";
-					_dbContext.Notifications.Add(new Notification
-					{
-						Title = "Permit Rejected",
-						Message = $"{rejPermitNo} has been rejected.",
-						Url = rejLink,
-						IsRead = false,
-						IsArchived = false,
-						NotificationUser = rejCreator,
-					});
-					await _pushService.PushAsync(rejCreator.Id, "Permit Rejected", $"{rejPermitNo} has been rejected.");
-				}
+					Title = "Permit Rejected",
+					Message = $"{rejPermitNo} has been rejected.",
+					Url = rejLink,
+					IsRead = false,
+					IsArchived = false,
+					NotificationUser = rejCreator,
+				});
+				await _pushService.PushAsync(rejCreator.Id, "Permit Rejected", $"{rejPermitNo} has been rejected.");
+			}
 
 			logMessage = $"Permit [PTW{permit.PermitNo}] has been rejected by {fullName.Trim()} ({currentUser.Email}) on {dateRejected:dd/MM/yyy hh:mm tt}.";
 		}

@@ -1,5 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-using PermitPro.Core.Data;
+﻿using PermitPro.Core.Data;
+
+using System.ComponentModel.DataAnnotations;
 
 namespace PermitPro.App.ViewModels;
 

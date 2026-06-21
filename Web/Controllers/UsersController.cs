@@ -220,7 +220,7 @@ public class UsersController : AppControllerBase
 				Name = e.Name,
 			})
 			.ToList();
-		
+
 		user.Roles = userRoles;
 		user.IsEdit = true;
 		user.OriginFromContractors = !string.IsNullOrEmpty(org) ? org == "c" : false;
@@ -233,7 +233,7 @@ public class UsersController : AppControllerBase
 				NewPassword = string.Empty,
 				ConfirmPassword = string.Empty,
 				IsContractors = !string.IsNullOrEmpty(org) && org == "c"
-      }
+			}
 		};
 
 		return View("Edit", model);
@@ -300,7 +300,7 @@ public class UsersController : AppControllerBase
 				}
 			}
 		}
-		
+
 		await _dbContext.SaveChangesAsync();
 
 		TempData["SuccessMessage"] = "User information has been successfully updated.";
@@ -888,7 +888,7 @@ public class UsersController : AppControllerBase
 
 		icons += "<div class=\"d-flex flex-row action-icons\">";
 		icons += $"<a href=\"/{company}/users/edit/{id}\" class=\"no-loading text-secondary\"><i class=\"fa-solid fa-money-check-pen fa-lg\"></i></a>";
-		
+
 		if (hasPermits)
 		{
 			icons += $"<a href=\"javascript:;\" class=\"no-loading text-danger\" data-bs-toggle=\"modal\" data-bs-target=\"#dlgDeleteWarnUser\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>";

@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+
 using PermitPro.Core.Entities;
 using PermitPro.Core.Interfaces;
+
 using System.Reflection;
 
 namespace PermitPro.Core.Data;

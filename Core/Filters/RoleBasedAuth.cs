@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
+
 using PermitPro.Core.Data;
+
 using System.Security.Claims;
 
 namespace PermitPro.Core.Filters;

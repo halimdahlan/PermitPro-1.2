@@ -255,9 +255,9 @@ public class PermitsController : AppControllerBase
 				e.CreatedWhen,
 				e.CreatedBy,
 				SubmittedBy = _dbContext.Users
-					.Select(p => new 
-					{ 
-						UserId = p.Id, 
+					.Select(p => new
+					{
+						UserId = p.Id,
 						FullName = $"{p.FirstName} {p.LastName}"
 					})
 					.SingleOrDefault(u => u.UserId == e.CreatedBy.ToString().ToLower())

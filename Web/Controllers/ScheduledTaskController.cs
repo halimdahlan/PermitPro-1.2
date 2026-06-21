@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+
 using PermitPro.Core.Data;
 using PermitPro.Core.Entities;
 using PermitPro.Core.Enums;

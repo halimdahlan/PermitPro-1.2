@@ -3,6 +3,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+
 using PermitPro.Core.Data;
 using PermitPro.Core.Entities;
 using PermitPro.Core.Interfaces;

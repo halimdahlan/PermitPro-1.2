@@ -1,7 +1,8 @@
 ﻿#nullable disable
 
-using System.ComponentModel.DataAnnotations;
 using PermitPro.Core.Enums;
+
+using System.ComponentModel.DataAnnotations;
 
 namespace PermitPro.App.ViewModels;
 

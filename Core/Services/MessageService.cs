@@ -1,6 +1,7 @@
 ﻿using MailKit.Net.Smtp;
 
 using MimeKit;
+
 using PermitPro.Core.Data;
 using PermitPro.Core.Helpers;
 using PermitPro.Core.Interfaces;
