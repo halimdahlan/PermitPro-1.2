@@ -41,7 +41,7 @@
 					<div class="row g-3">
 						<div class="col">
 							<input asp-for="IsSystemRole" class="form-check-input" type="checkbox"/>
-							<label class="form-check-label" for="IsActive">Is system role?</label>
+							<label class="form-check-label ms-2" for="IsActive">Is system role?</label>
 						</div>
 					</div>
 
@@ -65,8 +65,8 @@
 				<div class="card-header fs-4 fw-bold text-uppercase">
 					List of users in this role
 				</div>
-				<div class="card-body">
-					<div style="overflow-y: auto;height: 100%;max-height: 287px;">
+				<div class="card-body d-flex flex-column justify-content-between">
+					<div style="overflow-y: auto; height: 100%;max-height: 266px;">
 						<table class="table table-bordered table-striped">
 							<thead>
 								<th>NAME</th>
@@ -85,6 +85,12 @@
 								}
 							</tbody>
 						</table>
+					</div>
+					<div class="text-end">
+						@if (Model.UsersInRole?.Any() == true)
+						{
+							<span>Total: <strong>@Model.UsersInRole.Count</strong> user@((Model.UsersInRole.Count > 1) ? "s" : "")</span>
+						}
 					</div>
 				</div>
 			</div>
