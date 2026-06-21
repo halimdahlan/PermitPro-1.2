@@ -329,25 +329,34 @@ public class UsersController : AppControllerBase
 
 	public IActionResult UserRoles()
 	{
+		return View(new UsersViewModel());
+	}
+
+
+	[HttpGet("users/roles/grid")]
+	public IActionResult GetRolesGrid()
+	{
 		var roles = _dbContext.Roles
 			.Include(e => e.UserRoles)
 			.ThenInclude(e => e.User)
-			.Select(e => new UserRolesInfo
+			.OrderBy(e => e.Name)
+			.ToList()
+			.Select(e => new RolesGridViewModel
 			{
 				Id = e.Id,
 				Name = e.Name,
-				NumOfUsers = e.UserRoles.Count(),
-				IsNonEditable = CheckIfRoleIsNonEditable(e.NormalizedName),
+				Description = e.Description,
+				NumOfUsers = e.UserRoles?.Count ?? 0,
+				IsSystemRole = e.IsSystemRole,
+				CreatedWhen = GeneralHelper.GetDateInTimeZone(e.CreatedWhen),
+				ActionIcons = RolesGridActionIcons(e.Id, e.IsSystemRole, e.UserRoles?.Count ?? 0),
 			})
-			.OrderBy(e => e.Name)
 			.ToList();
 
-		var model = new UsersViewModel
+		return new JsonResult(roles, new JsonSerializerOptions
 		{
-			UserRolesInfos = roles
-		};
-
-		return View(model);
+			PropertyNamingPolicy = null,
+		});
 	}
 
 
@@ -730,6 +739,7 @@ public class UsersController : AppControllerBase
 		try
 		{
 			var req = Request.Form;
+			var currentUserId = Guid.Parse(_httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier));
 
 			if (mode == "new")
 			{
@@ -742,6 +752,9 @@ public class UsersController : AppControllerBase
 					{
 						Name = req["Name"].ToString(),
 						ConcurrencyStamp = Guid.NewGuid().ToString(),
+						IsSystemRole = false,
+						CreatedBy = currentUserId,
+						CreatedWhen = DateTime.UtcNow,
 					};
 
 					await _roleManager.CreateAsync(role);
@@ -761,7 +774,7 @@ public class UsersController : AppControllerBase
 			}
 			else
 			{
-				var role = await _roleManager.FindByIdAsync(req["Id"]);
+				var role = await _dbContext.Roles.FirstOrDefaultAsync(e => e.Id == req["Id"].ToString());
 
 				if (role == null)
 				{
@@ -769,6 +782,8 @@ public class UsersController : AppControllerBase
 				}
 
 				role.Name = req["Name"].ToString();
+				role.UpdatedBy = currentUserId;
+				role.UpdatedWhen = DateTime.UtcNow;
 				await _roleManager.UpdateAsync(role);
 
 				return Ok(new
@@ -783,6 +798,39 @@ public class UsersController : AppControllerBase
 			{
 				ErrorMessage = ex.Message
 			});
+		}
+	}
+
+
+	[HttpDelete("users/roles/{id}")]
+	public async Task<IActionResult> DeleteRole(string id)
+	{
+		try
+		{
+			var role = await _dbContext.Roles
+				.Include(e => e.UserRoles)
+				.FirstOrDefaultAsync(e => e.Id == id);
+
+			if (role == null)
+				return NotFound();
+
+			if (role.IsSystemRole)
+				return BadRequest(new { ErrorMessage = "System roles cannot be deleted." });
+
+			if (role.UserRoles?.Count > 0)
+				return BadRequest(new { ErrorMessage = "Cannot delete a role that has users assigned to it. Please reassign all users first." });
+
+			role.IsDeleted = true;
+			role.DeletedWhen = DateTime.UtcNow;
+			role.DeletedBy = Guid.Parse(_httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier));
+
+			await _roleManager.UpdateAsync(role);
+
+			return Ok(new { Data = "OK" });
+		}
+		catch (Exception ex)
+		{
+			return BadRequest(new { ErrorMessage = ex.Message });
 		}
 	}
 
@@ -856,10 +904,18 @@ public class UsersController : AppControllerBase
 	}
 
 
-	private static bool CheckIfRoleIsNonEditable(string roleName)
+	private static string RolesGridActionIcons(string id, bool isSystemRole, int numOfUsers)
 	{
-		IEnumerable<string> reservedRoles = Environment.GetEnvironmentVariable("RESERVED_ROLES").Split(';');
-		return reservedRoles.Contains(roleName);
+		var icons = "<div class=\"d-flex flex-row action-icons justify-content-center\">";
+		icons += $"<a href=\"javascript:;\" class=\"no-loading text-secondary\" onclick=\"editRole('{id}')\"><i class=\"fa-solid fa-money-check-pen fa-lg\"></i></a>";
+
+		if (!isSystemRole && numOfUsers == 0)
+		{
+			icons += $"<a href=\"javascript:;\" class=\"no-loading text-danger\" onclick=\"deleteRole('{id}')\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>";
+		}
+
+		icons += "</div>";
+		return icons;
 	}
 
 	#endregion

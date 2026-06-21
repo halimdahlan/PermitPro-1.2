@@ -17,5 +17,6 @@ public class UserRolesInfo
 	public required string Id { get; set; }
 	public required string Name { get; set; }
 	public int NumOfUsers { get; set; }
-	public bool IsNonEditable { get; set; }
+	public bool IsSystemRole { get; set; }
+	public DateTime CreatedWhen { get; set; }
 }

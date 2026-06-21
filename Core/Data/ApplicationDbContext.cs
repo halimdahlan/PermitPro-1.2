@@ -15,10 +15,20 @@ public class UserRole : IdentityUserRole<string>
 }
 
 
-public class Role : IdentityRole
+public class Role : IdentityRole, ISoftDeletable
 {
 	public virtual List<UserRole>? UserRoles { get; set; }
 	public virtual List<SystemMenu>? SystemMenus { get; set; }
+
+	public string? Description { get; set; }
+	public bool IsSystemRole { get; set; }
+	public DateTime CreatedWhen { get; set; }
+	public DateTime? UpdatedWhen { get; set; }
+	public Guid? CreatedBy { get; set; }
+	public Guid? UpdatedBy { get; set; }
+	public bool IsDeleted { get; set; }
+	public DateTime? DeletedWhen { get; set; }
+	public Guid? DeletedBy { get; set; }
 }
 
 

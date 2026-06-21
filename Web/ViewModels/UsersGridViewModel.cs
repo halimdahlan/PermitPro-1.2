@@ -4,6 +4,30 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PermitPro.App.ViewModels;
 
+public class RolesGridViewModel
+{
+	public string Id { get; set; }
+
+	[Display(Name = "NAME")]
+	public string Name { get; set; }
+
+	[Display(Name = "DESCRIPTION")]
+	public string Description { get; set; }
+
+	[Display(Name = "USERS")]
+	public int NumOfUsers { get; set; }
+
+	[Display(Name = "SYSTEM ROLE?")]
+	public bool IsSystemRole { get; set; }
+
+	[Display(Name = "DATE CREATED")]
+	public DateTime CreatedWhen { get; set; }
+
+	[Display(Name = "ACTION")]
+	public string ActionIcons { get; set; }
+}
+
+
 public class UsersGridViewModel
 {
 	public string Id { get; set; }
