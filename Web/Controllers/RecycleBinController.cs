@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using PermitPro.App.Controllers.Base;
 using PermitPro.Core.Data;
 using PermitPro.Core.Entities;
+using PermitPro.Core.Helpers;
 using PermitPro.Core.Interfaces;
 
 namespace PermitPro.App.Controllers;
@@ -50,7 +51,7 @@ public class RecycleBinController : AppControllerBase
 				 Detail = p.Site != null ? p.Site.Name : "(no site)",
 				 CompanyId = p.Company != null ? p.Company.Id : Guid.Empty,
 				 CompanyName = p.Company != null ? p.Company.Name : "(none)",
-				 DeletedWhen = p.DeletedWhen,
+				 DeletedWhen = GeneralHelper.GetDateInTimeZone(p.DeletedWhen.Value),
 				 DeletedBy = p.DeletedBy,
 			 })
 			 .ToListAsync();
@@ -68,7 +69,7 @@ public class RecycleBinController : AppControllerBase
 				 Detail = s.Description,
 				 CompanyId = s.SiteCompany != null ? s.SiteCompany.Id : Guid.Empty,
 				 CompanyName = s.SiteCompany != null ? s.SiteCompany.Name : "(none)",
-				 DeletedWhen = s.DeletedWhen,
+				 DeletedWhen = GeneralHelper.GetDateInTimeZone(s.DeletedWhen.Value),
 				 DeletedBy = s.DeletedBy,
 			 })
 			 .ToListAsync();
@@ -86,7 +87,7 @@ public class RecycleBinController : AppControllerBase
 				 Detail = w.Description,
 				 CompanyId = w.WorkflowCompany != null ? w.WorkflowCompany.Id : Guid.Empty,
 				 CompanyName = w.WorkflowCompany != null ? w.WorkflowCompany.Name : "(none)",
-				 DeletedWhen = w.DeletedWhen,
+				 DeletedWhen = GeneralHelper.GetDateInTimeZone(w.DeletedWhen.Value),
 				 DeletedBy = w.DeletedBy,
 			 })
 			 .ToListAsync();
@@ -105,7 +106,7 @@ public class RecycleBinController : AppControllerBase
 				 Detail = s.WorkflowStepWorkflow != null ? s.WorkflowStepWorkflow.Name : "(unknown workflow)",
 				 CompanyId = s.WorkflowStepWorkflow != null ? s.WorkflowStepWorkflow.WorkflowCompany.Id : Guid.Empty,
 				 CompanyName = s.WorkflowStepWorkflow != null ? s.WorkflowStepWorkflow.WorkflowCompany.Name : "(none)",
-				 DeletedWhen = s.DeletedWhen,
+				 DeletedWhen = GeneralHelper.GetDateInTimeZone(s.DeletedWhen.Value),
 				 DeletedBy = s.DeletedBy,
 			 })
 			 .ToListAsync();
@@ -123,7 +124,7 @@ public class RecycleBinController : AppControllerBase
 				 Detail = u.Email,
 				 CompanyId = u.UserCompany != null ? u.UserCompany.Id : Guid.Empty,
 				 CompanyName = u.UserCompany != null ? u.UserCompany.Name : "(none)",
-				 DeletedWhen = u.DeletedWhen,
+				 DeletedWhen = GeneralHelper.GetDateInTimeZone(u.DeletedWhen.Value),
 				 DeletedBy = u.DeletedBy,
 			 })
 			 .ToListAsync();
@@ -140,7 +141,7 @@ public class RecycleBinController : AppControllerBase
 				 Detail = r.Description,
 				 CompanyId = Guid.Empty,
 				 CompanyName = "(global)",
-				 DeletedWhen = r.DeletedWhen,
+				 DeletedWhen = GeneralHelper.GetDateInTimeZone(r.DeletedWhen.Value),
 				 DeletedBy = r.DeletedBy,
 			 })
 			 .ToListAsync();
@@ -180,7 +181,7 @@ public class RecycleBinController : AppControllerBase
 					 Detail = c.Description,
 					 CompanyId = c.Id,
 					 CompanyName = c.Name,
-					 DeletedWhen = c.DeletedWhen,
+					 DeletedWhen = GeneralHelper.GetDateInTimeZone(c.DeletedWhen.Value),
 					 DeletedBy = c.DeletedBy,
 				 })
 				 .ToListAsync();

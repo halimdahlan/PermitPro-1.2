@@ -114,7 +114,7 @@ public class DashboardController : AppControllerBase
 				SiteName = e.Site?.Name ?? "—",
 				RequestedByName = userNames.TryGetValue(e.CreatedBy.ToString(), out var name) ? name : "—",
 				Status = e.PermitStatus,
-				CreatedWhen = e.CreatedWhen
+				CreatedWhen = GeneralHelper.GetDateInTimeZone(e.CreatedWhen)
 			})
 			.ToList();
 
@@ -354,14 +354,14 @@ public class DashboardController : AppControllerBase
 
 	private static string GetTimeAgo(DateTime createdWhen)
 	{
-		var diff = DateTime.UtcNow - createdWhen;
+		var diff = GeneralHelper.GetDateInTimeZone(DateTime.UtcNow) - GeneralHelper.GetDateInTimeZone(createdWhen);
 
 		if (diff.TotalMinutes < 1) return "Just now";
 		if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes} min{((int)diff.TotalMinutes > 1 ? "s" : "")} ago";
 		if (diff.TotalHours < 24) return $"{(int)diff.TotalHours} hour{((int)diff.TotalHours > 1 ? "s" : "")} ago";
 		if (diff.TotalDays < 2) return "Yesterday";
 		if (diff.TotalDays < 7) return $"{(int)diff.TotalDays} days ago";
-		return createdWhen.ToLocalTime().ToString("dd MMM yyyy");
+		return GeneralHelper.GetDateInTimeZone(createdWhen).ToLocalTime().ToString("dd MMM yyyy");
 	}
 
 	#endregion

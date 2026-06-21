@@ -39,7 +39,7 @@ else
 							@if (item.DeletedWhen.HasValue)
 							{
 								<span title="@item.DeletedWhen.Value.ToString("f")">
-									@item.DeletedWhen.Value.ToString("dd MMM yyyy HH:mm")
+									@item.DeletedWhen.Value.ToString("dd MMM yyyy hh:mm tt")
 								</span>
 							}
 							else
