@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts;
 using Microsoft.IdentityModel.Tokens;
 
 using PermitPro.App.Hubs;

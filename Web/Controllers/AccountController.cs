@@ -398,6 +398,19 @@ public class AccountController : Controller
 	}
 
 
+	[Authorize()]
+	[HttpPost("{company}/account/profile")]
+	public IActionResult Profile(ProfileViewModel model)
+	{
+		if (!ModelState.IsValid)
+			return View(model);
+
+		var m = string.Empty;
+
+		return View();
+	}
+
+
 	[HttpPut("{company}/account/profile")]
 	[ValidateAntiForgeryToken]
 	public async Task<IActionResult> Profile(Guid company)

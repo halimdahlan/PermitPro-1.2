@@ -117,10 +117,11 @@ public class PermitService : IPermitService
 				_dbContext.SaveChanges();
 
 				// Add audit log to database
+				var currentDate = GeneralHelper.GetDateInTimeZone(permit.CreatedWhen);
 				var currentUser = _currentUserService.GetCurrentUser();
 				var fullName = $"{currentUser.FirstName} {currentUser.LastName}";
 				var logMessage = $"A new permit [PTW{permit.PermitNo}] has been created by {fullName.Trim()} ({currentUser.Email}) ";
-				logMessage += $"on {permit.CreatedWhen:dd/MM/yyyy hh:mm tt}.";
+				logMessage += $"on {currentDate:dd/MM/yyyy hh:mm tt}.";
 
 				await _logService.LogMessageAsync(LogTypeEnum.Information, "CREATE_PERMIT", logMessage, currentUser);
 
@@ -310,10 +311,11 @@ public class PermitService : IPermitService
 				await _dbContext.SaveChangesAsync();
 
 				// Add audit log to database
+				var currentDate = GeneralHelper.GetDateInTimeZone(permit.CreatedWhen);
 				var currentUser = _currentUserService.GetCurrentUser();
 				var fullName = $"{currentUser.FirstName} {currentUser.LastName}";
 				var logMessage = $"Permit [PTW{permit.PermitNo}] has been updated by {fullName.Trim()} ({currentUser.Email}) ";
-				logMessage += $"on {permit.CreatedWhen:dd/MM/yyyy hh:mm tt}.";
+				logMessage += $"on {currentDate:dd/MM/yyyy hh:mm tt}.";
 
 				await _logService.LogMessageAsync(LogTypeEnum.Information, "UPDATE_PERMIT", logMessage, currentUser);
 
@@ -476,10 +478,11 @@ public class PermitService : IPermitService
 			await _dbContext.SaveChangesAsync();
 
 			// Add audit log to database
+			var currentDate = GeneralHelper.GetDateInTimeZone(permit.CreatedWhen);
 			var currentUser = _currentUserService.GetCurrentUser();
 			var fullName = $"{currentUser.FirstName} {currentUser.LastName}";
 			var logMessage = $"Permit [PTW{permit.PermitNo}] has been updated by {fullName.Trim()} ({currentUser.Email}) ";
-			logMessage += $"on {permit.CreatedWhen:dd/MM/yyyy hh:mm tt}.";
+			logMessage += $"on {currentDate:dd/MM/yyyy hh:mm tt}.";
 
 			await _logService.LogMessageAsync(LogTypeEnum.Information, "UPDATE_PERMIT", logMessage, currentUser);
 		}
@@ -529,10 +532,11 @@ public class PermitService : IPermitService
 		await _dbContext.SaveChangesAsync();
 
 		// Add audit log to database
+		var logDate = GeneralHelper.GetDateInTimeZone(DateTime.UtcNow.ToUniversalTime());
 		var currentUser = _currentUserService.GetCurrentUser();
 		var fullName = $"{currentUser.FirstName} {currentUser.LastName}";
 		var logMessage = $"Permit [PTW{permitNo}] has been deleted by {fullName.Trim()} ({currentUser.Email}) ";
-		logMessage += $"on {DateTime.UtcNow.ToUniversalTime():dd/MM/yyyy hh:mm tt}.";
+		logMessage += $"on {logDate:dd/MM/yyyy hh:mm tt}.";
 
 		await _logService.LogMessageAsync(LogTypeEnum.Information, "DELETE_PERMIT", logMessage, currentUser);
 	}
@@ -718,7 +722,7 @@ public class PermitService : IPermitService
 				await _pushService.PushAsync(rejCreator.Id, "Permit Rejected", $"{rejPermitNo} has been rejected.");
 			}
 
-			logMessage = $"Permit [PTW{permit.PermitNo}] has been rejected by {fullName.Trim()} ({currentUser.Email}) on {dateRejected:dd/MM/yyy hh:mm tt}.";
+			logMessage = $"Permit [PTW{permit.PermitNo}] has been rejected by {fullName.Trim()} ({currentUser.Email}) on {GeneralHelper.GetDateInTimeZone(dateRejected):dd/MM/yyy hh:mm tt}.";
 		}
 
 		await _dbContext.SaveChangesAsync();
@@ -769,7 +773,8 @@ public class PermitService : IPermitService
 
 		// Add audit log to database
 		var fullName = $"{currentUser.FirstName} {currentUser.LastName}";
-		var logMessage = $"Permit [PTW{permit.PermitNo}] has been marked as closed by {fullName.Trim()} on {DateTime.UtcNow.ToUniversalTime():dd/MM/yyyy hh:mm tt}.";
+		var logMessage = $"Permit [PTW{permit.PermitNo}] has been marked as closed by ";
+	       logMessage += $"{fullName.Trim()} on {GeneralHelper.GetDateInTimeZone(DateTime.UtcNow.ToUniversalTime()):dd/MM/yyyy hh:mm tt}.";
 
 		await _logService.LogMessageAsync(LogTypeEnum.Information, "PERMIT_CLOSED", logMessage, currentUser);
 	}
