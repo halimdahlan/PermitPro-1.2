@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-
+using Microsoft.EntityFrameworkCore;
 using PermitPro.Core.Data;
 using PermitPro.Core.Entities;
 using PermitPro.Core.Enums;
@@ -12,8 +12,8 @@ using System.Text.Json;
 
 namespace PermitPro.App.Controllers;
 
-[Route("api/[controller]")]
 [ApiController]
+[Route("api/[controller]")]
 public class ScheduledTaskController : Controller
 {
 	private readonly SignInManager<UserInfo> _signInManager;
@@ -29,6 +29,7 @@ public class ScheduledTaskController : Controller
 	private readonly JsonSerializerOptions _jsonOptions;
 	private readonly ICurrentUserService _currentUserService;
 	private readonly ILogService _logService;
+	private readonly IAppSettingsService _appSettings;
 
 	public ScheduledTaskController(
 		UserManager<UserInfo> userManager
@@ -42,7 +43,8 @@ public class ScheduledTaskController : Controller
 		, PTWSettings ptwSettings
 		, ITemplateService templateService
 		, ICurrentUserService currentUserService
-		, ILogService logService)
+		, ILogService logService
+		, IAppSettingsService appSettingsService)
 	{
 		_userManager = userManager;
 		_roleManager = roleManager;
@@ -56,6 +58,7 @@ public class ScheduledTaskController : Controller
 		_templateService = templateService;
 		_currentUserService = currentUserService;
 		_logService = logService;
+		_appSettings = appSettingsService;
 
 		_jsonOptions = new JsonSerializerOptions
 		{
@@ -87,10 +90,10 @@ public class ScheduledTaskController : Controller
 	}
 
 
-	[HttpGet("permits/suspended/check")]
-	public async Task<IActionResult> CheckSuspendedPermits()
+	[HttpGet("permits/suspended/check/{company}")]
+	public async Task<IActionResult> CheckSuspendedPermits(Guid company)
 	{
-		var autoResumeDays = Convert.ToInt16(Environment.GetEnvironmentVariable("SUSPEND_AUTORESUME_DAYS") ?? "0");
+		var autoResumeDays = await _appSettings.GetIntAsync(company, "workflow", "suspended_autoresume_days");
 		var systemAdmin = _dbContext.Users.FirstOrDefault(u => u.Email == "admin@permitpro.app");
 
 		var suspendedPermits = _dbContext.Permits

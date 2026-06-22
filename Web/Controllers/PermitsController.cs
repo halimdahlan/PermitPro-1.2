@@ -31,6 +31,7 @@ public class PermitsController : AppControllerBase
 	private readonly IWebHostEnvironment _webHostEnvironment;
 	private readonly IPermitService _permitService;
 	private readonly ILogService _logService;
+	private readonly ISystemConfigurationService _systemConfigurationService;
 
 	public PermitsController(
 		ApplicationDbContext dbContext
@@ -49,6 +50,7 @@ public class PermitsController : AppControllerBase
 		_webHostEnvironment = webHostEnvironment;
 		_permitService = permitService;
 		_logService = logService;
+		_systemConfigurationService = systemConfigurationService;
 	}
 
 	[Route("{company}/permits/removefile")]
@@ -187,6 +189,9 @@ public class PermitsController : AppControllerBase
 				SuspendDate = permit.SuspendedDateTime,
 				PermitUpdatedByInfo = permitUpdatedByInfo,
 				PermitCreatedByInfo = permitCreatedByInfo,
+				UploadAllowedFileTypes = _systemConfigurationService.UploadAllowedFileTypes.Split(";"),
+				UploadFileSizeLimit = _systemConfigurationService.UploadMaxFileSize,
+				UploadMaxFileCount = _systemConfigurationService.UploadMaxFileCount
 			};
 
 			if (permit.PermitWorkflowStep != null)
@@ -217,6 +222,9 @@ public class PermitsController : AppControllerBase
 			{
 				CompanyId = company,
 				PermitStatus = PermitStatusEnum.Draft,
+				UploadAllowedFileTypes = _systemConfigurationService.UploadAllowedFileTypes.Split(";"),
+				UploadFileSizeLimit = _systemConfigurationService.UploadMaxFileSize,
+				UploadMaxFileCount = _systemConfigurationService.UploadMaxFileCount
 			},
 		};
 

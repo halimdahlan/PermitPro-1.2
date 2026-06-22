@@ -33,6 +33,7 @@ public class PermitService : IPermitService
 	private readonly ICurrentUserService _currentUserService;
 	private readonly ILogService _logService;
 	private readonly INotificationPushService _pushService;
+	private readonly IAppSettingsService _appSettings;
 
 	public PermitService(
 		ApplicationDbContext context
@@ -42,7 +43,8 @@ public class PermitService : IPermitService
 		, IHttpContextAccessor httpContextAccessor
 		, ICurrentUserService currentUserService
 		, ILogService logService
-		, INotificationPushService pushService)
+		, INotificationPushService pushService
+		, IAppSettingsService appSettingsService)
 	{
 		_dbContext = context;
 		_ptwSettings = ptwSettings;
@@ -52,6 +54,7 @@ public class PermitService : IPermitService
 		_currentUserService = currentUserService;
 		_logService = logService;
 		_pushService = pushService;
+		_appSettings = appSettingsService;
 	}
 
 
@@ -580,7 +583,7 @@ public class PermitService : IPermitService
 				}
 			}
 
-			checkForNext = (step.Id == workflowStep.Id);
+			checkForNext = step.Id == workflowStep.Id;
 		}
 
 		if (request["Mode"] == "approve")
@@ -820,6 +823,8 @@ public class PermitService : IPermitService
 		{
 			return null;
 		}
+
+		var companyId = permit.Company.Id;
 
 		var jsonObject = JObject.Parse(permit.PermitForm!);
 		var jo = JsonConvert.DeserializeObject(permit.PermitForm);
@@ -1604,9 +1609,11 @@ public class PermitService : IPermitService
 			});
 		}
 
+		var appDomain = await _appSettings.GetValueAsync(companyId, "general", "application_domain");
+
 		var templateData = new
 		{
-			AppDomain = Environment.GetEnvironmentVariable("APP_DOMAIN"),
+			AppDomain = appDomain,
 			DateIssued = GeneralHelper.GetDateInTimeZone(permit.CreatedWhen).ToString("dd/MM/yyyy @ HH:mm"),
 			PermitNo = string.Format("PTW{0:000000}", permit.RunningNumber),
 			General = new
@@ -1762,17 +1769,17 @@ public class PermitService : IPermitService
 
 		await page.AddStyleTagAsync(new AddTagOptions
 		{
-			Url = $"https://{Environment.GetEnvironmentVariable("APP_DOMAIN")}/lib/bootstrap/css/bootstrap.min.css"
+			Url = $"https://{appDomain}/lib/bootstrap/css/bootstrap.min.css"
 		});
 
 		await page.AddStyleTagAsync(new AddTagOptions
 		{
-			Url = $"https://{Environment.GetEnvironmentVariable("APP_DOMAIN")}/lib/fontawesome/css/all.min.css"
+			Url = $"https://{appDomain}/lib/fontawesome/css/all.min.css"
 		});
 
 		await page.AddStyleTagAsync(new AddTagOptions
 		{
-			Url = $"https://{Environment.GetEnvironmentVariable("APP_DOMAIN")}/fonts/roboto.css"
+			Url = $"https://{appDomain}/fonts/roboto.css"
 		});
 
 		//var pdfContent = await page.PdfStreamAsync(new PdfOptions
@@ -1853,7 +1860,7 @@ public class PermitService : IPermitService
 	}
 
 
-	private static string GetCheckBoxImage(bool isChecked)
+	private string GetCheckBoxImage(bool isChecked)
 	{
 		var checkBox = "empty";
 
@@ -1862,7 +1869,7 @@ public class PermitService : IPermitService
 			checkBox = "mark";
 		}
 
-		var imgUrl = $"{Environment.GetEnvironmentVariable("APP_DOMAIN")}/img/cb-{checkBox}.png";
+		var imgUrl = $"{GetAppDomain()}/img/cb-{checkBox}.png";
 
 		return $"<img src=\"https://{imgUrl}\" style=\"width:20px;\" />";
 	}
@@ -1926,6 +1933,17 @@ public class PermitService : IPermitService
 		template = System.IO.File.ReadAllText(htmlFile, Encoding.UTF8);
 
 		return template;
+	}
+
+
+	private string GetAppDomain()
+	{
+      var currentUser = _currentUserService.GetCurrentUser();
+		var companyId = currentUser?.UserCompany?.Id ?? Guid.Empty;
+
+      string appDomain = _appSettings.GetValueAsync(companyId, "general", "application_domain").GetAwaiter().GetResult();
+
+      return appDomain;
 	}
 
 	#endregion

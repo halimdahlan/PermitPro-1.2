@@ -28,23 +28,23 @@ public class MessageService : IMessageService
 		var currentUser = _currentUserService.GetCurrentUser();
 		var companyId = currentUser?.UserCompany?.Id ?? Guid.Empty;
 
-		var server = await _appSettings.GetValueAsync(companyId, "email", "server");
-		var portStr = await _appSettings.GetValueAsync(companyId, "email", "port");
-		var senderName = await _appSettings.GetValueAsync(companyId, "email", "senderName");
-		var senderEmail = await _appSettings.GetValueAsync(companyId, "email", "senderEmail");
-		var userName = await _appSettings.GetValueAsync(companyId, "email", "userName");
-		var password = await _appSettings.GetValueAsync(companyId, "email", "password");
-
-		_ = int.TryParse(portStr, out var port);
+		var server = await _appSettings.GetValueAsync(companyId, "email", "smtp_server");
+		var port = await _appSettings.GetIntAsync(companyId, "email", "smtp_port");
+		var senderName = await _appSettings.GetValueAsync(companyId, "email", "sender_name");
+		var senderEmail = await _appSettings.GetValueAsync(companyId, "email", "sender_email");
+		var userName = await _appSettings.GetValueAsync(companyId, "email", "email_username");
+		var password = await _appSettings.GetValueAsync(companyId, "email", "email_password");
 
 		var recipientName = emailInfo.Name;
 		var recipientEmail = emailInfo.Email;
 
-		var bodyBuilder = new BodyBuilder();
-		bodyBuilder.HtmlBody = emailInfo.Body;
+      var bodyBuilder = new BodyBuilder
+      {
+         HtmlBody = emailInfo.Body
+      };
 
-		var mailMessage = new MimeMessage();
-		mailMessage.From.Add(new MailboxAddress(senderName, senderEmail));
+      var mailMessage = new MimeMessage();
+		mailMessage.From.Add(new MailboxAddress(senderName, senderEmail!));
 
 		if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
 		{
@@ -61,19 +61,19 @@ public class MessageService : IMessageService
 
 		try
 		{
-			await client.ConnectAsync(server, port, false);
-			await client.AuthenticateAsync(userName, password);
+			await client.ConnectAsync(server!, port, false);
+			await client.AuthenticateAsync(userName!, password!);
 
 			await client.SendAsync(mailMessage);
 			await client.DisconnectAsync(true);
 
 			var logMessage = $"Email has been sent to: {recipientName} ({recipientEmail}).";
-			await _logService.LogMessageAsync(Enums.LogTypeEnum.Information, "SENDEMAIL", logMessage, currentUser);
+			await _logService.LogMessageAsync(Enums.LogTypeEnum.Information, "SENDEMAIL", logMessage, currentUser!);
 		}
 		catch (Exception ex)
 		{
 			var logMessage = $"Error sending email to: {recipientName} ({recipientEmail}). Error: {ex.Message}";
-			await _logService.LogMessageAsync(Enums.LogTypeEnum.Error, "SENDEMAIL", logMessage, currentUser);
+			await _logService.LogMessageAsync(Enums.LogTypeEnum.Error, "SENDEMAIL", logMessage, currentUser!);
 		}
 	}
 

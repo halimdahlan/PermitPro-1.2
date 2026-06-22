@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts;
 using Microsoft.IdentityModel.Tokens;
 
 using PermitPro.App.Hubs;
@@ -141,7 +142,7 @@ builder.Services.AddScoped<INotificationPushService, NotificationPushService>();
 
 var app = builder.Build();
 
-await PermitPro.Core.Services.AppSettingsSeed.SeedDefaultsAsync(app.Services, appConfig);
+//await PermitPro.Core.Services.AppSettingsSeed.SeedDefaultsAsync(app.Services, appConfig);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

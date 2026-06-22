@@ -10,6 +10,11 @@
 
 @Html.AntiForgeryToken()
 
+<div id="msgAlert" class="alert alert-warning alert-dismissible d-flex flex-row align-items-center" role="alert mb-3" style="display: none !important;">
+	<i class="fa-solid fa-triangle-exclamation fa-2x me-3"></i> <span class="fs-4" id="errorMessage"></span>
+	<button type="button" class="btn-close text-dark" data-bs-dismiss="alert"></button>
+</div>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
 	<span class="text-muted small">Manage application settings per category.</span>
 	<button class="btn btn-sm btn-primary" onclick="addCategory()">
@@ -47,10 +52,6 @@ else
 					}
 				</div>
 				<div class="d-flex align-items-center gap-2">
-					<button class="btn btn-sm btn-outline-primary"
-							onclick="addSetting('@cat.Id')">
-						<i class="fa-solid fa-plus me-1"></i> Add Setting
-					</button>
 					<button class="btn btn-sm btn-outline-secondary"
 							title="Edit category"
 							onclick="editCategory('@cat.Id', '@escapedSlug', '@escapedName', '@escapedDesc', '@escapedIcon', @cat.SortOrder)">
@@ -64,9 +65,17 @@ else
 				</div>
 			</div>
 
-			<div id="stg-panel-@cat.Id">
-				<div class="text-muted small py-2 ps-1">
-					<i class="fa-regular fa-spinner fa-spin me-1"></i> Loading...
+			<div>
+				<div class="d-flex flex-column align-items-end mb-2">
+					<button class="btn btn-sm btn-outline-primary"
+							onclick="addSetting('@cat.Id')">
+						<i class="fa-solid fa-plus me-1"></i> Add Setting
+					</button>
+				</div>
+				<div id="stg-panel-@cat.Id">
+					<div class="text-muted small py-2 ps-1">
+						<i class="fa-regular fa-spinner fa-spin me-1"></i> Loading...
+					</div>
 				</div>
 			</div>
 		</div>
@@ -191,7 +200,7 @@ else
 	const antiForgeryToken = $('input[name="__RequestVerificationToken"]').val();
 
 	// Load all category panels on page load
-	$(function () {
+	$(() => {
 		$('[id^="stg-panel-"]').each(function () {
 			const categoryId = this.id.replace('stg-panel-', '');
 			loadSettings(categoryId);
@@ -201,15 +210,15 @@ else
 	// -------------------------------------------------------------------------
 	// Settings table
 	// -------------------------------------------------------------------------
-	function loadSettings(categoryId) {
+	const loadSettings = (categoryId) => {
 		$.get(`/${companyId}/settings/getsettings?categoryId=${categoryId}`, function (data) {
 			renderSettingsTable(categoryId, data);
 		}).fail(() => {
 			$(`#stg-panel-${categoryId}`).html('<p class="text-danger small mb-0">Failed to load settings.</p>');
 		});
-	}
+	};
 
-	function renderSettingsTable(categoryId, settings) {
+	const renderSettingsTable =(categoryId, settings) => {
 		const panel = $(`#stg-panel-${categoryId}`);
 		if (!settings || settings.length === 0) {
 			panel.html('<p class="text-muted small mb-0 ps-1">No settings defined for this category.</p>');
@@ -251,9 +260,9 @@ else
 				<tbody>${rows}</tbody>
 			</table>
 		`);
-	}
+	};
 
-	function escapeHtml(str) {
+	const escapeHtml = (str) => {
 		if (str == null) return '';
 		return String(str)
 			.replace(/&/g, '&amp;')
@@ -261,19 +270,19 @@ else
 			.replace(/>/g, '&gt;')
 			.replace(/"/g, '&quot;')
 			.replace(/'/g, '&#039;');
-	}
+	};
 
 	// -------------------------------------------------------------------------
 	// Category CRUD
 	// -------------------------------------------------------------------------
-	function addCategory() {
+	const addCategory = () => {
 		$('#categoryModalLabel').text('New Category');
 		$('#catId,#catDisplayName,#catName,#catDescription,#catIcon').val('');
 		$('#catSortOrder').val('0');
 		$('#categoryModal').modal('show');
-	}
+	};
 
-	function editCategory(id, name, displayName, description, icon, sortOrder) {
+	const editCategory = (id, name, displayName, description, icon, sortOrder) => {
 		$('#categoryModalLabel').text('Edit Category');
 		$('#catId').val(id);
 		$('#catName').val(name);
@@ -282,9 +291,9 @@ else
 		$('#catIcon').val(icon);
 		$('#catSortOrder').val(sortOrder);
 		$('#categoryModal').modal('show');
-	}
+	};
 
-	function saveCategory() {
+	const saveCategory = () => {
 		const payload = {
 			id: $('#catId').val() || '00000000-0000-0000-0000-000000000000',
 			name: $('#catName').val().trim(),
@@ -294,32 +303,53 @@ else
 			sortOrder: parseInt($('#catSortOrder').val()) || 0
 		};
 		if (!payload.name || !payload.displayName) { alert('Name and Display Name are required.'); return; }
+
+		$('.loading').show();
+
 		$.ajax({
 			url: `/${companyId}/settings/savecategory`,
 			type: 'POST',
 			contentType: 'application/json',
 			data: JSON.stringify(payload),
-			headers: { 'RequestVerificationToken': antiForgeryToken },
-			success: () => { $('#categoryModal').modal('hide'); location.reload(); },
-			error: xhr => alert('Error: ' + xhr.responseText)
+			headers: {
+				'RequestVerificationToken': antiForgeryToken
+			},
+			success: () => {
+				$('.loading').hide();
+				$('#categoryModal').modal('hide');
+				location.reload();
+			},
+			error: xhr => {
+				$('.loading').hide();
+				alert('Error: ' + xhr.responseText);
+			}
 		});
-	}
+	};
 
-	function deleteCategory(id, name) {
+	const deleteCategory = (id, name) => {
 		if (!confirm(`Delete category "${name}" and all its settings? This cannot be undone.`)) return;
+
+		$('.loading').show();
+
 		$.ajax({
 			url: `/${companyId}/settings/deletecategory?id=${id}`,
 			type: 'DELETE',
 			headers: { 'RequestVerificationToken': antiForgeryToken },
-			success: () => location.reload(),
-			error: xhr => alert('Error: ' + xhr.responseText)
+			success: () => {
+				$('.loading').hide();
+				location.reload();
+			},
+			error: xhr => {
+				$('.loading').hide();
+				alert('Error: ' + xhr.responseText);
+			}
 		});
-	}
+	};
 
 	// -------------------------------------------------------------------------
 	// Setting CRUD
 	// -------------------------------------------------------------------------
-	function addSetting(categoryId) {
+	const addSetting = (categoryId) => {
 		$('#settingModalLabel').text('New Setting');
 		$('#stgId').val('');
 		$('#stgCategoryId').val(categoryId);
@@ -330,9 +360,9 @@ else
 		$('#stgValue').attr('type', 'text');
 		$('#stgValueHint').hide();
 		$('#settingModal').modal('show');
-	}
+	};
 
-	function editSetting(encoded) {
+	const editSetting = (encoded) => {
 		const s = JSON.parse(decodeURIComponent(encoded));
 		$('#settingModalLabel').text('Edit Setting');
 		$('#stgId').val(s.Id);
@@ -346,13 +376,13 @@ else
 		$('#stgSortOrder').val(s.SortOrder);
 		$('#stgValueHint').toggle(s.IsEncrypted);
 		$('#settingModal').modal('show');
-	}
+	};
 
-	function onDataTypeChange() {
+	const onDataTypeChange = () => {
 		$('#stgValue').attr('type', $('#stgDataType').val() === 'password' ? 'password' : 'text');
-	}
+	};
 
-	function saveSetting() {
+	const saveSetting = () => {
 		const categoryId = $('#stgCategoryId').val();
 		const payload = {
 			id: $('#stgId').val() || '00000000-0000-0000-0000-000000000000',
@@ -364,27 +394,51 @@ else
 			isEncrypted: $('#stgIsEncrypted').prop('checked'),
 			sortOrder: parseInt($('#stgSortOrder').val()) || 0
 		};
+
 		if (!payload.key || !payload.displayName) { alert('Key and Display Name are required.'); return; }
+
+		$('.loading').show();
+
 		$.ajax({
 			url: `/${companyId}/settings/savesetting`,
 			type: 'POST',
 			contentType: 'application/json',
 			data: JSON.stringify(payload),
-			headers: { 'RequestVerificationToken': antiForgeryToken },
-			success: () => { $('#settingModal').modal('hide'); loadSettings(categoryId); },
-			error: xhr => alert('Error: ' + xhr.responseText)
+			headers: {
+				'RequestVerificationToken': antiForgeryToken
+			},
+			success: () => {
+				$('.loading').hide();
+				$('#settingModal').modal('hide');
+				loadSettings(categoryId);
+			},
+			error: xhr => {
+				$('.loading').hide();
+				alert('Error: ' + xhr.responseText);
+			}
 		});
-	}
+	};
 
-	function deleteSetting(id, categoryId) {
+	const deleteSetting = (id, categoryId) => {
 		if (!confirm('Delete this setting permanently?')) return;
+
+		$('.loading').show();
+
 		$.ajax({
 			url: `/${companyId}/settings/deletesetting?id=${id}`,
 			type: 'DELETE',
-			headers: { 'RequestVerificationToken': antiForgeryToken },
-			success: () => loadSettings(categoryId),
-			error: xhr => alert('Error: ' + xhr.responseText)
+			headers: {
+				'RequestVerificationToken': antiForgeryToken
+			},
+			success: () => {
+				$('.loading').hide();
+				loadSettings(categoryId);
+			},
+			error: xhr => {
+				$('.loading').hide();
+				alert('Error: ' + xhr.responseText);
+			}
 		});
-	}
+	};
 </script>
 }

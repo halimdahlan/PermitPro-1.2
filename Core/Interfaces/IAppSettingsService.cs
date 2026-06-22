@@ -11,6 +11,7 @@ public interface IAppSettingsService
 
     // Settings
     Task<string?> GetValueAsync(Guid companyId, string categoryName, string key);
+    Task<int> GetIntAsync(Guid companyId, string categoryName, string key);
     Task<IEnumerable<AppSetting>> GetSettingsAsync(Guid companyId, Guid categoryId);
     Task UpsertSettingAsync(AppSetting setting);
     Task DeleteSettingAsync(Guid id);

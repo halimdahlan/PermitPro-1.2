@@ -38,18 +38,9 @@ public record EditPermitViewModel
 
 	public bool SuspendAutoResume { get; set; }
 
-	public long UploadFileSizeLimit
-	{
-		get { return Convert.ToInt32(Environment.GetEnvironmentVariable("UPLOAD_MAX_FILE_SIZE")); }
-	}
+	public long UploadFileSizeLimit { get; set; }
 
-	public int UploadMaxFileCount
-	{
-		get { return Convert.ToInt32(Environment.GetEnvironmentVariable("UPLOAD_MAX_FILE_COUNT")); }
-	}
+	public int UploadMaxFileCount { get; set; }
 
-	public string[] UploadAllowedFileTypes
-	{
-		get { return Environment.GetEnvironmentVariable("UPLOAD_ALLOWED_FILE_TYPES").ToString().Split(";"); }
-	}
+	public string[] UploadAllowedFileTypes { get; set; }
 }

@@ -22,6 +22,7 @@ public class SystemConfigurationService : ISystemConfigurationService
 	private readonly ICurrentUserService _currentUserService;
 	private readonly IHttpContextAccessor _httpContextAccessor;
 	private readonly IWebHostEnvironment _webHostEnvironment;
+	private readonly IAppSettingsService _appSettings;
 
 	private List<SystemMenu> _authorizedMenus = new();
 
@@ -31,13 +32,15 @@ public class SystemConfigurationService : ISystemConfigurationService
 		, ApplicationDbContext dbContext
 		, ICurrentUserService currentUserService
 		, IHttpContextAccessor httpContextAccessor
-		, IWebHostEnvironment webHostEnvironment)
+		, IWebHostEnvironment webHostEnvironment
+		, IAppSettingsService appSettings)
 	{
 		_userManager = userManager;
 		_context = dbContext;
 		_currentUserService = currentUserService;
 		_httpContextAccessor = httpContextAccessor;
 		_webHostEnvironment = webHostEnvironment;
+		_appSettings = appSettings;
 	}
 
 
@@ -60,33 +63,42 @@ public class SystemConfigurationService : ISystemConfigurationService
 		}
 	}
 
-
-	public int UserCreateLimit
-	{
-		get
-		{
-			return Convert.ToInt16(Environment.GetEnvironmentVariable("USER_CREATE_LIMIT"));
-		}
-	}
-
-
 	public IEnumerable<string> ReservedRoles
 	{
 		get
 		{
-			string reservedRoles = Environment.GetEnvironmentVariable("RESERVED_ROLES");
-
-			if (!string.IsNullOrEmpty(reservedRoles))
-			{
-				return reservedRoles.Split(';');
-			}
-
+			var val = _appSettings.GetValueAsync(GetCurrentCompanyId(), "general", "reserved_roles").GetAwaiter().GetResult();
+			if (!string.IsNullOrEmpty(val))
+				return val.Split(';', StringSplitOptions.RemoveEmptyEntries);
 			return null;
 		}
 	}
 
+	public string ApplicationDomain => _appSettings.GetValueAsync(GetCurrentCompanyId(), "general", "application_domain").GetAwaiter().GetResult();
 
-	public void Init()
+	public int UserCreateLimit => _appSettings.GetIntAsync(GetCurrentCompanyId(), "general", "user_create_limit").GetAwaiter().GetResult();
+
+   public int UploadMaxFileSize => _appSettings.GetIntAsync(GetCurrentCompanyId(), "general", "upload_max_file_size").GetAwaiter().GetResult();
+
+   public int UploadMaxFileCount => _appSettings.GetIntAsync(GetCurrentCompanyId(), "general", "upload_max_file_count").GetAwaiter().GetResult();
+
+   public string UploadAllowedFileTypes => _appSettings.GetValueAsync(GetCurrentCompanyId(), "general", "upload_allowed_file_types").GetAwaiter().GetResult();
+
+   public string SMTPServer => _appSettings.GetValueAsync(GetCurrentCompanyId(), "email", "smtp_server").GetAwaiter().GetResult();
+
+   public int SMTPPort => _appSettings.GetIntAsync(GetCurrentCompanyId(), "email", "smtp_port").GetAwaiter().GetResult();
+
+   public string SenderName => _appSettings.GetValueAsync(GetCurrentCompanyId(), "email", "sender_name").GetAwaiter().GetResult();
+
+	public string SenderEmail => _appSettings.GetValueAsync(GetCurrentCompanyId(), "email", "sender_email").GetAwaiter().GetResult();
+
+   public string EmailUserName => _appSettings.GetValueAsync(GetCurrentCompanyId(), "email", "email_username").GetAwaiter().GetResult();
+
+   public string EmailPassword => _appSettings.GetValueAsync(GetCurrentCompanyId(), "email", "email_password").GetAwaiter().GetResult();
+
+   public int SuspendedAutoResume => _appSettings.GetIntAsync(GetCurrentCompanyId(), "workflow", "suspended_autoresume_days").GetAwaiter().GetResult();
+
+   public void Init()
 	{
 		var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -162,5 +174,13 @@ public class SystemConfigurationService : ISystemConfigurationService
 
 		return menu != null;
 	}
+	
 
+	private Guid GetCurrentCompanyId()
+	{
+		var routeValue = _httpContextAccessor.HttpContext?.Request.RouteValues["company"];
+		if (routeValue != null && Guid.TryParse(routeValue.ToString(), out var companyId))
+			return companyId;
+		return Guid.Empty;
+	}
 }

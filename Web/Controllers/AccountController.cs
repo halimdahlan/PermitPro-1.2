@@ -42,6 +42,7 @@ public class AccountController : Controller
 	private readonly IAppSettingsService _appSettings;
 	private readonly ILogService _logService;
 	private readonly JwtSettings _jwtSettings;
+	private readonly ISystemConfigurationService _systemConfigurationService;
 
 
 	public AccountController(
@@ -72,6 +73,7 @@ public class AccountController : Controller
 		_appSettings = appSettings;
 		_logService = logService;
 		_jwtSettings = jwtSettings;
+		_systemConfigurationService = systemConfigurationService;
 
 		Guid company = Guid.Empty;
 		var routeValue = _httpContextAccessor!.HttpContext!.GetRouteValue("company");
@@ -266,7 +268,7 @@ public class AccountController : Controller
 		var templateData = new
 		{
 			RecipientName = $"{user.FirstName} {user.LastName}",
-			ResetLink = $"https://{Environment.GetEnvironmentVariable("APP_DOMAIN")}/account/reset-password?token={Base64UrlEncoder.Encode(token)}&id={user.Id}&email={user.Email}",
+			ResetLink = $"https://{_systemConfigurationService.ApplicationDomain}/account/reset-password?token={Base64UrlEncoder.Encode(token)}&id={user.Id}&email={user.Email}",
 		};
 
 		var renderedHtml = template.Render(templateData);
