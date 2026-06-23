@@ -365,7 +365,7 @@ public class AccountController : Controller
 	}
 
 
-	[Authorize()]
+	[Authorize]
 	[HttpGet("{company}/account/profile")]
 	public IActionResult Profile()
 	{
@@ -380,28 +380,40 @@ public class AccountController : Controller
 
 		var imageFile = currentUser.ProfileImage;
 
-		var model = new ProfileViewModel
+		var model = new ProfileMainViewModel
 		{
-			UserId = currentUser.Id,
-			FirstName = currentUser.FirstName,
-			LastName = currentUser.LastName,
-			Email = currentUser.Email,
-			Designation = currentUser.Designation,
-			ProfileImageUrl = System.IO.File.Exists(profileImageUrl) ? $"/img/profiles/{currentUser.ProfileImage}" : "/img/user-default.png",
-			HasProfileImage = !string.IsNullOrEmpty(currentUser.ProfileImage) && currentUser.ProfileImage != "/img/user-default.png",
-			RoleNames = currentUser.UserRoles.Select(r => r.Role!.Name!).ToList(),
-			IsSuperAdmin = currentUser.UserRoles.Any(r => r.Role!.NormalizedName == "SUPERUSER"),
-			PhoneNumber = currentUser.PhoneNumber,
+			ProfileForm = new ProfileViewModel
+			{
+				UserId = currentUser.Id,
+				FirstName = currentUser.FirstName,
+				LastName = currentUser.LastName,
+				Email = currentUser.Email,
+				Designation = currentUser.Designation,
+				ProfileImageUrl = System.IO.File.Exists(profileImageUrl) ? $"/img/profiles/{currentUser.ProfileImage}" : "/img/user-default.png",
+				HasProfileImage = !string.IsNullOrEmpty(currentUser.ProfileImage) && currentUser.ProfileImage != "/img/user-default.png",
+				RoleNames = currentUser.UserRoles.Select(r => r.Role!.Name!).ToList(),
+				IsSuperAdmin = currentUser.UserRoles.Any(r => r.Role!.NormalizedName == "SUPERUSER"),
+				PhoneNumber = currentUser.PhoneNumber,
+			},
+			ProfilePasswordForm = new ProfilePasswordViewModel
+			{
+				UserId = currentUser.Id,
+				CurrentPassword = string.Empty,
+				Password = string.Empty,
+				ConfirmPassword = string.Empty
+			}
 		};
 
 		return View(model);
 	}
 
 
-	[Authorize()]
+	[Authorize]
 	[HttpPost("{company}/account/profile")]
-	public IActionResult Profile(ProfileViewModel model)
+	public IActionResult Profile(ProfileMainViewModel model)
 	{
+		ModelState.Remove("ProfilePasswordForm");
+
 		if (!ModelState.IsValid)
 			return View(model);
 
@@ -451,7 +463,7 @@ public class AccountController : Controller
 	}
 
 
-	[Authorize()]
+	[Authorize]
 	[HttpPut("{company}/account/changepassword")]
 	[ValidateAntiForgeryToken]
 	public async Task<IActionResult> ChangePassword(Guid company)
@@ -713,6 +725,7 @@ public class AccountController : Controller
 		return (storedName, fullPath, fs.Length);
 	}
 
+
 	private Task FileDeleteAsync(string filePath, CancellationToken ct = default)
 	{
 		if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
@@ -724,7 +737,9 @@ public class AccountController : Controller
 
 	private bool CanAccess(Guid targetUserId) => targetUserId == UserId || IsInRole("Portal Admin") || IsInRole("Super User");
 
+
 	protected bool IsInRole(string role) => User.IsInRole(role);
+
 
 	private UserInfo CreateUser()
 	{
@@ -739,6 +754,7 @@ public class AccountController : Controller
 				 $"override the register page in /Areas/Identity/Pages/Account/Register.cshtml");
 		}
 	}
+
 
 	private IUserEmailStore<UserInfo> GetEmailStore()
 	{

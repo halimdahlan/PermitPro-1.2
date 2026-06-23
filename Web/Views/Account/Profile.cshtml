@@ -1,6 +1,6 @@
 ﻿@using Kendo.Mvc.UI
 
-@model ProfileViewModel
+@model ProfileMainViewModel
 
 @{
 	ViewData["Title"] = "Settings / User / Profile";
@@ -9,8 +9,8 @@
 	var companyId = ViewContext.RouteData.Values["company"] as string;
 
 	// var companyGuid = (ViewBag.CompanyGuid as string) ?? User.FindFirst("companyGuid")?.Value ?? "";
-	var profileId = Model.UserId;
-	var avatarSrc = Model.ProfileImageUrl;
+	var profileId = Model.ProfileForm!.UserId;
+	var avatarSrc = Model.ProfileForm!.ProfileImageUrl;
 	var isOwnProfile = profileId?.ToString() == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 }
 
@@ -27,18 +27,18 @@
 		<input type="file" id="avatarInput" class="d-none" accept=".png,.jpg,.jpeg,.gif,.webp" />
 	</div>
 	<div>
-		<h2 class="h4 fw-bold mb-1">@Model.FirstName @Model.LastName</h2>
+		<h2 class="h4 fw-bold mb-1">@Model.ProfileForm!.FirstName @Model.ProfileForm!.LastName</h2>
 		<div class="d-flex flex-wrap gap-1 mb-1">
-			@if (Model.IsSuperAdmin)
+			@if (Model.ProfileForm!.IsSuperAdmin)
 			{
 				<span class="badge bg-primary"><i class="fa-regular fa-shield-check me-1"></i>Super Admin</span>
 			}
-			@foreach (var role in Model.RoleNames)
+			@foreach (var role in Model.ProfileForm!.RoleNames)
 			{
 				<span class="badge bg-secondary-subtle text-secondary">@role</span>
 			}
 		</div>
-		<div class="text-muted small">@Model.Email</div>
+		<div class="text-muted small">@Model.ProfileForm!.Email</div>
 		<div id="avatarError" class="text-danger small d-none mt-1"></div>
 		<div id="avatarSuccess" class="text-success small d-none mt-1"></div>
 	</div>
@@ -56,35 +56,36 @@
 					<div class="row g-3">
 						<div class="col-6">
 							<label class="form-label small fw-semibold">First Name <span class="text-danger">*</span></label>
-							<input asp-for="FirstName" class="form-control" />
-							<span asp-validation-for="FirstName" class="text-danger small"></span>
+							<input asp-for="ProfileForm!.FirstName" class="form-control" />
+							<span asp-validation-for="ProfileForm.FirstName" class="text-danger small"></span>
 						</div>
 						<div class="col-6">
 							<label class="form-label small fw-semibold">Last Name <span class="text-danger">*</span></label>
-							<input asp-for="LastName" class="form-control" />
-							<span asp-validation-for="LastName" class="text-danger small"></span>
+							<input asp-for="ProfileForm.LastName" class="form-control" />
+							<span asp-validation-for="ProfileForm.LastName" class="text-danger small"></span>
 						</div>
 						<div class="col-12">
 							<label class="form-label small fw-semibold">Email</label>
-							<input value="@Model.Email" class="form-control bg-light" readonly />
+							<input asp-for="ProfileForm.Email" class="form-control bg-light" readonly />
 							<div class="form-text">Email cannot be changed here.</div>
 						</div>
 						<div class="col-6">
 							<label class="form-label small fw-semibold">Designation</label>
-							<input asp-for="Designation" class="form-control" />
-							<span asp-validation-for="Designation" class="text-danger small"></span>
+							<input asp-for="ProfileForm.Designation" class="form-control" />
+							<span asp-validation-for="ProfileForm.Designation" class="text-danger small"></span>
 						</div>
 						<div class="col-6">
 							<label class="form-label small fw-semibold">Phone</label>
-							<input asp-for="PhoneNumber" type="tel" class="form-control" />
-							<span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+							<input asp-for="ProfileForm.PhoneNumber" type="tel" class="form-control" />
+							<span asp-validation-for="ProfileForm.PhoneNumber" class="text-danger small"></span>
 						</div>
 					</div>
 					<hr class="my-4" />
 					<button type="submit" class="btn btn-sm btn-primary">
 						<span class="px-3">Save Changes</span>
 					</button>
-					<input type="hidden" asp-for="UserId" />
+					<input type="hidden" asp-for="ProfileForm.UserId" />
+					<input type="hidden" asp-for="ProfileForm.ProfileImageUrl" />
 				</form>
 			</div>
 		</div>
@@ -99,24 +100,24 @@
 					@Html.AntiForgeryToken()
 					<div class="mb-3">
 						<label class="form-label small fw-semibold">Current Password <span class="text-danger">*</span></label>
-						<input name="CurrentPassword" type="password" class="form-control"
-								 autocomplete="current-password" placeholder="Enter current password" />
+						<input asp-for="ProfilePasswordForm.CurrentPassword" class="form-control" />
+						<span asp-validation-for="ProfilePasswordForm.CurrentPassword" class="text-danger small"></span>
 					</div>
 					<div class="mb-3">
 						<label class="form-label small fw-semibold">New Password <span class="text-danger">*</span></label>
-						<input name="NewPassword" type="password" class="form-control"
-								 autocomplete="new-password" placeholder="Min. 8 characters" />
+						<input asp-for="ProfilePasswordForm.Password" class="form-control" />
+						<span asp-validation-for="ProfilePasswordForm.Password" class="text-danger small"></span>
 					</div>
 					<div class="mb-4">
 						<label class="form-label small fw-semibold">Confirm New Password <span class="text-danger">*</span></label>
-						<input name="ConfirmPassword" type="password" class="form-control"
-								 autocomplete="new-password" placeholder="Repeat new password" />
+						<input asp-for="ProfilePasswordForm.ConfirmPassword" class="form-control" />
+						<span asp-validation-for="ProfilePasswordForm.ConfirmPassword" class="text-danger small"></span>
 					</div>
 					<hr class="my-4" />
 					<button type="submit" class="btn btn-sm btn-outline-primary">
 						<span class="px-3">Change Password</span>
 					</button>
-					<input type="hidden" asp-for="UserId" />
+					<input type="hidden" asp-for="ProfilePasswordForm.UserId" />
 				</form>
 			</div>
 		</div>
