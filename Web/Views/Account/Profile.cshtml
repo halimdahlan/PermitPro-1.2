@@ -9,9 +9,9 @@
 	var companyId = ViewContext.RouteData.Values["company"] as string;
 
 	// var companyGuid = (ViewBag.CompanyGuid as string) ?? User.FindFirst("companyGuid")?.Value ?? "";
-	var profileId = Model.ProfileForm!.UserId;
-	var avatarSrc = Model.ProfileForm!.ProfileImageUrl;
-	var isOwnProfile = profileId?.ToString() == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+	//var profileId = Model.ProfileForm!.UserId;
+	var avatarSrc = Model.ProfileForm != null ? Model.ProfileForm.ProfileImageUrl : Model.ProfilePasswordForm?.ProfileImageUrl;
+	//var isOwnProfile = profileId?.ToString() == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 }
 
 @* ── Profile header ──────────────────────────────────────────────────────────── *@
@@ -44,12 +44,28 @@
 	</div>
 </div>
 
+@if (TempData["SuccessMessage"] != null)
+{
+	<div class="alert alert-success alert-dismissible fade show" role="alert mb-3">
+		<i class="fa-solid fa-circle-check me-2"></i> @TempData["SuccessMessage"]
+		<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+	</div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+	<div class="alert alert-warning alert-dismissible fade show" role="alert mb-3">
+		<i class="fa-solid fa-triangle-exclamation me-2"></i> @TempData["ErrorMessage"]
+		<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+	</div>
+}
+
 <div class="row g-4">
 
 	@* ── Personal information ─────────────────────────────────────────────────── *@
 	<div class="col-12 col-lg-6">
 		<div class="card shadow-sm">
-			<div class="card-header h4 py-2 px-3">Personal Information</div>
+			<div class="card-header h4 px-3">Personal Information</div>
 			<div class="card-body p-4">
 				<form method="post">
 					@Html.AntiForgeryToken()
@@ -67,7 +83,6 @@
 						<div class="col-12">
 							<label class="form-label small fw-semibold">Email</label>
 							<input asp-for="ProfileForm.Email" class="form-control bg-light" readonly />
-							<div class="form-text">Email cannot be changed here.</div>
 						</div>
 						<div class="col-6">
 							<label class="form-label small fw-semibold">Designation</label>
@@ -81,9 +96,11 @@
 						</div>
 					</div>
 					<hr class="my-4" />
-					<button type="submit" class="btn btn-sm btn-primary">
-						<span class="px-3">Save Changes</span>
-					</button>
+					<div class="d-flex flex-column align-items-end">
+						<button type="submit" class="btn btn-sm btn-primary">
+							<span class="px-3">Save Changes</span>
+						</button>
+					</div>
 					<input type="hidden" asp-for="ProfileForm.UserId" />
 					<input type="hidden" asp-for="ProfileForm.ProfileImageUrl" />
 				</form>
@@ -94,7 +111,7 @@
 	@* ── Change password ──────────────────────────────────────────────────────── *@
 	<div class="col-12 col-lg-6">
 		<div class="card shadow-sm">
-			<div class="card-header h4 py-2 px-3">Change Password</div>
+			<div class="card-header h4 px-3">Change Password</div>
 			<div class="card-body p-4">
 				<form method="post" action="/@companyId/account/profile/change-password">
 					@Html.AntiForgeryToken()
@@ -114,10 +131,13 @@
 						<span asp-validation-for="ProfilePasswordForm.ConfirmPassword" class="text-danger small"></span>
 					</div>
 					<hr class="my-4" />
-					<button type="submit" class="btn btn-sm btn-outline-primary">
-						<span class="px-3">Change Password</span>
-					</button>
+					<div class="d-flex flex-column align-items-end">
+						<button type="submit" class="btn btn-sm btn-primary">
+							<span class="px-3">Change Password</span>
+						</button>
+					</div>
 					<input type="hidden" asp-for="ProfilePasswordForm.UserId" />
+					<input type="hidden" asp-for="ProfilePasswordForm.ProfileImageUrl" />
 				</form>
 			</div>
 		</div>
@@ -196,7 +216,12 @@
 	</style>
 }
 
+
 @section Scripts {
+	@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial");
+	}
+	
 	<script>
 		document.getElementById('avatarInput').addEventListener('change', async function () {
 			const file = this.files[0];

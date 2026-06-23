@@ -367,9 +367,9 @@ public class AccountController : Controller
 
 	[Authorize]
 	[HttpGet("{company}/account/profile")]
-	public IActionResult Profile()
+	public async Task<IActionResult> Profile()
 	{
-		var currentUser = _currentUserService.GetCurrentUser();
+		var currentUser = await _currentUserService.GetCurrentUserAsync();
 		var profileImageUrl = string.Empty;
 
 		// Check for profile image if exists
@@ -400,7 +400,8 @@ public class AccountController : Controller
 				UserId = currentUser.Id,
 				CurrentPassword = string.Empty,
 				Password = string.Empty,
-				ConfirmPassword = string.Empty
+				ConfirmPassword = string.Empty,
+				ProfileImageUrl = System.IO.File.Exists(profileImageUrl) ? $"/img/profiles/{currentUser.ProfileImage}" : "/img/user-default.png",
 			}
 		};
 
@@ -410,18 +411,64 @@ public class AccountController : Controller
 
 	[Authorize]
 	[HttpPost("{company}/account/profile")]
-	public IActionResult Profile(ProfileMainViewModel model)
+	[ValidateAntiForgeryToken]
+	public async Task<IActionResult> Profile(ProfileMainViewModel model)
 	{
 		ModelState.Remove("ProfilePasswordForm");
 
 		if (!ModelState.IsValid)
 			return View(model);
 
-		var m = string.Empty;
+		var user = await _context.Users.FirstAsync(e => e.Id == model.ProfileForm.UserId);
 
-		return View();
+		if (user == null)
+			return NotFound("User not found");
+
+		var form = model.ProfileForm;
+
+		user.FirstName = form.FirstName;
+		user.LastName = form.LastName;
+		user.Designation = form.Designation;
+		user.PhoneNumber = form.PhoneNumber;
+
+		_context.Users.Update(user);
+		await _context.SaveChangesAsync();
+
+		TempData["SuccessMessage"] = "Information has been successfully updated.";
+
+		return View(model);
 	}
 
+
+	[Authorize]
+	[HttpPost("{company}/account/profile/change-password")]
+	[ValidateAntiForgeryToken]
+	public async Task<IActionResult> ChangePassword(Guid company, ProfileMainViewModel model)
+	{
+		ModelState.Remove("ProfileForm");
+
+		if (!ModelState.IsValid)
+			return View(nameof(Profile), model);
+
+		var form = model.ProfilePasswordForm;
+
+		var user = await _userManager.FindByIdAsync(form.UserId);
+
+		if (user == null)
+			return NotFound("User not found!");
+
+		var result = await _userManager.ChangePasswordAsync(user, form.CurrentPassword, form.ConfirmPassword);
+
+		if (!result.Succeeded)
+		{
+			TempData["ErrorMesssage"] = string.Join(", ", result.Errors.Select(e => new { Message = e.Description}).ToList());
+			return Redirect($"/{company}/account/profile");
+		}
+
+		TempData["SuccessMessage"] = "Successfully changed your password. For security reasons, you are encouraged to log out and log in back using the new password.";
+
+		return View(nameof(Profile), model);
+	}
 
 	[HttpPut("{company}/account/profile")]
 	[ValidateAntiForgeryToken]
@@ -466,7 +513,7 @@ public class AccountController : Controller
 	[Authorize]
 	[HttpPut("{company}/account/changepassword")]
 	[ValidateAntiForgeryToken]
-	public async Task<IActionResult> ChangePassword(Guid company)
+	public async Task<IActionResult> ChangePasswordX(Guid company)
 	{
 		try
 		{

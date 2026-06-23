@@ -57,4 +57,6 @@ public class ProfilePasswordViewModel
 	[Compare("Password", ErrorMessage = "Both passwords do not match")]
 	[MinLength(8, ErrorMessage = "Mininum length is 8 characters")]
 	public required string ConfirmPassword { get; set; }
+
+	public string? ProfileImageUrl { get; set; }
 }
