@@ -412,29 +412,87 @@ public class AccountController : Controller
 	[Authorize]
 	[HttpPost("{company}/account/profile")]
 	[ValidateAntiForgeryToken]
-	public async Task<IActionResult> Profile(ProfileMainViewModel model)
+	public async Task<IActionResult> Profile(Guid company, ProfileMainViewModel model)
 	{
-		ModelState.Remove("ProfilePasswordForm");
-
+		ModelState.Remove((model.ProfileForm == null) ? "ProfileForm" : "ProfilePasswordForm");
+			
 		if (!ModelState.IsValid)
 			return View(model);
 
-		var user = await _context.Users.FirstAsync(e => e.Id == model.ProfileForm.UserId);
+		if (model.ProfileForm != null)
+		{
+			var user = await _context.Users.FirstAsync(e => e.Id == model.ProfileForm.UserId);
 
-		if (user == null)
-			return NotFound("User not found");
+			if (user == null)
+				return NotFound("User not found");
 
-		var form = model.ProfileForm;
+			var profileImageUrl = string.Empty;
+			if (user.ProfileImage != null)
+			{
+				profileImageUrl = Path.Combine(_webHostEnvironment.WebRootPath, "img", "profiles", user.ProfileImage);
+			}
+			
+			var form = model.ProfileForm;
+			
+			user.FirstName = form.FirstName;
+			user.LastName = form.LastName;
+			user.Designation = form.Designation;
+			user.PhoneNumber = form.PhoneNumber;
 
-		user.FirstName = form.FirstName;
-		user.LastName = form.LastName;
-		user.Designation = form.Designation;
-		user.PhoneNumber = form.PhoneNumber;
+			_context.Users.Update(user);
+			await _context.SaveChangesAsync();
 
-		_context.Users.Update(user);
-		await _context.SaveChangesAsync();
+			model.ProfilePasswordForm = new ProfilePasswordViewModel
+			{
+				UserId = user.Id,
+				CurrentPassword = string.Empty,
+				Password = string.Empty,
+				ConfirmPassword = string.Empty,
+				ProfileImageUrl = System.IO.File.Exists(profileImageUrl) ? $"/img/profiles/{user.ProfileImage}" : "/img/user-default.png",
+			};
 
-		TempData["SuccessMessage"] = "Information has been successfully updated.";
+			TempData["SuccessMessage"] = "Information has been successfully updated.";
+		}
+		else
+		{
+			var user = await _context.Users.FirstAsync(e => e.Id == model.ProfilePasswordForm.UserId);
+
+			if (user == null)
+				return NotFound("User not found");
+
+			var profileImageUrl = string.Empty;
+			if (user.ProfileImage != null)
+			{
+				profileImageUrl = Path.Combine(_webHostEnvironment.WebRootPath, "img", "profiles", user.ProfileImage);
+			}
+
+			var form = model.ProfilePasswordForm;
+			//var user = await _userManager.FindByIdAsync(form.UserId);
+
+			var result = await _userManager.ChangePasswordAsync(user, form.CurrentPassword, form.ConfirmPassword);
+
+			model.ProfileForm = new ProfileViewModel
+			{
+				UserId = user.Id,
+				FirstName = user.FirstName,
+				LastName = user.LastName,
+				Email = user.Email,
+				Designation = user.Designation,
+				ProfileImageUrl = System.IO.File.Exists(profileImageUrl) ? $"/img/profiles/{user.ProfileImage}" : "/img/user-default.png",
+				HasProfileImage = !string.IsNullOrEmpty(user.ProfileImage) && user.ProfileImage != "/img/user-default.png",
+				RoleNames = user.UserRoles.Select(r => r.Role!.Name!).ToList(),
+				IsSuperAdmin = user.UserRoles.Any(r => r.Role!.NormalizedName == "SUPERUSER"),
+				PhoneNumber = user.PhoneNumber,
+			};
+
+			if (!result.Succeeded)
+			{
+				TempData["ErrorMessage"] = string.Join(", ", result.Errors.Select(e => new { e.Description }).ToList());
+				return View(model);
+			}
+
+			TempData["SuccessMessage"] = "Successfully changed your password. For security reasons, you are encouraged to log out and log in back using the new password.";			
+		}
 
 		return View(model);
 	}

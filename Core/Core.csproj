@@ -6,6 +6,7 @@
 		<Nullable>enable</Nullable>
 		<AssemblyName>PermitPro.$(MSBuildProjectName)</AssemblyName>
 		<RootNamespace>PermitPro.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+		<AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
 	</PropertyGroup>
 
 	<ItemGroup>
