@@ -61,13 +61,27 @@ namespace PermitPro.App.Controllers.Base
 			}
 		}
 
-		// Makes CompanyID available in every view as @ViewData["CompanyId"] (Guid)
-		// and @ViewData["CompanyIdStr"] (string) for use in href/URL helpers.
+		// Makes CompanyID and company branding available in every view.
 		// Called by MVC after construction, so ViewData is writable here.
 		public override void OnActionExecuting(ActionExecutingContext context)
 		{
 			ViewData["CompanyId"] = CompanyID;
 			ViewData["CompanyIdStr"] = CompanyID.ToString();
+
+			if (_companyId != Guid.Empty)
+			{
+				var company = _dbContext.Companies
+					.Where(c => c.Id == _companyId)
+					.Select(c => new { c.Name, c.LogoFileName })
+					.FirstOrDefault();
+
+				if (company != null)
+				{
+					ViewData["CompanyName"] = company.Name;
+					ViewData["CompanyLogoFileName"] = company.LogoFileName;
+				}
+			}
+
 			base.OnActionExecuting(context);
 		}
 	}

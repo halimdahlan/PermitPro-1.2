@@ -94,8 +94,14 @@
 			<div class="navbar-brand">
 				<div>
 					<div class="app-logo d-none d-md-block">
-						<img src="~/img/app-logo.jpg" />
-						<!--<i class="fa-duotone fa-user-helmet-safety fa-2xl text-info"></i>-->
+						@if (ViewData["CompanyLogoFileName"] != null)
+						{
+							<img src="/img/logos/@ViewData["CompanyLogoFileName"]" alt="@ViewData["CompanyName"]" />
+						}
+						else
+						{
+							<i class="fa-solid fa-helmet-safety fa-2xl text-info"></i>
+						}
 					</div>
 					<div class="app-name">
 						PermitPRO

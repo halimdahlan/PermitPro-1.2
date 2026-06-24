@@ -10,6 +10,8 @@ public class Company : EntityBase
 
 	public bool IsActive { get; set; }
 
+	public string? LogoFileName { get; set; }
+
 	public List<Address> CompanyAddresses { get; set; } = new();
 
 	public List<UserInfo> CompanyUsers { get; set; } = new();

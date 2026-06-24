@@ -1,0 +1,105 @@
+@{
+    Layout = "_LayoutAnon";
+    ViewData["Title"] = "Super Admin Sign In";
+}
+
+@model AdminLoginViewModel
+
+<div class="login-page">
+    <div class="login-card">
+
+        <!-- Logo -->
+        <div class="login-logo">
+            <div class="logo-icon">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div class="logo-text">PermitPro</div>
+            <div class="logo-sub" style="color:#f59e0b;font-weight:700;letter-spacing:.05em;font-size:.75rem;text-transform:uppercase;">Super Admin Portal</div>
+        </div>
+
+        <h5 class="login-heading">Administrator Sign In</h5>
+        <p class="login-sub">Restricted to Super Admin accounts only</p>
+
+        <form id="adminLoginForm" method="post" asp-controller="admin" asp-action="login">
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="validation-summary-errors mb-3">
+                    @Html.ValidationSummary(false)
+                </div>
+            }
+
+            <!-- Email -->
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label">@Html.DisplayNameFor(f => f.Email)</label>
+                <div class="input-group input-group-icon">
+                    <span class="input-group-text">
+                        <i class="fa-regular fa-envelope"></i>
+                    </span>
+                    <input asp-for="Email" class="form-control" placeholder="admin@company.com" autocomplete="username" required />
+                </div>
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <!-- Password -->
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label">@Html.DisplayNameFor(f => f.Password)</label>
+                <div class="input-group input-group-icon">
+                    <span class="input-group-text">
+                        <i class="fa-solid fa-lock"></i>
+                    </span>
+                    <input asp-for="Password" id="passwordInput" class="form-control"
+                           placeholder="••••••••••••" autocomplete="current-password" required />
+                    <button type="button" class="btn-pwd-toggle input-group-text"
+                            onclick="togglePassword()" title="Show/hide password">
+                        <i class="fa-regular fa-eye" id="pwdToggleIcon"></i>
+                    </button>
+                </div>
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <!-- Remember me -->
+            <div class="mb-4 d-flex align-items-center">
+                <input class="form-check-input me-2" asp-for="RememberMe" style="accent-color:#2c7be5;width:16px;height:16px;" />
+                <label class="form-check-label" asp-for="RememberMe">@Html.DisplayNameFor(m => m.RememberMe)</label>
+            </div>
+
+            <!-- Submit -->
+            <button id="btnSubmit" type="submit" class="btn btn-login w-100">
+                <i class="fa-solid fa-arrow-right-to-bracket me-2"></i> Sign In as Admin
+            </button>
+
+        </form>
+
+        <div class="mt-3 text-center" style="font-size:.78rem;">
+            <a href="/account/login" style="color:#64748b;text-decoration:none;">
+                <i class="fa-solid fa-arrow-left me-1"></i> Back to company login
+            </a>
+        </div>
+
+        <p class="login-footer-note">
+            Protected by PermitPro &bull; v1.2
+        </p>
+
+    </div>
+</div>
+
+@section CustomCss {
+    <link rel="stylesheet" href="~/css/login.css" />
+}
+
+@section Scripts {
+    <script>
+        function togglePassword() {
+            var input = document.getElementById('passwordInput');
+            var icon = document.getElementById('pwdToggleIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fa-regular fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fa-regular fa-eye';
+            }
+        }
+    </script>
+}

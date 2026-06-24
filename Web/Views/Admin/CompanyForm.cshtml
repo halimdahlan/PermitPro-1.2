@@ -1,0 +1,144 @@
+@{
+	Layout = "_LayoutAdmin";
+	var isEdit = Model.IsEdit;
+	ViewData["Title"] = isEdit ? "Edit Company" : "New Company";
+	var hasLogo = !string.IsNullOrEmpty(Model.ExistingLogoFileName);
+}
+
+@model AdminCompanyFormViewModel
+
+<div class="page-header">
+	<h4>
+		<i class="fa-solid fa-@(isEdit ? "pen-to-square" : "plus-circle") me-2 text-primary"></i>
+		@(isEdit ? "Edit Company" : "New Company")
+	</h4>
+	<a href="/admin/companies" class="btn btn-sm btn-outline-secondary">
+		<i class="fa-solid fa-arrow-left me-1"></i> Back to Companies
+	</a>
+</div>
+
+<div class="card shadow-sm border-0" style="max-width:660px;">
+	<div class="card-body p-4">
+
+		@if (!ViewData.ModelState.IsValid)
+		{
+			<div class="alert alert-danger">
+				@Html.ValidationSummary(false)
+			</div>
+		}
+
+		<form method="post" enctype="multipart/form-data"
+				action="@(isEdit ? $"/admin/companies/{Model.Id}/edit" : "/admin/companies/new")">
+			@Html.AntiForgeryToken()
+
+			@if (isEdit)
+			{
+				<input type="hidden" asp-for="Id" />
+			}
+			<input type="hidden" asp-for="ExistingLogoFileName" />
+
+			<!-- Name -->
+			<div class="mb-3">
+				<label asp-for="Name" class="form-label fw-600">
+					@Html.DisplayNameFor(f => f.Name) <span class="text-danger">*</span>
+				</label>
+				<input asp-for="Name" class="form-control" placeholder="e.g. Acme Corporation" autofocus />
+				<span asp-validation-for="Name" class="text-danger small"></span>
+			</div>
+
+			<!-- Description -->
+			<div class="mb-3">
+				<label asp-for="Description" class="form-label fw-600">@Html.DisplayNameFor(f => f.Description)</label>
+				<textarea asp-for="Description" class="form-control" rows="3"
+							 placeholder="Optional — short description of this company"></textarea>
+				<span asp-validation-for="Description" class="text-danger small"></span>
+			</div>
+
+			<!-- Logo -->
+			<div class="mb-4">
+				<label class="form-label fw-600">@Html.DisplayNameFor(f => f.LogoFile)</label>
+
+				@if (hasLogo)
+				{
+					<div class="mb-2 d-flex align-items-center gap-3" id="currentLogoWrap">
+						<img src="/img/logos/@Model.ExistingLogoFileName" alt="Current logo" id="logoPreview"
+							  style="height:56px;width:auto;max-width:180px;object-fit:contain;border:1px solid #e2e8f0;border-radius:6px;padding:4px;background:#fff;" />
+						<div>
+							<div class="text-muted small mb-1">Current logo</div>
+							<div class="form-check">
+								<input class="form-check-input" type="checkbox" asp-for="RemoveLogo" id="removeLogo"
+										 onchange="toggleRemove(this)" />
+								<label class="form-check-label text-danger small" for="removeLogo">
+									Remove logo
+								</label>
+							</div>
+						</div>
+					</div>
+				}
+				else
+				{
+					<div class="mb-2" id="logoPreviewWrap" style="display:none;">
+						<img id="logoPreview" src="" alt="Preview"
+							  style="height:56px;width:auto;max-width:180px;object-fit:contain;border:1px solid #e2e8f0;border-radius:6px;padding:4px;background:#fff;" />
+					</div>
+				}
+
+				<div id="logoInputWrap">
+					<input asp-for="LogoFile" type="file" class="form-control" accept=".png,.jpg,.jpeg,.webp,.svg"
+							 onchange="previewLogo(this)" />
+					<div class="form-text">PNG, JPG, WebP or SVG · Max 2 MB</div>
+				</div>
+
+				<span asp-validation-for="LogoFile" class="text-danger small"></span>
+			</div>
+
+			<!-- Active -->
+			<div class="mb-4">
+				<div class="form-check form-switch">
+					<input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch" />
+					<label asp-for="IsActive" class="form-check-label fw-600">Active</label>
+				</div>
+				<small class="text-muted">Inactive companies cannot be selected on the login page.</small>
+			</div>
+
+			<hr class="my-3" />
+
+			<div class="d-flex gap-2">
+				<button type="submit" class="btn btn-sm btn-primary">
+					<i class="fa-solid fa-floppy-disk me-1"></i>
+					@(isEdit ? "Save Changes" : "Create Company")
+				</button>
+				<a href="/admin/companies" class="btn btn-sm btn-outline-secondary">Cancel</a>
+			</div>
+
+		</form>
+	</div>
+</div>
+
+@section Scripts {
+	<script>
+		function previewLogo(input) {
+			if (!input.files || !input.files[0]) return;
+			var reader = new FileReader();
+			reader.onload = function (e) {
+				var img = document.getElementById('logoPreview');
+				var wrap = document.getElementById('logoPreviewWrap');
+				if (img) img.src = e.target.result;
+				if (wrap) wrap.style.display = 'block';
+			};
+			reader.readAsDataURL(input.files[0]);
+		}
+
+		function toggleRemove(cb) {
+			var inputWrap = document.getElementById('logoInputWrap');
+			var previewWrap = document.getElementById('currentLogoWrap');
+			if (cb.checked) {
+				if (inputWrap) inputWrap.style.display = 'none';
+				if (previewWrap) previewWrap.style.opacity = '0.4';
+			} else {
+				if (inputWrap) inputWrap.style.display = 'block';
+				if (previewWrap) previewWrap.style.opacity = '1';
+			}
+		}
+	</script>
+}
