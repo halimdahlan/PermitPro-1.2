@@ -28,20 +28,25 @@ A multi-tenant, enterprise web application for managing **Permit-to-Work (PTW)**
 ```
 PermitPro-1.2/
 ├── Web/                        # ASP.NET Core MVC web application
-│   ├── Areas/Identity/         # Scaffolded identity pages (login, register, 2FA)
-│   ├── Controllers/            # 19 active MVC controllers
+│   ├── Controllers/            # 21 active MVC controllers
+│   │   ├── Base/               # AppControllerBase (company scoping + ViewData)
+│   │   └── AdminController.cs  # Super Admin portal (login + company management)
 │   ├── Hubs/                   # SignalR hubs (NotificationHub)
 │   ├── Models/                 # AJAX request/response models, chart models
 │   ├── Services/               # Web-layer services (NotificationPushService)
-│   ├── ViewModels/             # 30+ typed view models
-│   ├── Views/                  # Razor templates per feature area
-│   └── wwwroot/                # Static assets (CSS, JS, images, themes)
+│   ├── ViewModels/             # 32 typed view models
+│   ├── Views/
+│   │   ├── Admin/              # Super Admin views (Login, Companies, CompanyForm)
+│   │   ├── Shared/             # Layouts (_Layout, _LayoutAnon, _LayoutAdmin, _LayoutPdf)
+│   │   └── <feature>/          # Razor templates per feature area
+│   └── wwwroot/
+│       └── img/logos/          # Uploaded company logo files
 ├── Core/                       # Domain logic class library
 │   ├── Data/                   # ApplicationDbContext + soft-delete/restore logic
-│   ├── Entities/               # 18 active domain entities
+│   ├── Entities/               # 20 active domain entities
 │   ├── Enums/                  # PermitStatus, WorkflowStatus, SiteType, etc.
-│   ├── Interfaces/             # 12 service and entity interfaces
-│   ├── Services/               # 7 core service implementations
+│   ├── Interfaces/             # 13 service and entity interfaces
+│   ├── Services/               # 9 core service implementations
 │   ├── Filters/                # Authorization filters
 │   ├── Helpers/                # Email, JWT, PTW settings helpers
 │   ├── Interceptors/           # EF Core audit interceptor
@@ -56,6 +61,16 @@ PermitPro-1.2/
 ---
 
 ## Features
+
+### Super Admin Portal
+- Separate login page at `/admin/login` — no company selection required
+- Restricted to accounts with the `SUPERUSER` role only
+- Full company management across all tenants:
+  - Create, edit, and soft-delete companies
+  - Activate / deactivate companies (inactive companies are hidden from the tenant login page)
+  - Upload a company logo (PNG, JPG, WebP, SVG — max 2 MB)
+- Company logo is displayed in the tenant sidebar; falls back to a helmet-safety icon if none is set
+- Dedicated `_LayoutAdmin` layout with a minimal dark navigation bar
 
 ### Permit Management
 - Create and manage safety permits across 8 certificate types:
@@ -72,8 +87,9 @@ PermitPro-1.2/
 
 ### Multi-Tenancy
 - Each company operates in an isolated namespace
-- Route pattern: `/{company}/{controller}/{action}`
+- Tenant route pattern: `/{company}/{controller}/{action}`
 - All data scoped to the tenant company
+- Company name and logo injected into every tenant view via `AppControllerBase`
 
 ### Real-time Notifications
 - SignalR `NotificationHub` pushes live notifications to connected users
@@ -90,6 +106,11 @@ PermitPro-1.2/
 - `RecycleBinController` exposes restore functionality for soft-deleted records
 - Cascade restore recovers children deleted within the same cascade operation (10-second window)
 
+### App Settings
+- Per-company key-value configuration stored in `AppSettingCategory` / `AppSetting` entities
+- Settings are grouped by category and scoped by `CompanyId`
+- Used for email server configuration, branding, and feature toggles
+
 ### Reporting & Export
 - Kendo UI grid-based reporting with Excel export
 - Permit and workflow summary dashboards
@@ -105,7 +126,7 @@ PermitPro-1.2/
 
 | Role | Description |
 |---|---|
-| **Super User** | Full system access across all tenants |
+| **Super User** | Cross-tenant system access; manages companies via `/admin` portal |
 | **Portal Admin** | Company-level administration |
 | **User** | Standard access — view and submit permits |
 | **Permit Issuer** | Can issue and approve permits |
@@ -166,18 +187,24 @@ PermitPro-1.2/
 
 5. Apply database migrations:
    ```bash
-   cd Web
-   dotnet ef database update
+   dotnet ef database update --project Core --startup-project Web
    ```
 
 6. Run the application:
    ```bash
-   dotnet run
+   dotnet run --project Web
    ```
 
    Default URLs:
    - HTTP: `http://localhost:5144`
    - HTTPS: `https://localhost:7079`
+
+### First-Time Setup
+
+1. Create a `SUPERUSER` role and assign it to an admin account directly in the database (or via seed).
+2. Navigate to `/admin/login` and sign in with that account.
+3. Create your first company from `/admin/companies`.
+4. Tenant users log in at `/account/login` and select their company from the dropdown.
 
 ### Docker / MSSQL
 
@@ -216,7 +243,7 @@ Entity Framework Core with SQL Server. Key entities:
 
 | Entity | Purpose |
 |---|---|
-| `Company` | Multi-tenant root |
+| `Company` | Multi-tenant root; holds name, logo filename, and active state |
 | `Site` | Work sites with GPS coordinates |
 | `Permit` | Safety permits with status lifecycle |
 | `Workflow` / `WorkflowStep` | Approval workflow definitions |
@@ -231,8 +258,24 @@ Entity Framework Core with SQL Server. Key entities:
 | `Contact` | Company contact records |
 | `PermitNumber` | Sequential permit numbering per company |
 | `SystemMenu` | Role-based menu visibility configuration |
+| `AppSettingCategory` | Per-company grouping for key-value settings |
+| `AppSetting` | Per-company key-value configuration (unique on CompanyId + CategoryId + Key) |
 
 All core entities support soft-delete via `ISoftDeletable`. Hard deletes are not performed by the application by default (`UseSoftDelete = true`).
+
+### Migration history
+
+| Migration | Description |
+|---|---|
+| `InitialCreate` | Base schema |
+| `AddNewProperty-PreviousPermitStatus-Permit` | Tracks previous permit status |
+| `AddedNewProperties-Permit-01` | Additional permit fields |
+| `AddSoftDelete` | `IsDeleted` / `DeletedWhen` / `DeletedBy` on all core entities |
+| `AddNotificationTitle` | `Title` column on `Notification` |
+| `AddRoleAuditFields` | Audit fields on `Role` |
+| `AddRoleDescription` | `Description` and `IsSystemRole` on `Role` |
+| `AddAppSettings` | `AppSettingCategory` and `AppSetting` tables |
+| `AddCompanyLogo` | `LogoFileName` on `Company` |
 
 Run migrations:
 ```bash
@@ -269,3 +312,4 @@ Deployment user: `[YOUR_WEB_DEPLOY_USERNAME]`
 - The `RESERVED_ROLES` environment variable restricts certain role assignments (SUPERUSER, PORTALADMIN)
 - All audit events are written to `AuditLog` and are non-deletable by application users
 - JWT `SecretKey` must be stored securely and never committed to source control
+- The Super Admin portal (`/admin/*`) is protected by the `SUPERUSER` role check on every action — regular tenant users are rejected at login, not just redirected
