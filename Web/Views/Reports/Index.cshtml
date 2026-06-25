@@ -154,6 +154,94 @@
 
 <hr />
 
+<!-- Inline loading state for the stats area -->
+<div id="reportLoading" class="text-center py-5" style="display:none">
+	<i class="fa-solid fa-loader fa-spin text-secondary" style="font-size:2rem"></i>
+	<p class="text-secondary mt-2 mb-0 small">Loading statistics…</p>
+</div>
+
+<!-- KPI Summary Cards -->
+<div id="kpiSection" class="mb-4" style="display:none">
+	<div class="row g-3">
+		<div class="col">
+			<div class="card border-0 shadow-sm text-center kpi-card">
+				<div class="card-body py-3">
+					<div class="kpi-value text-primary" id="kpiTotal">—</div>
+					<div class="kpi-label">Total Permits</div>
+				</div>
+			</div>
+		</div>
+		<div class="col">
+			<div class="card border-0 shadow-sm text-center kpi-card">
+				<div class="card-body py-3">
+					<div class="kpi-value" style="color:#f6c343" id="kpiPending">—</div>
+					<div class="kpi-label">Pending</div>
+				</div>
+			</div>
+		</div>
+		<div class="col">
+			<div class="card border-0 shadow-sm text-center kpi-card">
+				<div class="card-body py-3">
+					<div class="kpi-value text-success" id="kpiApproved">—</div>
+					<div class="kpi-label">Approved</div>
+				</div>
+			</div>
+		</div>
+		<div class="col">
+			<div class="card border-0 shadow-sm text-center kpi-card">
+				<div class="card-body py-3">
+					<div class="kpi-value text-secondary" id="kpiClosed">—</div>
+					<div class="kpi-label">Closed</div>
+				</div>
+			</div>
+		</div>
+		<div class="col">
+			<div class="card border-0 shadow-sm text-center kpi-card" id="kpiOverdueCard">
+				<div class="card-body py-3">
+					<div class="kpi-value text-danger" id="kpiOverdue">—</div>
+					<div class="kpi-label">Overdue</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Charts Row -->
+<div id="chartsSection" class="mb-4" style="display:none">
+	<div class="row g-3">
+		<div class="col-md-3">
+			<div class="card border-0 shadow-sm h-100">
+				<div class="card-body">
+					<div class="chart-section-title">Status Distribution</div>
+					<div class="chart-wrap">
+						<canvas id="statusChart"></canvas>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="card border-0 shadow-sm h-100">
+				<div class="card-body">
+					<div class="chart-section-title">Monthly Trend <span class="fw-normal text-secondary">(last 12 months)</span></div>
+					<div class="chart-wrap">
+						<canvas id="monthlyChart"></canvas>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-3">
+			<div class="card border-0 shadow-sm h-100">
+				<div class="card-body">
+					<div class="chart-section-title">Top Locations</div>
+					<div class="chart-wrap">
+						<canvas id="locationChart"></canvas>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
 <div class="grid-result">
 	@(Html.Kendo().Grid<ReportGridModel>()
 		.Name("gridResult")
@@ -239,14 +327,129 @@
 }
 
 @section Scripts {
+	<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 	<script>
+		var companyId = '@companyId';
 		var useDateRange = false;
 		var dateRange;
 		var gridResult;
+		var statusChart = null, monthlyChart = null, locationChart = null;
+
+		const chartColors = {
+			approved: '#00d97e',
+			pending:  '#f6c343',
+			other:    '#b2c1d6',
+			blue:     '#2c7be5',
+			white:    '#ffffff',
+			statusPalette: ['#b2c1d6', '#f6c343', '#00d97e', '#e63757', '#fd7e14', '#6f42c1', '#6e84a3'],
+		};
+
+		const chartFont = { family: "'Poppins', sans-serif", size: 11 };
+
+		const loadChartData = (params) => {
+			$.ajax({
+				url: `/${companyId}/reports/getchartdata`,
+				data: params,
+				method: 'GET',
+				success: (data) => {
+					// KPI cards
+					$('#kpiTotal').text(data.summary.total);
+					$('#kpiPending').text(data.summary.pending);
+					$('#kpiApproved').text(data.summary.approved);
+					$('#kpiClosed').text(data.summary.closed);
+					$('#kpiOverdue').text(data.summary.overdue);
+					$('#kpiOverdueCard').toggleClass('kpi-card-danger', data.summary.overdue > 0);
+
+					$('#kpiSection, #chartsSection').show();
+
+					// Destroy stale chart instances before re-drawing
+					if (statusChart)   { statusChart.destroy();   statusChart = null; }
+					if (monthlyChart)  { monthlyChart.destroy();  monthlyChart = null; }
+					if (locationChart) { locationChart.destroy(); locationChart = null; }
+
+					// ── Doughnut: status distribution ──────────────────
+					statusChart = new Chart(document.getElementById('statusChart'), {
+						type: 'doughnut',
+						data: {
+							labels: ['Draft', 'Pending', 'Approved', 'Rejected', 'Suspended', 'KIV', 'Closed'],
+							datasets: [{
+								data: [
+									data.summary.draft, data.summary.pending, data.summary.approved,
+									data.summary.rejected, data.summary.suspended, data.summary.kiv, data.summary.closed
+								],
+								backgroundColor: chartColors.statusPalette,
+								borderWidth: 2,
+								borderColor: chartColors.white,
+								hoverBorderColor: chartColors.white,
+							}]
+						},
+						options: {
+							responsive: true,
+							maintainAspectRatio: false,
+							cutout: '65%',
+							plugins: {
+								legend: {
+									position: 'bottom',
+									labels: { font: chartFont, padding: 8, boxWidth: 12 }
+								}
+							}
+						}
+					});
+
+					// ── Stacked bar: monthly trend ──────────────────────
+					monthlyChart = new Chart(document.getElementById('monthlyChart'), {
+						type: 'bar',
+						data: {
+							labels: data.byMonth.map(m => m.label),
+							datasets: [
+								{ label: 'Approved / Closed', data: data.byMonth.map(m => m.approved), backgroundColor: chartColors.approved, borderRadius: 3 },
+								{ label: 'Pending',           data: data.byMonth.map(m => m.pending),  backgroundColor: chartColors.pending,  borderRadius: 3 },
+								{ label: 'Other',             data: data.byMonth.map(m => m.other),    backgroundColor: chartColors.other,    borderRadius: 3 },
+							]
+						},
+						options: {
+							responsive: true,
+							maintainAspectRatio: false,
+							plugins: {
+								legend: { position: 'bottom', labels: { font: chartFont, boxWidth: 12, padding: 8 } }
+							},
+							scales: {
+								x: { stacked: true, grid: { display: false }, ticks: { font: chartFont } },
+								y: { stacked: true, ticks: { font: chartFont, precision: 0 } }
+							}
+						}
+					});
+
+					// ── Horizontal bar: top locations ───────────────────
+					locationChart = new Chart(document.getElementById('locationChart'), {
+						type: 'bar',
+						data: {
+							labels: data.byLocation.map(l => l.label),
+							datasets: [{
+								label: 'Permits',
+								data: data.byLocation.map(l => l.count),
+								backgroundColor: chartColors.blue,
+								borderRadius: 3,
+							}]
+						},
+						options: {
+							indexAxis: 'y',
+							responsive: true,
+							maintainAspectRatio: false,
+							plugins: { legend: { display: false } },
+							scales: {
+								x: { grid: { display: false }, ticks: { font: chartFont, precision: 0 } },
+								y: { grid: { display: false }, ticks: { font: chartFont } }
+							}
+						}
+					});
+				},
+				complete: () => { $('#reportLoading').hide(); }
+			});
+		};
+
 
 		$(document).ready(() => {
-
-			//$('.k-button[type="button"]').addClass('btn-primary');
 
 			gridResult = $("#gridResult").data("kendoGrid");
 			dateRange = $('#dateRange').data('kendoDateRangePicker');
@@ -257,35 +460,48 @@
 			};
 
 			$('.view-report').click(() => {
-				var ddtLocation = $('#ddtLocation').data('kendoDropDownTree');
+				$('#kpiSection, #chartsSection').hide();
+				$('#reportLoading').show();
+
+				var ddtLocation    = $('#ddtLocation').data('kendoDropDownTree');
 				var ddlCertificate = $('#ddlCertificate').data('kendoDropDownList');
 				var ddlPermitStatus = $('#ddlPermitStatus').data('kendoDropDownList');
+				var ddlMonth = $('#ddlMonth').data('kendoDropDownList');
+				var ddlYear  = $('#ddlYear').data('kendoDropDownList');
 
-				var gridFilter = { logic: 'and', filters: [], };
+				// ── Grid filter (Kendo client-side) ──────────────────
+				var gridFilter = { logic: 'and', filters: [] };
 
 				if (useDateRange) {
 					var range = dateRange.range();
-
 					gridFilter.filters.push({ field: 'CreatedWhen', operator: 'gte', value: range.start });
 					gridFilter.filters.push({ field: 'CreatedWhen', operator: 'lte', value: range.end });
 				} else {
-					var ddlMonth = $('#ddlMonth').data('kendoDropDownList');
-					var ddlYear = $('#ddlYear').data('kendoDropDownList');
-
 					if (ddlMonth.value() != '') gridFilter.filters.push({ field: 'CreatedMonth', operator: 'eq', value: ddlMonth.value() });
-					if (ddlYear.value() != '') gridFilter.filters.push({ field: 'CreatedYear', operator: 'eq', value: ddlYear.value() });
+					if (ddlYear.value()  != '') gridFilter.filters.push({ field: 'CreatedYear',  operator: 'eq', value: ddlYear.value() });
 				}
-
-				if (ddtLocation.value() != '') gridFilter.filters.push({ field: 'LocationId', operator: 'eq', value: ddtLocation.value() });
-				if (ddlCertificate.value() != '') gridFilter.filters.push({ field: 'Certificates', operator: 'contains', value: ddlCertificate.value() });
-				if (ddlPermitStatus.value() != '') gridFilter.filters.push({ field: 'PermitStatusEnum', operator: 'eq', value: ddlPermitStatus.value() });
-
-				//console.log(gridFilter);
+				if (ddtLocation.value()    != '') gridFilter.filters.push({ field: 'LocationId',      operator: 'eq',       value: ddtLocation.value() });
+				if (ddlCertificate.value() != '') gridFilter.filters.push({ field: 'Certificates',    operator: 'contains', value: ddlCertificate.value() });
+				if (ddlPermitStatus.value() != '') gridFilter.filters.push({ field: 'PermitStatusEnum', operator: 'eq',      value: ddlPermitStatus.value() });
 
 				$('.grid-result').css('display', 'block');
-
 				gridResult.dataSource.filter(gridFilter);
-				//gridResult.dataSource.read();
+
+				// ── Chart data (server-side aggregation) ─────────────
+				var chartParams = { useDateRange: useDateRange };
+				if (useDateRange) {
+					var r = dateRange.range();
+					if (r.start) chartParams.startDate = r.start.toISOString();
+					if (r.end)   chartParams.endDate   = r.end.toISOString();
+				} else {
+					if (ddlMonth.value() != '') chartParams.month = ddlMonth.value();
+					if (ddlYear.value()  != '') chartParams.year  = ddlYear.value();
+				}
+				if (ddtLocation.value()     != '') chartParams.locationId     = ddtLocation.value();
+				if (ddlCertificate.value()  != '') chartParams.certificateType = ddlCertificate.value();
+				if (ddlPermitStatus.value() != '') chartParams.permitStatus    = ddlPermitStatus.value();
+
+				loadChartData(chartParams);
 			});
 
 
@@ -295,11 +511,11 @@
 
 
 			$('.clear-filter').click(() => {
-				var ddtLocation = $('#ddtLocation').data('kendoDropDownTree');
+				var ddtLocation    = $('#ddtLocation').data('kendoDropDownTree');
 				var ddlCertificate = $('#ddlCertificate').data('kendoDropDownList');
 				var ddlPermitStatus = $('#ddlPermitStatus').data('kendoDropDownList');
 				var ddlMonth = $('#ddlMonth').data('kendoDropDownList');
-				var ddlYear = $('#ddlYear').data('kendoDropDownList');
+				var ddlYear  = $('#ddlYear').data('kendoDropDownList');
 
 				dateRange.range({});
 				ddtLocation.value('');
@@ -309,6 +525,7 @@
 				ddlYear.value('');
 
 				gridResult.dataSource.filter({});
+				$('#kpiSection, #chartsSection').hide();
 			});
 
 		});
@@ -316,14 +533,11 @@
 
 		const onOptionChange = (e) => {
 			var dateRange = $('#dateRange').data('kendoDateRangePicker');
-			var ddlMonth = $('#ddlMonth').data('kendoDropDownList');
-			var ddlYear = $('#ddlYear').data('kendoDropDownList');
-
-			var option1 = $('#option1').data('kendoRadioButton');
-			var option2 = $('#option2').data('kendoRadioButton');
+			var ddlMonth  = $('#ddlMonth').data('kendoDropDownList');
+			var ddlYear   = $('#ddlYear').data('kendoDropDownList');
 
 			ddlMonth.enable(e.sender.element[0].id == 'option1');
-			ddlYear.enable(e.sender.element[0].id == 'option1');
+			ddlYear.enable(e.sender.element[0].id  == 'option1');
 			dateRange.enable(e.sender.element[0].id == 'option2');
 
 			useDateRange = e.sender.element[0].id == 'option2';

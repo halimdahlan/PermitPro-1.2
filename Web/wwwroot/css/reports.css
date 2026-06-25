@@ -112,3 +112,51 @@
 .k-toolbar .k-input, .k-toolbar .k-picker {
 	width: 15em !important;
 }
+
+
+/* ── KPI Cards ──────────────────────────────────────────── */
+.kpi-card {
+	border-radius: 8px;
+	transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.kpi-card:hover {
+	transform: translateY(-3px);
+	box-shadow: 0 .5rem 1rem rgba(0,0,0,.1) !important;
+}
+
+.kpi-value {
+	font-size: 2.2rem;
+	font-weight: 700;
+	line-height: 1.1;
+	font-family: 'Poppins', sans-serif;
+}
+
+.kpi-label {
+	font-size: 0.68rem;
+	text-transform: uppercase;
+	letter-spacing: 0.07em;
+	color: #95aac9;
+	margin-top: 5px;
+}
+
+.kpi-card-danger {
+	border: 1px solid rgba(230, 55, 87, 0.25) !important;
+	background-color: rgba(230, 55, 87, 0.05);
+}
+
+
+/* ── Chart Containers ───────────────────────────────────── */
+.chart-section-title {
+	font-size: 0.68rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.07em;
+	color: #95aac9;
+	margin-bottom: 14px;
+}
+
+.chart-wrap {
+	position: relative;
+	height: 230px;
+}

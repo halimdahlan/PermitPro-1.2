@@ -13,6 +13,7 @@ using PermitPro.App.ViewModels;
 using PermitPro.Core.Data;
 using PermitPro.Core.Entities;
 using PermitPro.Core.Helpers;
+using PermitPro.Core.Enums;
 using PermitPro.Core.Interfaces;
 
 using System.Text.Json;
@@ -220,6 +221,122 @@ public class ReportsController : AppControllerBase
 		});
 	}
 
+	public JsonResult GetChartData(
+		Guid company,
+		bool useDateRange = false,
+		string month = "",
+		int year = 0,
+		DateTime? startDate = null,
+		DateTime? endDate = null,
+		string locationId = "",
+		string certificateType = "",
+		int permitStatus = -1)
+	{
+		var permitsRaw = _dbContext.Permits
+			.Include(e => e.Site)
+			.Where(e => e.Company.Id == company && e.PermitWorkflowStep != null && e.Site != null)
+			.AsEnumerable();
+
+		var all = new List<ChartPermitData>();
+		foreach (var p in permitsRaw)
+		{
+			if (string.IsNullOrWhiteSpace(p.PermitForm)) continue;
+			JObject json = JObject.Parse(p.PermitForm);
+
+			var dtmEnd = json["general"]?["endDateTime"] as JValue;
+
+			var certs = new List<string>();
+			var certsToken = json["general"]?["certificates"];
+			if (certsToken != null)
+			{
+				foreach (var cert in certsToken.Children())
+				{
+					var letter = cert["name"]?.ToString() switch
+					{
+						"hotwork" => "A", "confinedspace" => "B", "radiation" => "C",
+						"excavation" => "D", "isolation" => "E", "methodStatement" => "F",
+						"liftingHoisting" => "G", "override" => "H", _ => "?"
+					};
+					certs.Add(letter);
+				}
+			}
+
+			var dtm = GeneralHelper.GetDateInTimeZone(p.CreatedWhen);
+			all.Add(new ChartPermitData
+			{
+				Status = p.PermitStatus,
+				CreatedWhen = new DateTime(dtm.Year, dtm.Month, dtm.Day),
+				LocationId = p.Site?.Id.ToString() ?? string.Empty,
+				LocationName = p.Site?.Name ?? string.Empty,
+				Certificates = string.Join(",", certs),
+				EndDate = dtmEnd?.Value != null ? DateTime.Parse(dtmEnd.ToString()).ToLocalTime() : null,
+			});
+		}
+
+		// Filtered set — used for KPI cards, donut chart, and location chart
+		IEnumerable<ChartPermitData> filtered = all;
+		if (useDateRange && startDate.HasValue && endDate.HasValue)
+			filtered = filtered.Where(p => p.CreatedWhen >= startDate.Value.Date && p.CreatedWhen <= endDate.Value.Date);
+		else if (!useDateRange)
+		{
+			if (!string.IsNullOrEmpty(month)) filtered = filtered.Where(p => p.CreatedWhen.ToString("MMMM") == month);
+			if (year > 0) filtered = filtered.Where(p => p.CreatedWhen.Year == year);
+		}
+		if (!string.IsNullOrEmpty(locationId)) filtered = filtered.Where(p => p.LocationId == locationId);
+		if (!string.IsNullOrEmpty(certificateType)) filtered = filtered.Where(p => p.Certificates.Contains(certificateType));
+		if (permitStatus >= 0) filtered = filtered.Where(p => (int)p.Status == permitStatus);
+		var f = filtered.ToList();
+
+		var terminalStatuses = new[] { PermitStatusEnum.Closed, PermitStatusEnum.Rejected, PermitStatusEnum.ClosedNoAction };
+		var now = DateTime.Now;
+
+		var summary = new
+		{
+			total = f.Count,
+			draft = f.Count(p => p.Status == PermitStatusEnum.Draft),
+			pending = f.Count(p => p.Status == PermitStatusEnum.Pending),
+			approved = f.Count(p => p.Status == PermitStatusEnum.Approved),
+			rejected = f.Count(p => p.Status == PermitStatusEnum.Rejected),
+			suspended = f.Count(p => p.Status == PermitStatusEnum.Suspended),
+			kiv = f.Count(p => p.Status == PermitStatusEnum.KIV),
+			closed = f.Count(p => p.Status == PermitStatusEnum.Closed || p.Status == PermitStatusEnum.ClosedNoAction),
+			overdue = f.Count(p => p.EndDate.HasValue && p.EndDate.Value < now && !terminalStatuses.Contains(p.Status)),
+		};
+
+		var byLocation = f
+			.GroupBy(p => p.LocationName)
+			.Select(g => new { label = g.Key, count = g.Count() })
+			.OrderByDescending(x => x.count)
+			.Take(8)
+			.ToList<object>();
+
+		// Monthly trend — always last 12 months; date filter is intentionally excluded
+		// so the trend chart retains context when a specific month/year is selected.
+		IEnumerable<ChartPermitData> trendBase = all;
+		if (!string.IsNullOrEmpty(locationId)) trendBase = trendBase.Where(p => p.LocationId == locationId);
+		if (!string.IsNullOrEmpty(certificateType)) trendBase = trendBase.Where(p => p.Certificates.Contains(certificateType));
+		if (permitStatus >= 0) trendBase = trendBase.Where(p => (int)p.Status == permitStatus);
+
+		var monthStart = new DateTime(now.Year, now.Month, 1).AddMonths(-11);
+		var trend = trendBase.Where(p => p.CreatedWhen >= monthStart).ToList();
+
+		var byMonth = new List<object>();
+		for (int i = 0; i < 12; i++)
+		{
+			var m = monthStart.AddMonths(i);
+			var mp = trend.Where(p => p.CreatedWhen.Year == m.Year && p.CreatedWhen.Month == m.Month).ToList();
+			byMonth.Add(new
+			{
+				label = m.ToString("MMM yy"),
+				approved = mp.Count(p => p.Status == PermitStatusEnum.Approved || p.Status == PermitStatusEnum.Closed || p.Status == PermitStatusEnum.ClosedNoAction),
+				pending = mp.Count(p => p.Status == PermitStatusEnum.Pending),
+				other = mp.Count(p => p.Status != PermitStatusEnum.Approved && p.Status != PermitStatusEnum.Closed && p.Status != PermitStatusEnum.ClosedNoAction && p.Status != PermitStatusEnum.Pending),
+			});
+		}
+
+		return new JsonResult(new { summary, byMonth, byLocation }, new JsonSerializerOptions { PropertyNamingPolicy = null });
+	}
+
 	#endregion
 
 
@@ -238,4 +355,13 @@ public class ReportsController : AppControllerBase
 	#region "Private functions/methods"
 	#endregion
 
+	private class ChartPermitData
+	{
+		public PermitStatusEnum Status { get; set; }
+		public DateTime CreatedWhen { get; set; }
+		public string LocationId { get; set; } = string.Empty;
+		public string LocationName { get; set; } = string.Empty;
+		public string Certificates { get; set; } = string.Empty;
+		public DateTime? EndDate { get; set; }
+	}
 }
