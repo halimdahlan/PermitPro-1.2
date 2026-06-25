@@ -1,6 +1,6 @@
 ---
 name: session-reports
-description: "Full implementation of KPI cards, Chart.js charts, aggregation tabs, permit holder filter, and duration column in the Reports section"
+description: "Reports section: KPI cards, charts, aggregation tabs, holder filter, overdue paging, GetReportGrid N+1 fix"
 metadata: 
   node_type: memory
   type: project
@@ -117,10 +117,33 @@ c.Bound(p => p.DurationDays)
 **JavaScript logic:**
 - `loadChartData(params)` — GET `/${companyId}/reports/getchartdata`, populates all KPI/chart/table sections
 - "View Report" click: shows `#reportLoading`, hides KPI/charts, calls both `GetReportGrid` (via Kendo grid read) and `loadChartData`
-- "Clear filter" click: resets all dropdowns incl. `ddlPermitHolder`, hides stats sections
-- `renderOverdueTable(permits)` — HTML table with permit link, holder, location, endDate, daysOverdue, status badge
+- "Clear filter" click: resets all dropdowns incl. `ddlPermitHolder`, hides stats sections, resets `_overduePermits = []`
+- `renderOverduePage(page)` — replaces old `renderOverdueTable`; renders a paginated slice of `_overduePermits` with Bootstrap 5 `pagination-sm` and "Showing X–Y of Z records" label
 - `renderHolderTable(holders)` — HTML table with approval rate progress bar
 - `renderLocationTable(locations)` — same structure as holderTable
+
+**Overdue table paging (added 2026-06-25):**
+- `var _overduePermits = []` — module-level store for all overdue permits returned by `GetChartData`
+- `const OVERDUE_PAGE_SIZE = 20` — default page size
+- On `loadChartData` success: `_overduePermits = data.overduePermits || []; renderOverduePage(1);`
+- Pagination clicks use `$(document).on('click', '.overdue-page', ...)` — event delegation since `#overdueContainer` content is replaced per render
+- Pagination bar only rendered when `totalPages > 1`
+
+### `Web/Controllers/ReportsController.cs` — `GetReportGrid` N+1 fix (2026-06-25)
+
+**Root cause:** The original `Select` projection included a correlated `_dbContext.Users` subquery per permit row — N+1 queries.
+
+**Fix pattern** (same as `GetChartData`):
+1. Query permits without user names (`.ToList()`)
+2. Collect distinct `PermitHolderId` strings
+3. One batch `Users WHERE Id IN (...)` query → `Dictionary<string, string>`
+4. `holderNames.TryGetValue(permit.PermitHolderId, out var name)` per row
+
+**Other improvements:**
+- `.AsEnumerable()` → `.ToList()` for explicit materialization
+- `new List<ReportGridModel>(rawPermits.Count)` — pre-allocated capacity
+- 8-branch `if` cert chain → `Dictionary<string, string> certMap` built once
+- Null-safe `json["general"]?["startDateTime"] as JValue`
 
 ### `Web/wwwroot/css/reports.css`
 Added CSS for:
