@@ -410,6 +410,8 @@
 		var dateRange;
 		var gridResult;
 		var statusChart = null, monthlyChart = null, locationChart = null;
+		var _overduePermits = [];
+		const OVERDUE_PAGE_SIZE = 20;
 
 		const chartColors = {
 			approved: '#00d97e',
@@ -422,10 +424,16 @@
 
 		const chartFont = { family: "'Poppins', sans-serif", size: 11 };
 
-		const renderOverdueTable = (permits) => {
-			if (!permits || permits.length === 0)
-				return '<p class="text-secondary text-center py-4 mb-0 small">No overdue permits found for the selected filters.</p>';
-			const rows = permits.map(p => `
+		const renderOverduePage = (page) => {
+			if (!_overduePermits || _overduePermits.length === 0) {
+				$('#overdueContainer').html('<p class="text-secondary text-center py-4 mb-0 small">No overdue permits found for the selected filters.</p>');
+				return;
+			}
+			const total = _overduePermits.length;
+			const totalPages = Math.ceil(total / OVERDUE_PAGE_SIZE);
+			page = Math.max(1, Math.min(page, totalPages));
+			const slice = _overduePermits.slice((page - 1) * OVERDUE_PAGE_SIZE, page * OVERDUE_PAGE_SIZE);
+			const rows = slice.map(p => `
 				<tr>
 					<td><a href="/${companyId}/permits/edit/${p.id}" class="text-info fw-semibold">${p.permitNo}</a></td>
 					<td>${p.holderName}</td>
@@ -434,12 +442,25 @@
 					<td class="text-center">${p.daysOverdue} day${p.daysOverdue !== 1 ? 's' : ''}</td>
 					<td><span class="badge bg-warning text-dark">${p.status}</span></td>
 				</tr>`).join('');
-			return `<div class="table-responsive"><table class="table table-sm table-hover align-middle report-table">
+			let pagination = '';
+			if (totalPages > 1) {
+				const from = (page - 1) * OVERDUE_PAGE_SIZE + 1;
+				const to = Math.min(page * OVERDUE_PAGE_SIZE, total);
+				let items = `<li class="page-item${page === 1 ? ' disabled' : ''}"><a class="page-link overdue-page" data-page="${page - 1}" href="#">&laquo;</a></li>`;
+				for (let i = 1; i <= totalPages; i++)
+					items += `<li class="page-item${i === page ? ' active' : ''}"><a class="page-link overdue-page" data-page="${i}" href="#">${i}</a></li>`;
+				items += `<li class="page-item${page === totalPages ? ' disabled' : ''}"><a class="page-link overdue-page" data-page="${page + 1}" href="#">&raquo;</a></li>`;
+				pagination = `<div class="d-flex justify-content-between align-items-center mt-2 px-1">
+					<small class="text-secondary">Showing ${from}–${to} of ${total} records</small>
+					<nav><ul class="pagination pagination-sm mb-0">${items}</ul></nav>
+				</div>`;
+			}
+			$('#overdueContainer').html(`<div class="table-responsive"><table class="table table-sm table-hover align-middle report-table">
 				<thead class="table-light"><tr>
 					<th>Permit No.</th><th>Permit Holder</th><th>Location</th>
 					<th>End Date</th><th class="text-center">Days Overdue</th><th>Status</th>
 				</tr></thead><tbody>${rows}</tbody>
-			</table></div>`;
+			</table></div>${pagination}`);
 		};
 
 		const renderHolderTable = (holders) => {
@@ -525,11 +546,12 @@
 					$('#kpiSection, #chartsSection').show();
 
 					// Tab tables
-					$('#overdueContainer').html(renderOverdueTable(data.overduePermits));
+					_overduePermits = data.overduePermits || [];
+					renderOverduePage(1);
 					$('#holderContainer').html(renderHolderTable(data.byHolder));
 					$('#locationContainer').html(renderLocationTable(data.byLocation));
 
-					const overdueCount = data.overduePermits ? data.overduePermits.length : 0;
+					const overdueCount = _overduePermits.length;
 					$('#badgeOverdue').text(overdueCount).toggleClass('d-none', overdueCount === 0);
 
 					// Destroy stale chart instances before re-drawing
@@ -700,8 +722,16 @@
 				ddlYear.value('');
 
 				gridResult.dataSource.filter({});
+				_overduePermits = [];
+				$('#overdueContainer').html('<p class="text-secondary text-center py-4 mb-0 small">Apply a filter and click <strong>View report</strong> to see overdue permits.</p>');
 				$('#badgeOverdue').addClass('d-none');
 				$('#kpiSection, #chartsSection').hide();
+			});
+
+			$(document).on('click', '.overdue-page', function (e) {
+				e.preventDefault();
+				const page = parseInt($(this).data('page'));
+				if (!isNaN(page)) renderOverduePage(page);
 			});
 
 		});

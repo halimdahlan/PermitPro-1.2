@@ -155,7 +155,7 @@ public class ReportsController : AppControllerBase
 
 	public JsonResult GetReportGrid(Guid company)
 	{
-		var permits = _dbContext.Permits
+		var rawPermits = _dbContext.Permits
 			.Include(e => e.Site)
 			.Where(e => e.Company.Id == company && e.PermitWorkflowStep != null && e.Site != null)
 			.OrderByDescending(e => e.CreatedWhen)
@@ -163,7 +163,6 @@ public class ReportsController : AppControllerBase
 			{
 				e.Id,
 				PermitHolderId = e.CreatedBy.ToString().ToLower(),
-				PermitHolderName = _dbContext.Users.Select(u => new { UserId = u.Id, FullName = $"{u.FirstName} {u.LastName}" }).FirstOrDefault(n => n.UserId == e.CreatedBy.ToString().ToLower()).FullName, //_dbContext.Users.Select(u => new { u.Id, FullName = string.Format("{0} {1}", u.FirstName, u.LastName) }).FirstOrDefault(f => f.Id == e.CreatedBy.ToString()).FullName,
 				PermitNo = string.Format("PTW{0:000000}", e.RunningNumber),
 				Location = e.Site.Name,
 				PermitStatus = e.PermitStatus.ToString(),
@@ -172,74 +171,61 @@ public class ReportsController : AppControllerBase
 				LocationId = e.Site.Id,
 				PermitStatusEnum = e.PermitStatus,
 			})
-			.AsEnumerable();
+			.ToList();
 
-		//if (await _currentUserService.IsLeadPermitIssuer() || await _currentUserService.IsLeadPermitIssuer())
-		//{
-		//	permits = permits.Where(e => e.PermitHolderId.ToString() == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
-		//}
+		var holderIds = rawPermits.Select(p => p.PermitHolderId).Distinct().ToList();
+		var holderNames = _dbContext.Users
+			.Where(u => holderIds.Contains(u.Id))
+			.Select(u => new { u.Id, FullName = (u.FirstName + " " + u.LastName).Trim() })
+			.ToDictionary(u => u.Id, u => u.FullName);
 
-		List<ReportGridModel> list = new();
-
-		if (permits != null)
+		var certMap = new Dictionary<string, string>(StringComparer.Ordinal)
 		{
-			foreach (var permit in permits)
+			["hotwork"] = "A", ["confinedspace"] = "B", ["radiation"] = "C",
+			["excavation"] = "D", ["isolation"] = "E", ["methodStatement"] = "F",
+			["liftingHoisting"] = "G", ["override"] = "H",
+		};
+
+		var list = new List<ReportGridModel>(rawPermits.Count);
+
+		foreach (var permit in rawPermits)
+		{
+			JObject json = JObject.Parse(permit.PermitForm);
+
+			var dtmStart = json["general"]?["startDateTime"] as JValue;
+			var dtmEnd   = json["general"]?["endDateTime"]   as JValue;
+
+			var certs = json["general"]?["certificates"]?.Children()
+				.Select(c => certMap.TryGetValue(c["name"]?.ToString() ?? "", out var letter) ? letter : null)
+				.Where(l => l != null)
+				.ToList() ?? new List<string>();
+
+			var dtm = GeneralHelper.GetDateInTimeZone(permit.CreatedWhen);
+
+			var data = new ReportGridModel
 			{
-				JObject json = JObject.Parse(permit.PermitForm);
+				Id = permit.Id,
+				PermitNo = permit.PermitNo,
+				PermitHolderName = holderNames.TryGetValue(permit.PermitHolderId, out var name) ? name : "(unknown)",
+				Location = permit.Location,
+				PermitStatus = permit.PermitStatus,
+				Certificates = string.Join(", ", certs),
+				CreatedWhen = new DateTime(dtm.Year, dtm.Month, dtm.Day),
+				CreatedWhenString = dtm.ToString("dd MMMM yyyy"),
+				CreatedMonth = dtm.ToString("MMMM"),
+				CreatedYear = Convert.ToInt16(dtm.ToString("yyyy")),
+				LocationId = permit.LocationId.ToString(),
+				PermitHolderId = permit.PermitHolderId,
+				PermitStatusEnum = (int)permit.PermitStatusEnum,
+			};
 
-				var loc = json["general"]["location"];
-				var dtmStart = (JValue)json["general"]["startDateTime"];
-				var dtmEnd = (JValue)json["general"]["endDateTime"];
+			if (dtmStart?.Value != null) data.StartDate = DateTime.Parse(dtmStart.ToString()).ToLocalTime();
+			if (dtmEnd?.Value != null) data.EndDate = DateTime.Parse(dtmEnd.ToString()).ToLocalTime();
 
-				List<JToken> tmpCerts = json["general"]["certificates"].Children().ToList();
-				List<dynamic> certs = new();
-
-				foreach (var cert in tmpCerts)
-				{
-					var certLetter = "A";
-
-					if (cert["name"].ToString() == "hotwork") certLetter = "A";
-					if (cert["name"].ToString() == "confinedspace") certLetter = "B";
-					if (cert["name"].ToString() == "radiation") certLetter = "C";
-					if (cert["name"].ToString() == "excavation") certLetter = "D";
-					if (cert["name"].ToString() == "isolation") certLetter = "E";
-					if (cert["name"].ToString() == "methodStatement") certLetter = "F";
-					if (cert["name"].ToString() == "liftingHoisting") certLetter = "G";
-					if (cert["name"].ToString() == "override") certLetter = "H";
-
-					certs.Add(certLetter);
-				}
-
-				var dtm = GeneralHelper.GetDateInTimeZone(permit.CreatedWhen);
-
-				var data = new ReportGridModel
-				{
-					Id = permit.Id,
-					PermitNo = permit.PermitNo,
-					PermitHolderName = permit.PermitHolderName,
-					Location = permit.Location,
-					PermitStatus = permit.PermitStatus,
-					Certificates = string.Join(", ", certs),
-					CreatedWhen = new DateTime(dtm.Year, dtm.Month, dtm.Day),
-					CreatedWhenString = dtm.ToString("dd MMMM yyyy"),
-					CreatedMonth = dtm.ToString("MMMM"),
-					CreatedYear = Convert.ToInt16(dtm.ToString("yyyy")),
-					LocationId = permit.LocationId.ToString(),
-					PermitHolderId = permit.PermitHolderId,
-					PermitStatusEnum = (int)permit.PermitStatusEnum,
-				};
-
-				if (dtmStart.Value != null) data.StartDate = DateTime.Parse(dtmStart.ToString()).ToLocalTime();
-				if (dtmEnd.Value != null) data.EndDate = DateTime.Parse(dtmEnd.ToString()).ToLocalTime();
-
-				list.Add(data);
-			}
+			list.Add(data);
 		}
 
-		return new JsonResult(list, new JsonSerializerOptions
-		{
-			PropertyNamingPolicy = null,
-		});
+		return new JsonResult(list, new JsonSerializerOptions { PropertyNamingPolicy = null });
 	}
 
 	public JsonResult GetChartData(

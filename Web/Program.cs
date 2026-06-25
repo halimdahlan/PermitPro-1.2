@@ -42,8 +42,8 @@ builder.Services.AddIdentity<UserInfo, Role>(options =>
 	.AddRoles<Role>()
 	.AddEntityFrameworkStores<ApplicationDbContext>()
 	.AddDefaultTokenProviders();
-//.AddTokenProvider<CustomEmailConfirmationTokenProvider<SiteUser>>("CustomEmailConfirmation")
-//.AddDefaultUI();
+	//.AddTokenProvider<CustomEmailConfirmationTokenProvider<SiteUser>>("CustomEmailConfirmation")
+	//.AddDefaultUI();
 
 // JWT Bearer is an additional scheme alongside the default Identity cookie scheme.
 // Use [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)] on
@@ -112,6 +112,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 		{
 			context.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddDays(30);
 		}
+		
 		return Task.CompletedTask;
 	};
 });
