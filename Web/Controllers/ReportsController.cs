@@ -133,6 +133,26 @@ public class ReportsController : AppControllerBase
 	}
 
 
+	public JsonResult GetDropdownPermitHolders(Guid company)
+	{
+		var holderGuids = _dbContext.Permits
+			.Where(p => p.Company.Id == company && p.PermitWorkflowStep != null)
+			.Select(p => p.CreatedBy)
+			.Distinct()
+			.ToList();
+
+		var holderIds = holderGuids.Select(g => g.ToString().ToLower()).ToList();
+
+		var holders = _dbContext.Users
+			.Where(u => holderIds.Contains(u.Id))
+			.Select(u => new { text = (u.FirstName + " " + u.LastName).Trim(), value = u.Id })
+			.OrderBy(u => u.text)
+			.ToList<object>();
+
+		return Json(new object[] { new { text = "(select)", value = "" } }.Concat(holders));
+	}
+
+
 	public JsonResult GetReportGrid(Guid company)
 	{
 		var permits = _dbContext.Permits
@@ -142,7 +162,7 @@ public class ReportsController : AppControllerBase
 			.Select(e => new
 			{
 				e.Id,
-				PermitHolderId = e.CreatedBy.ToString(),
+				PermitHolderId = e.CreatedBy.ToString().ToLower(),
 				PermitHolderName = _dbContext.Users.Select(u => new { UserId = u.Id, FullName = $"{u.FirstName} {u.LastName}" }).FirstOrDefault(n => n.UserId == e.CreatedBy.ToString().ToLower()).FullName, //_dbContext.Users.Select(u => new { u.Id, FullName = string.Format("{0} {1}", u.FirstName, u.LastName) }).FirstOrDefault(f => f.Id == e.CreatedBy.ToString()).FullName,
 				PermitNo = string.Format("PTW{0:000000}", e.RunningNumber),
 				Location = e.Site.Name,
@@ -205,6 +225,7 @@ public class ReportsController : AppControllerBase
 					CreatedMonth = dtm.ToString("MMMM"),
 					CreatedYear = Convert.ToInt16(dtm.ToString("yyyy")),
 					LocationId = permit.LocationId.ToString(),
+					PermitHolderId = permit.PermitHolderId,
 					PermitStatusEnum = (int)permit.PermitStatusEnum,
 				};
 
@@ -230,12 +251,19 @@ public class ReportsController : AppControllerBase
 		DateTime? endDate = null,
 		string locationId = "",
 		string certificateType = "",
-		int permitStatus = -1)
+		int permitStatus = -1,
+		string holderId = "")
 	{
 		var permitsRaw = _dbContext.Permits
 			.Include(e => e.Site)
 			.Where(e => e.Company.Id == company && e.PermitWorkflowStep != null && e.Site != null)
-			.AsEnumerable();
+			.ToList();
+
+		var holderGuids = permitsRaw.Select(p => p.CreatedBy.ToString().ToLower()).Distinct().ToList();
+		var holderNames = _dbContext.Users
+			.Where(u => holderGuids.Contains(u.Id))
+			.Select(u => new { u.Id, Name = (u.FirstName + " " + u.LastName).Trim() })
+			.ToDictionary(u => u.Id, u => u.Name);
 
 		var all = new List<ChartPermitData>();
 		foreach (var p in permitsRaw)
@@ -243,7 +271,8 @@ public class ReportsController : AppControllerBase
 			if (string.IsNullOrWhiteSpace(p.PermitForm)) continue;
 			JObject json = JObject.Parse(p.PermitForm);
 
-			var dtmEnd = json["general"]?["endDateTime"] as JValue;
+			var dtmStart = json["general"]?["startDateTime"] as JValue;
+			var dtmEnd   = json["general"]?["endDateTime"]   as JValue;
 
 			var certs = new List<string>();
 			var certsToken = json["general"]?["certificates"];
@@ -261,14 +290,20 @@ public class ReportsController : AppControllerBase
 				}
 			}
 
+			var holderKey = p.CreatedBy.ToString().ToLower();
 			var dtm = GeneralHelper.GetDateInTimeZone(p.CreatedWhen);
 			all.Add(new ChartPermitData
 			{
+				Id = p.Id,
+				PermitNo = string.Format("PTW{0:000000}", p.RunningNumber),
+				HolderUserId = holderKey,
+				HolderName = holderNames.TryGetValue(holderKey, out var hname) ? hname : "(unknown)",
 				Status = p.PermitStatus,
 				CreatedWhen = new DateTime(dtm.Year, dtm.Month, dtm.Day),
 				LocationId = p.Site?.Id.ToString() ?? string.Empty,
 				LocationName = p.Site?.Name ?? string.Empty,
 				Certificates = string.Join(",", certs),
+				StartDate = dtmStart?.Value != null ? DateTime.Parse(dtmStart.ToString()).ToLocalTime() : null,
 				EndDate = dtmEnd?.Value != null ? DateTime.Parse(dtmEnd.ToString()).ToLocalTime() : null,
 			});
 		}
@@ -285,6 +320,7 @@ public class ReportsController : AppControllerBase
 		if (!string.IsNullOrEmpty(locationId)) filtered = filtered.Where(p => p.LocationId == locationId);
 		if (!string.IsNullOrEmpty(certificateType)) filtered = filtered.Where(p => p.Certificates.Contains(certificateType));
 		if (permitStatus >= 0) filtered = filtered.Where(p => (int)p.Status == permitStatus);
+		if (!string.IsNullOrEmpty(holderId)) filtered = filtered.Where(p => p.HolderUserId.Equals(holderId, StringComparison.OrdinalIgnoreCase));
 		var f = filtered.ToList();
 
 		var terminalStatuses = new[] { PermitStatusEnum.Closed, PermitStatusEnum.Rejected, PermitStatusEnum.ClosedNoAction };
@@ -305,9 +341,44 @@ public class ReportsController : AppControllerBase
 
 		var byLocation = f
 			.GroupBy(p => p.LocationName)
-			.Select(g => new { label = g.Key, count = g.Count() })
+			.Select(g => new
+			{
+				label    = g.Key,
+				count    = g.Count(),
+				approved = g.Count(p => p.Status == PermitStatusEnum.Approved || p.Status == PermitStatusEnum.Closed || p.Status == PermitStatusEnum.ClosedNoAction),
+				pending  = g.Count(p => p.Status == PermitStatusEnum.Pending),
+				other    = g.Count(p => p.Status != PermitStatusEnum.Approved && p.Status != PermitStatusEnum.Closed && p.Status != PermitStatusEnum.ClosedNoAction && p.Status != PermitStatusEnum.Pending),
+			})
 			.OrderByDescending(x => x.count)
 			.Take(8)
+			.ToList<object>();
+
+		var byHolder = f
+			.GroupBy(p => new { p.HolderUserId, p.HolderName })
+			.Select(g => new
+			{
+				name     = g.Key.HolderName,
+				total    = g.Count(),
+				approved = g.Count(p => p.Status == PermitStatusEnum.Approved || p.Status == PermitStatusEnum.Closed || p.Status == PermitStatusEnum.ClosedNoAction),
+				pending  = g.Count(p => p.Status == PermitStatusEnum.Pending),
+				other    = g.Count(p => p.Status != PermitStatusEnum.Approved && p.Status != PermitStatusEnum.Closed && p.Status != PermitStatusEnum.ClosedNoAction && p.Status != PermitStatusEnum.Pending),
+			})
+			.OrderByDescending(x => x.total)
+			.ToList<object>();
+
+		var overduePermits = f
+			.Where(p => p.EndDate.HasValue && p.EndDate.Value < now && !terminalStatuses.Contains(p.Status))
+			.OrderBy(p => p.EndDate)
+			.Select(p => new
+			{
+				id          = p.Id,
+				permitNo    = p.PermitNo,
+				holderName  = p.HolderName,
+				location    = p.LocationName,
+				endDate     = p.EndDate.Value.ToString("dd MMM yyyy"),
+				daysOverdue = (int)Math.Round((now - p.EndDate.Value).TotalDays),
+				status      = p.Status.ToString(),
+			})
 			.ToList<object>();
 
 		// Monthly trend — always last 12 months; date filter is intentionally excluded
@@ -316,6 +387,7 @@ public class ReportsController : AppControllerBase
 		if (!string.IsNullOrEmpty(locationId)) trendBase = trendBase.Where(p => p.LocationId == locationId);
 		if (!string.IsNullOrEmpty(certificateType)) trendBase = trendBase.Where(p => p.Certificates.Contains(certificateType));
 		if (permitStatus >= 0) trendBase = trendBase.Where(p => (int)p.Status == permitStatus);
+		if (!string.IsNullOrEmpty(holderId)) trendBase = trendBase.Where(p => p.HolderUserId.Equals(holderId, StringComparison.OrdinalIgnoreCase));
 
 		var monthStart = new DateTime(now.Year, now.Month, 1).AddMonths(-11);
 		var trend = trendBase.Where(p => p.CreatedWhen >= monthStart).ToList();
@@ -334,7 +406,7 @@ public class ReportsController : AppControllerBase
 			});
 		}
 
-		return new JsonResult(new { summary, byMonth, byLocation }, new JsonSerializerOptions { PropertyNamingPolicy = null });
+		return new JsonResult(new { summary, byMonth, byLocation, byHolder, overduePermits }, new JsonSerializerOptions { PropertyNamingPolicy = null });
 	}
 
 	#endregion
@@ -357,11 +429,16 @@ public class ReportsController : AppControllerBase
 
 	private class ChartPermitData
 	{
+		public Guid Id { get; set; }
+		public string PermitNo { get; set; } = string.Empty;
+		public string HolderUserId { get; set; } = string.Empty;
+		public string HolderName { get; set; } = string.Empty;
 		public PermitStatusEnum Status { get; set; }
 		public DateTime CreatedWhen { get; set; }
 		public string LocationId { get; set; } = string.Empty;
 		public string LocationName { get; set; } = string.Empty;
 		public string Certificates { get; set; } = string.Empty;
+		public DateTime? StartDate { get; set; }
 		public DateTime? EndDate { get; set; }
 	}
 }

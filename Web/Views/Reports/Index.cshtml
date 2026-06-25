@@ -105,6 +105,26 @@
 	</div>
 
 	<div class="d-flex flex-row align-items-center mb-2">
+		<div class="me-3 label-width">Permit holder</div>
+		<div>
+			@(Html.Kendo().DropDownList()
+				.Name("ddlPermitHolder")
+				.Size(ComponentSize.Medium)
+				.Rounded(Rounded.Medium)
+				.FillMode(FillMode.Solid)
+				.DataTextField("text")
+				.DataValueField("value")
+				.DataSource(ds => ds
+					.Read(read => read
+						.Action("GetDropdownPermitHolders", "Reports")
+					)
+				)
+				.HtmlAttributes(new { @style = "width:380px" })
+			)
+		</div>
+	</div>
+
+	<div class="d-flex flex-row align-items-center mb-2">
 		<div class="me-3 label-width">Certificate type</div>
 		<div>
 			@(Html.Kendo().DropDownList()
@@ -242,7 +262,27 @@
 	</div>
 </div>
 
-<div class="grid-result">
+<!-- Report Tabs -->
+<ul class="nav nav-tabs mt-3 mb-0" id="reportTabs" role="tablist">
+	<li class="nav-item" role="presentation">
+		<button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-permits" type="button" role="tab">All Permits</button>
+	</li>
+	<li class="nav-item" role="presentation">
+		<button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-overdue" type="button" role="tab">
+			Overdue <span class="badge bg-danger ms-1 d-none" id="badgeOverdue"></span>
+		</button>
+	</li>
+	<li class="nav-item" role="presentation">
+		<button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-by-holder" type="button" role="tab">By Holder</button>
+	</li>
+	<li class="nav-item" role="presentation">
+		<button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-by-location" type="button" role="tab">By Location</button>
+	</li>
+</ul>
+<div class="tab-content border border-top-0 rounded-bottom" id="reportTabContent">
+
+	<div class="tab-pane fade show active p-3" id="tab-permits" role="tabpanel">
+		<div class="grid-result">
 	@(Html.Kendo().Grid<ReportGridModel>()
 		.Name("gridResult")
 		.ToolBar(toolbar =>
@@ -281,8 +321,20 @@
 				.Width(150);
 			
 			c.Bound(p => p.PermitStatus)
-				.Width(150);
-			
+				.Width(130);
+
+			c.Bound(p => p.StartDate)
+				.Format("{0:dd MMM, yyyy}")
+				.Width(120);
+
+			c.Bound(p => p.EndDate)
+				.Format("{0:dd MMM, yyyy}")
+				.Width(120);
+
+			c.Bound(p => p.DurationDays)
+				.ClientTemplate("# if (DurationDays !== null && DurationDays !== undefined) { # #= DurationDays # d # } else { # — # } #")
+				.Width(100);
+
 			c.Bound(p => p.Certificates)
 				.Groupable(false)
 				.Width(150);
@@ -319,6 +371,30 @@
 			.PageSize(25)
 		)
 	)
+		</div>
+	</div>
+
+	<!-- Overdue permits -->
+	<div class="tab-pane fade p-3" id="tab-overdue" role="tabpanel">
+		<div id="overdueContainer">
+			<p class="text-secondary text-center py-4 mb-0 small">Apply a filter and click <strong>View report</strong> to see overdue permits.</p>
+		</div>
+	</div>
+
+	<!-- By permit holder -->
+	<div class="tab-pane fade p-3" id="tab-by-holder" role="tabpanel">
+		<div id="holderContainer">
+			<p class="text-secondary text-center py-4 mb-0 small">Apply a filter and click <strong>View report</strong> to see a breakdown by permit holder.</p>
+		</div>
+	</div>
+
+	<!-- By location -->
+	<div class="tab-pane fade p-3" id="tab-by-location" role="tabpanel">
+		<div id="locationContainer">
+			<p class="text-secondary text-center py-4 mb-0 small">Apply a filter and click <strong>View report</strong> to see a breakdown by location.</p>
+		</div>
+	</div>
+
 </div>
 @Html.AntiForgeryToken()
 
@@ -346,6 +422,92 @@
 
 		const chartFont = { family: "'Poppins', sans-serif", size: 11 };
 
+		const renderOverdueTable = (permits) => {
+			if (!permits || permits.length === 0)
+				return '<p class="text-secondary text-center py-4 mb-0 small">No overdue permits found for the selected filters.</p>';
+			const rows = permits.map(p => `
+				<tr>
+					<td><a href="/${companyId}/permits/edit/${p.id}" class="text-info fw-semibold">${p.permitNo}</a></td>
+					<td>${p.holderName}</td>
+					<td>${p.location}</td>
+					<td class="text-danger">${p.endDate}</td>
+					<td class="text-center">${p.daysOverdue} day${p.daysOverdue !== 1 ? 's' : ''}</td>
+					<td><span class="badge bg-warning text-dark">${p.status}</span></td>
+				</tr>`).join('');
+			return `<div class="table-responsive"><table class="table table-sm table-hover align-middle report-table">
+				<thead class="table-light"><tr>
+					<th>Permit No.</th><th>Permit Holder</th><th>Location</th>
+					<th>End Date</th><th class="text-center">Days Overdue</th><th>Status</th>
+				</tr></thead><tbody>${rows}</tbody>
+			</table></div>`;
+		};
+
+		const renderHolderTable = (holders) => {
+			if (!holders || holders.length === 0)
+				return '<p class="text-secondary text-center py-4 mb-0 small">No data for the selected filters.</p>';
+			const rows = holders.map(h => {
+				const rate = h.total > 0 ? Math.round(h.approved / h.total * 100) : 0;
+				return `<tr>
+					<td>${h.name}</td>
+					<td class="text-center">${h.total}</td>
+					<td class="text-center text-success">${h.approved}</td>
+					<td class="text-center" style="color:#f6c343">${h.pending}</td>
+					<td class="text-center text-secondary">${h.other}</td>
+					<td class="text-center">
+						<div class="d-flex align-items-center gap-2">
+							<div class="progress flex-grow-1" style="height:6px">
+								<div class="progress-bar bg-success" style="width:${rate}%"></div>
+							</div>
+							<span class="text-secondary" style="font-size:0.75rem;min-width:30px">${rate}%</span>
+						</div>
+					</td>
+				</tr>`;
+			}).join('');
+			return `<div class="table-responsive"><table class="table table-sm table-hover align-middle report-table">
+				<thead class="table-light"><tr>
+					<th>Permit Holder</th>
+					<th class="text-center">Total</th>
+					<th class="text-center text-success">Approved</th>
+					<th class="text-center" style="color:#f6c343">Pending</th>
+					<th class="text-center text-secondary">Other</th>
+					<th>Approval Rate</th>
+				</tr></thead><tbody>${rows}</tbody>
+			</table></div>`;
+		};
+
+		const renderLocationTable = (locations) => {
+			if (!locations || locations.length === 0)
+				return '<p class="text-secondary text-center py-4 mb-0 small">No data for the selected filters.</p>';
+			const rows = locations.map(l => {
+				const rate = l.count > 0 ? Math.round(l.approved / l.count * 100) : 0;
+				return `<tr>
+					<td>${l.label}</td>
+					<td class="text-center">${l.count}</td>
+					<td class="text-center text-success">${l.approved}</td>
+					<td class="text-center" style="color:#f6c343">${l.pending}</td>
+					<td class="text-center text-secondary">${l.other}</td>
+					<td>
+						<div class="d-flex align-items-center gap-2">
+							<div class="progress flex-grow-1" style="height:6px">
+								<div class="progress-bar bg-success" style="width:${rate}%"></div>
+							</div>
+							<span class="text-secondary" style="font-size:0.75rem;min-width:30px">${rate}%</span>
+						</div>
+					</td>
+				</tr>`;
+			}).join('');
+			return `<div class="table-responsive"><table class="table table-sm table-hover align-middle report-table">
+				<thead class="table-light"><tr>
+					<th>Location</th>
+					<th class="text-center">Total</th>
+					<th class="text-center text-success">Approved</th>
+					<th class="text-center" style="color:#f6c343">Pending</th>
+					<th class="text-center text-secondary">Other</th>
+					<th>Approval Rate</th>
+				</tr></thead><tbody>${rows}</tbody>
+			</table></div>`;
+		};
+
 		const loadChartData = (params) => {
 			$.ajax({
 				url: `/${companyId}/reports/getchartdata`,
@@ -361,6 +523,14 @@
 					$('#kpiOverdueCard').toggleClass('kpi-card-danger', data.summary.overdue > 0);
 
 					$('#kpiSection, #chartsSection').show();
+
+					// Tab tables
+					$('#overdueContainer').html(renderOverdueTable(data.overduePermits));
+					$('#holderContainer').html(renderHolderTable(data.byHolder));
+					$('#locationContainer').html(renderLocationTable(data.byLocation));
+
+					const overdueCount = data.overduePermits ? data.overduePermits.length : 0;
+					$('#badgeOverdue').text(overdueCount).toggleClass('d-none', overdueCount === 0);
 
 					// Destroy stale chart instances before re-drawing
 					if (statusChart)   { statusChart.destroy();   statusChart = null; }
@@ -463,8 +633,9 @@
 				$('#kpiSection, #chartsSection').hide();
 				$('#reportLoading').show();
 
-				var ddtLocation    = $('#ddtLocation').data('kendoDropDownTree');
-				var ddlCertificate = $('#ddlCertificate').data('kendoDropDownList');
+				var ddtLocation     = $('#ddtLocation').data('kendoDropDownTree');
+				var ddlPermitHolder = $('#ddlPermitHolder').data('kendoDropDownList');
+				var ddlCertificate  = $('#ddlCertificate').data('kendoDropDownList');
 				var ddlPermitStatus = $('#ddlPermitStatus').data('kendoDropDownList');
 				var ddlMonth = $('#ddlMonth').data('kendoDropDownList');
 				var ddlYear  = $('#ddlYear').data('kendoDropDownList');
@@ -480,9 +651,10 @@
 					if (ddlMonth.value() != '') gridFilter.filters.push({ field: 'CreatedMonth', operator: 'eq', value: ddlMonth.value() });
 					if (ddlYear.value()  != '') gridFilter.filters.push({ field: 'CreatedYear',  operator: 'eq', value: ddlYear.value() });
 				}
-				if (ddtLocation.value()    != '') gridFilter.filters.push({ field: 'LocationId',      operator: 'eq',       value: ddtLocation.value() });
-				if (ddlCertificate.value() != '') gridFilter.filters.push({ field: 'Certificates',    operator: 'contains', value: ddlCertificate.value() });
-				if (ddlPermitStatus.value() != '') gridFilter.filters.push({ field: 'PermitStatusEnum', operator: 'eq',      value: ddlPermitStatus.value() });
+				if (ddtLocation.value()      != '') gridFilter.filters.push({ field: 'LocationId',      operator: 'eq',       value: ddtLocation.value() });
+				if (ddlPermitHolder.value()  != '') gridFilter.filters.push({ field: 'PermitHolderId',  operator: 'eq',       value: ddlPermitHolder.value() });
+				if (ddlCertificate.value()   != '') gridFilter.filters.push({ field: 'Certificates',    operator: 'contains', value: ddlCertificate.value() });
+				if (ddlPermitStatus.value()  != '') gridFilter.filters.push({ field: 'PermitStatusEnum', operator: 'eq',      value: ddlPermitStatus.value() });
 
 				$('.grid-result').css('display', 'block');
 				gridResult.dataSource.filter(gridFilter);
@@ -498,6 +670,7 @@
 					if (ddlYear.value()  != '') chartParams.year  = ddlYear.value();
 				}
 				if (ddtLocation.value()     != '') chartParams.locationId     = ddtLocation.value();
+				if (ddlPermitHolder.value() != '') chartParams.holderId       = ddlPermitHolder.value();
 				if (ddlCertificate.value()  != '') chartParams.certificateType = ddlCertificate.value();
 				if (ddlPermitStatus.value() != '') chartParams.permitStatus    = ddlPermitStatus.value();
 
@@ -511,20 +684,23 @@
 
 
 			$('.clear-filter').click(() => {
-				var ddtLocation    = $('#ddtLocation').data('kendoDropDownTree');
-				var ddlCertificate = $('#ddlCertificate').data('kendoDropDownList');
+				var ddtLocation     = $('#ddtLocation').data('kendoDropDownTree');
+				var ddlPermitHolder = $('#ddlPermitHolder').data('kendoDropDownList');
+				var ddlCertificate  = $('#ddlCertificate').data('kendoDropDownList');
 				var ddlPermitStatus = $('#ddlPermitStatus').data('kendoDropDownList');
 				var ddlMonth = $('#ddlMonth').data('kendoDropDownList');
 				var ddlYear  = $('#ddlYear').data('kendoDropDownList');
 
 				dateRange.range({});
 				ddtLocation.value('');
+				ddlPermitHolder.value('');
 				ddlCertificate.value('');
 				ddlPermitStatus.value('');
 				ddlMonth.value('');
 				ddlYear.value('');
 
 				gridResult.dataSource.filter({});
+				$('#badgeOverdue').addClass('d-none');
 				$('#kpiSection, #chartsSection').hide();
 			});
 

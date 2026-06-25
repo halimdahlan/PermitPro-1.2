@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace PermitPro.App.Models.Reports
 {
@@ -12,6 +12,8 @@ namespace PermitPro.App.Models.Reports
 		[Display(Name = "PERMIT HOLDER")]
 		public string? PermitHolderName { get; set; }
 
+		public string? PermitHolderId { get; set; }
+
 		[Display(Name = "LOCATION")]
 		public string? Location { get; set; }
 
@@ -20,6 +22,11 @@ namespace PermitPro.App.Models.Reports
 
 		[Display(Name = "END DATE")]
 		public DateTime? EndDate { get; set; }
+
+		[Display(Name = "DURATION (days)")]
+		public int? DurationDays => (StartDate.HasValue && EndDate.HasValue)
+			? (int?)Math.Round((EndDate.Value - StartDate.Value).TotalDays)
+			: null;
 
 		[Display(Name = "STATUS")]
 		public string? PermitStatus { get; set; }
@@ -40,6 +47,5 @@ namespace PermitPro.App.Models.Reports
 		public int PermitStatusEnum { get; set; }
 
 		public string? LocationId { get; set; }
-
 	}
 }

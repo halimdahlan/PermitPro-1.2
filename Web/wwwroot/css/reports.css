@@ -160,3 +160,26 @@
 	position: relative;
 	height: 230px;
 }
+
+
+/* ── Aggregation Tables (By Holder / By Location / Overdue) ─ */
+.report-table {
+	font-size: 0.85rem;
+}
+
+.report-table thead th {
+	font-size: 0.68rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: #95aac9;
+	border-bottom: 1px solid #edf2f9;
+}
+
+.report-table tbody tr:hover td {
+	background-color: #f9fbfd;
+}
+
+.report-table .progress {
+	background-color: #edf2f9;
+}
