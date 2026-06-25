@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Permit Intelligence Report</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+  /* ── Design tokens ─────────────────────────────────────────────── */
+  :root {
+    --ink:        #0f1923;
+    --ink-soft:   #4a5568;
+    --ink-muted:  #8a96a3;
+    --surface:    #f7f8fa;
+    --card:       #ffffff;
+    --rule:       #e2e6ea;
+    --hazard:     #c0392b;   /* danger / overdue */
+    --caution:    #e67e22;   /* warning */
+    --safe:       #27ae60;   /* active / ok */
+    --sky:        #1a4fa0;   /* primary accent */
+    --sky-light:  #ddeaff;
+    --sky-mid:    #4a7fd4;
+    --mono: 'Courier New', Courier, monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 14px;
+    background: var(--surface);
+    color: var(--ink);
+    line-height: 1.6;
+  }
+
+  /* ── Signature element: safety-tape header strip ─────────────── */
+  .tape-header {
+    background: repeating-linear-gradient(
+      -45deg,
+      var(--ink) 0px, var(--ink) 18px,
+      #f5c518 18px, #f5c518 36px
+    );
+    height: 8px;
+  }
+
+  .page-header {
+    background: var(--ink);
+    color: #fff;
+    padding: 28px 40px 24px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .page-header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  .page-header .subtitle {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 3px;
+    font-family: var(--mono);
+  }
+
+  .header-actions { display: flex; gap: 10px; align-items: center; }
+
+  .btn {
+    padding: 9px 18px;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn-primary { background: #f5c518; color: var(--ink); }
+  .btn-ghost   { background: rgba(255,255,255,0.12); color: #fff; }
+
+  /* ── Layout ───────────────────────────────────────────────────── */
+  .report-body { max-width: 1100px; margin: 0 auto; padding: 32px 24px 60px; }
+
+  /* ── Upload / data source bar ─────────────────────────────────── */
+  .data-bar {
+    background: var(--sky-light);
+    border: 1px solid #b3caf5;
+    border-radius: 6px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+  .data-bar label { font-weight: 600; font-size: 13px; color: var(--sky); white-space: nowrap; }
+  .data-bar input[type=file] { flex: 1; min-width: 180px; font-size: 13px; }
+  .data-bar .or { color: var(--ink-muted); font-size: 12px; }
+
+  .btn-load {
+    padding: 8px 16px; background: var(--sky); color: #fff;
+    border: none; border-radius: 4px; font-weight: 600;
+    font-size: 13px; cursor: pointer;
+  }
+  .btn-load:hover { background: #1340880; }
+
+  /* ── KPI strip ────────────────────────────────────────────────── */
+  .kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .kpi-card {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 18px 20px 14px;
+    border-top: 3px solid var(--sky);
+  }
+  .kpi-card.danger  { border-top-color: var(--hazard); }
+  .kpi-card.caution { border-top-color: var(--caution); }
+  .kpi-card.safe    { border-top-color: var(--safe); }
+
+  .kpi-value { font-size: 32px; font-weight: 800; line-height: 1; letter-spacing: -1px; }
+  .kpi-label { font-size: 11px; color: var(--ink-muted); margin-top: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* ── Section titles ───────────────────────────────────────────── */
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--ink-muted);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 16px;
+  }
+
+  /* ── AI insight box ───────────────────────────────────────────── */
+  .ai-box {
+    background: var(--ink);
+    color: #e2e8f0;
+    border-radius: 6px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    position: relative;
+    min-height: 72px;
+  }
+  .ai-box .ai-label {
+    font-size: 10px;
+    font-family: var(--mono);
+    color: #f5c518;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+  }
+  .ai-box p { font-size: 13.5px; line-height: 1.7; }
+  .ai-box .loading-dots::after {
+    content: '';
+    animation: dots 1.4s infinite;
+  }
+  @keyframes dots {
+    0%   { content: '.'; }
+    33%  { content: '..'; }
+    66%  { content: '...'; }
+    100% { content: ''; }
+  }
+
+  /* ── Charts grid ──────────────────────────────────────────────── */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 28px;
+  }
+  @media (max-width: 680px) { .charts-grid { grid-template-columns: 1fr; } }
+
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 20px;
+  }
+  .chart-card .chart-title { font-size: 12px; font-weight: 700; color: var(--ink-soft); margin-bottom: 14px; }
+  .chart-card canvas { max-height: 220px; }
+
+  /* ── Tables ───────────────────────────────────────────────────── */
+  .table-card {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+
+  .table-card table { width: 100%; border-collapse: collapse; }
+  .table-card th {
+    background: var(--ink);
+    color: #fff;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 10px 14px;
+    text-align: left;
+  }
+  .table-card td {
+    padding: 10px 14px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: middle;
+  }
+  .table-card tr:last-child td { border-bottom: none; }
+  .table-card tr:nth-child(even) td { background: #fafbfc; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .badge-active   { background: #d4edda; color: #1a6e35; }
+  .badge-expired  { background: #fde8e8; color: #8b1a1a; }
+  .badge-overdue  { background: #fff3cd; color: #7a4f00; }
+  .badge-closed   { background: #e9ecef; color: #495057; }
+  .badge-pending  { background: #e8eeff; color: #1a4fa0; }
+
+  /* ── Overdue alerts table ─────────────────────────────────────── */
+  .alert-row td { background: #fff8f8 !important; }
+  .alert-row td:first-child { border-left: 3px solid var(--hazard); }
+
+  /* ── Footer ───────────────────────────────────────────────────── */
+  .report-footer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--ink-muted);
+    padding-top: 20px;
+    border-top: 1px solid var(--rule);
+    font-family: var(--mono);
+  }
+
+  /* ── Print / PDF ──────────────────────────────────────────────── */
+  @media print {
+    .data-bar, .header-actions, .btn { display: none !important; }
+    body { background: white; }
+    .chart-card canvas { max-height: 180px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="tape-header"></div>
+
+<header class="page-header" id="report-header">
+  <div>
+    <h1>Permit Intelligence Report</h1>
+    <div class="subtitle" id="report-meta">Load a JSON dataset to generate this report</div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-ghost" onclick="exportPDF()">⬇ Export PDF</button>
+  </div>
+</header>
+
+<div class="report-body" id="reportBody">
+
+  <!-- Data source bar -->
+  <div class="data-bar" id="dataBar">
+    <label>📂 Load Permit JSON</label>
+    <input type="file" id="jsonFile" accept=".json" onchange="handleFileLoad(event)" />
+    <span class="or">or</span>
+    <button class="btn-load" onclick="loadSampleData()">Use Sample Data</button>
+  </div>
+
+  <!-- KPI strip -->
+  <div class="kpi-strip" id="kpiStrip" style="display:none">
+    <div class="kpi-card"><div class="kpi-value" id="kpi-total">—</div><div class="kpi-label">Total Permits</div></div>
+    <div class="kpi-card safe"><div class="kpi-value" id="kpi-active">—</div><div class="kpi-label">Active</div></div>
+    <div class="kpi-card caution"><div class="kpi-value" id="kpi-pending">—</div><div class="kpi-label">Pending</div></div>
+    <div class="kpi-card danger"><div class="kpi-value" id="kpi-overdue">—</div><div class="kpi-label">Overdue / Expired</div></div>
+    <div class="kpi-card"><div class="kpi-value" id="kpi-sites">—</div><div class="kpi-label">Sites</div></div>
+    <div class="kpi-card"><div class="kpi-value" id="kpi-avgdur">—</div><div class="kpi-label">Avg Duration (days)</div></div>
+  </div>
+
+  <!-- AI insight -->
+  <div id="aiSection" style="display:none">
+    <div class="section-title">AI Executive Summary</div>
+    <div class="ai-box">
+      <div class="ai-label">▸ Claude AI · Permit Analysis</div>
+      <p id="aiSummary"><span class="loading-dots">Generating insights</span></p>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div id="chartsSection" style="display:none">
+    <div class="section-title">Trend Analysis &amp; Breakdown</div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">Permits Over Time (Monthly)</div>
+        <canvas id="trendChart"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Permit Type Breakdown</div>
+        <canvas id="typeChart"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Status Distribution</div>
+        <canvas id="statusChart"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Permits by Site (Top 8)</div>
+        <canvas id="siteChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Site Risk Summary -->
+  <div id="siteRiskSection" style="display:none">
+    <div class="section-title">Site-Level Risk Summary</div>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Site Name</th>
+            <th>Total Permits</th>
+            <th>Active</th>
+            <th>Expired</th>
+            <th>Overdue</th>
+            <th>Risk Level</th>
+          </tr>
+        </thead>
+        <tbody id="siteRiskBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Overdue / Expired Alerts -->
+  <div id="alertSection" style="display:none">
+    <div class="section-title">⚠ Overdue &amp; Expired Permit Alerts</div>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Permit ID</th>
+            <th>Site</th>
+            <th>Type</th>
+            <th>Creator</th>
+            <th>Status</th>
+            <th>End Date</th>
+            <th>Days Overdue</th>
+          </tr>
+        </thead>
+        <tbody id="alertBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Full Permit Table -->
+  <div id="fullTableSection" style="display:none">
+    <div class="section-title">All Permits</div>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Permit ID</th>
+            <th>Site</th>
+            <th>Creator</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Duration</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody id="fullTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer class="report-footer" id="reportFooter" style="display:none">
+    Generated by Permit Intelligence · <span id="footerDate"></span> · AI insights powered by Claude (Anthropic)
+  </footer>
+
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   SAMPLE DATA — mirrors the JSON schema your scheduled task
+   should push. Replace with real API/file payload.
+═══════════════════════════════════════════════════════════ */
+const SAMPLE_JSON = {
+  "reportPeriod": { "from": "2024-01-01", "to": "2024-06-30" },
+  "permits": [
+    { "id":"PTW-001","siteName":"Refinery Block A","creator":"Ahmad Razif","permitType":"Hot Work","status":"Expired","startDate":"2024-01-05","endDate":"2024-01-07","durationDays":2,"description":"Welding on pipeline section 3B" },
+    { "id":"PTW-002","siteName":"Warehouse C","creator":"Siti Nora","permitType":"Confined Space","status":"Closed","startDate":"2024-01-10","endDate":"2024-01-12","durationDays":2,"description":"Tank cleaning — Entry team 4 persons" },
+    { "id":"PTW-003","siteName":"Substation 7","creator":"Kevin Lim","permitType":"Electrical","status":"Active","startDate":"2024-01-14","endDate":"2024-01-18","durationDays":4,"description":"Panel upgrade, HV isolation required" },
+    { "id":"PTW-004","siteName":"Refinery Block A","creator":"Ahmad Razif","permitType":"Hot Work","status":"Overdue","startDate":"2024-01-20","endDate":"2024-01-22","durationDays":2,"description":"Flange cutting near tank T-12" },
+    { "id":"PTW-005","siteName":"Jetty Platform","creator":"Lena Chong","permitType":"Working at Height","status":"Active","startDate":"2024-02-03","endDate":"2024-02-05","durationDays":2,"description":"Scaffolding erection at level 3" },
+    { "id":"PTW-006","siteName":"Control Room B","creator":"Ravi Subramaniam","permitType":"Electrical","status":"Closed","startDate":"2024-02-08","endDate":"2024-02-09","durationDays":1,"description":"UPS battery replacement" },
+    { "id":"PTW-007","siteName":"Warehouse C","creator":"Siti Nora","permitType":"General Work","status":"Pending","startDate":"2024-02-12","endDate":"2024-02-14","durationDays":2,"description":"Rack installation bay 4-7" },
+    { "id":"PTW-008","siteName":"Jetty Platform","creator":"Lena Chong","permitType":"Working at Height","status":"Expired","startDate":"2024-02-18","endDate":"2024-02-20","durationDays":2,"description":"Crane lift inspection" },
+    { "id":"PTW-009","siteName":"Substation 7","creator":"Kevin Lim","permitType":"Electrical","status":"Overdue","startDate":"2024-02-25","endDate":"2024-02-27","durationDays":2,"description":"Cable tray installation — Zone 2" },
+    { "id":"PTW-010","siteName":"Refinery Block A","creator":"Ahmad Razif","permitType":"Hot Work","status":"Active","startDate":"2024-03-04","endDate":"2024-03-06","durationDays":2,"description":"Pipe spool replacement T-15" },
+    { "id":"PTW-011","siteName":"Admin Block","creator":"Norhaiza Md Ali","permitType":"General Work","status":"Closed","startDate":"2024-03-11","endDate":"2024-03-12","durationDays":1,"description":"False ceiling repair, office Level 2" },
+    { "id":"PTW-012","siteName":"Jetty Platform","creator":"Lena Chong","permitType":"Confined Space","status":"Active","startDate":"2024-03-18","endDate":"2024-03-22","durationDays":4,"description":"Ballast tank inspection team 6P" },
+    { "id":"PTW-013","siteName":"Warehouse C","creator":"Siti Nora","permitType":"Hot Work","status":"Overdue","startDate":"2024-03-25","endDate":"2024-03-27","durationDays":2,"description":"Steel frame cutting — Bay 9" },
+    { "id":"PTW-014","siteName":"Control Room B","creator":"Ravi Subramaniam","permitType":"Electrical","status":"Closed","startDate":"2024-04-02","endDate":"2024-04-03","durationDays":1,"description":"PLC cabinet wiring modification" },
+    { "id":"PTW-015","siteName":"Refinery Block A","creator":"Ahmad Razif","permitType":"Confined Space","status":"Expired","startDate":"2024-04-08","endDate":"2024-04-11","durationDays":3,"description":"Vessel internal inspection V-04" },
+    { "id":"PTW-016","siteName":"Substation 7","creator":"Kevin Lim","permitType":"Electrical","status":"Active","startDate":"2024-04-15","endDate":"2024-04-18","durationDays":3,"description":"Transformer oil testing and sampling" },
+    { "id":"PTW-017","siteName":"Admin Block","creator":"Norhaiza Md Ali","permitType":"General Work","status":"Pending","startDate":"2024-04-22","endDate":"2024-04-24","durationDays":2,"description":"CCTV installation corridors 1–3" },
+    { "id":"PTW-018","siteName":"Jetty Platform","creator":"Lena Chong","permitType":"Working at Height","status":"Active","startDate":"2024-04-26","endDate":"2024-04-30","durationDays":4,"description":"Fender replacement, berth 2 south" },
+    { "id":"PTW-019","siteName":"Refinery Block A","creator":"Ahmad Razif","permitType":"Hot Work","status":"Overdue","startDate":"2024-05-06","endDate":"2024-05-08","durationDays":2,"description":"Weld overlay on elbow E-22" },
+    { "id":"PTW-020","siteName":"Warehouse C","creator":"Siti Nora","permitType":"General Work","status":"Closed","startDate":"2024-05-13","endDate":"2024-05-14","durationDays":1,"description":"Forklift charging station wiring" },
+    { "id":"PTW-021","siteName":"Jetty Platform","creator":"Lena Chong","permitType":"Confined Space","status":"Active","startDate":"2024-05-20","endDate":"2024-05-24","durationDays":4,"description":"Chain locker cleaning and inspection" },
+    { "id":"PTW-022","siteName":"Control Room B","creator":"Ravi Subramaniam","permitType":"Electrical","status":"Expired","startDate":"2024-05-27","endDate":"2024-05-29","durationDays":2,"description":"SCADA server UPS replacement" },
+    { "id":"PTW-023","siteName":"Substation 7","creator":"Kevin Lim","permitType":"Electrical","status":"Active","startDate":"2024-06-03","endDate":"2024-06-05","durationDays":2,"description":"Switchgear annual maintenance" },
+    { "id":"PTW-024","siteName":"Admin Block","creator":"Norhaiza Md Ali","permitType":"General Work","status":"Pending","startDate":"2024-06-10","endDate":"2024-06-12","durationDays":2,"description":"Rooftop antenna installation" },
+    { "id":"PTW-025","siteName":"Refinery Block A","creator":"Ahmad Razif","permitType":"Hot Work","status":"Active","startDate":"2024-06-17","endDate":"2024-06-20","durationDays":3,"description":"Gasket replacement, manifold M-7" }
+  ]
+};
+
+/* ══════════════════════════════════════════════════════════
+   Chart instances (kept to allow destroy on re-render)
+═══════════════════════════════════════════════════════════ */
+let chartInstances = {};
+
+/* ══════════════════════════════════════════════════════════
+   DATA LOADING
+═══════════════════════════════════════════════════════════ */
+function handleFileLoad(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      renderReport(data);
+    } catch {
+      alert('Invalid JSON file. Please check the format.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function loadSampleData() {
+  renderReport(SAMPLE_JSON);
+}
+
+/* ══════════════════════════════════════════════════════════
+   MAIN RENDER
+═══════════════════════════════════════════════════════════ */
+async function renderReport(data) {
+  const permits = data.permits || [];
+  const period  = data.reportPeriod || {};
+
+  // Update meta
+  document.getElementById('report-meta').textContent =
+    `Period: ${period.from || '—'} → ${period.to || '—'} · ${permits.length} permits · Generated ${new Date().toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'})}`;
+
+  document.getElementById('footerDate').textContent =
+    new Date().toLocaleString('en-GB');
+
+  // Show all sections
+  ['kpiStrip','aiSection','chartsSection','siteRiskSection','alertSection','fullTableSection','reportFooter']
+    .forEach(id => document.getElementById(id).style.display = '');
+
+  document.getElementById('kpiStrip').style.display = 'grid';
+
+  // ── KPIs ──────────────────────────────────────────────────────
+  const today = new Date();
+  const totalPermits  = permits.length;
+  const activeCount   = permits.filter(p => p.status === 'Active').length;
+  const pendingCount  = permits.filter(p => p.status === 'Pending').length;
+  const overdueCount  = permits.filter(p => ['Overdue','Expired'].includes(p.status)).length;
+  const sites         = [...new Set(permits.map(p => p.siteName))].length;
+  const avgDur        = permits.length
+    ? Math.round(permits.reduce((s,p) => s + (p.durationDays||0), 0) / permits.length)
+    : 0;
+
+  document.getElementById('kpi-total').textContent   = totalPermits;
+  document.getElementById('kpi-active').textContent  = activeCount;
+  document.getElementById('kpi-pending').textContent = pendingCount;
+  document.getElementById('kpi-overdue').textContent = overdueCount;
+  document.getElementById('kpi-sites').textContent   = sites;
+  document.getElementById('kpi-avgdur').textContent  = avgDur;
+
+  // ── Charts ─────────────────────────────────────────────────────
+  renderCharts(permits);
+
+  // ── Site Risk Table ────────────────────────────────────────────
+  renderSiteRisk(permits);
+
+  // ── Alert Table ────────────────────────────────────────────────
+  renderAlerts(permits, today);
+
+  // ── Full Permit Table ──────────────────────────────────────────
+  renderFullTable(permits);
+
+  // ── AI Summary (async, non-blocking) ──────────────────────────
+  document.getElementById('aiSummary').innerHTML =
+    '<span class="loading-dots">Generating insights</span>';
+  await generateAiSummary(permits, period);
+}
+
+/* ══════════════════════════════════════════════════════════
+   CHARTS
+═══════════════════════════════════════════════════════════ */
+function renderCharts(permits) {
+  // Destroy existing
+  Object.values(chartInstances).forEach(c => c.destroy());
+  chartInstances = {};
+
+  const PALETTE = ['#1a4fa0','#e67e22','#27ae60','#c0392b','#8e44ad','#16a085','#d35400','#2c3e50'];
+
+  // 1. Trend — permits per month
+  const monthMap = {};
+  permits.forEach(p => {
+    const key = p.startDate ? p.startDate.slice(0,7) : 'Unknown';
+    monthMap[key] = (monthMap[key]||0) + 1;
+  });
+  const sortedMonths = Object.keys(monthMap).sort();
+
+  console.log(sortedMonths.map(m => monthMap[m]));
+
+  chartInstances.trend = new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: {
+      labels: sortedMonths.map(m => {
+        const [y,mo] = m.split('-');
+        return new Date(y, mo-1).toLocaleDateString('en-GB',{month:'short',year:'2-digit'});
+      }),
+      datasets: [{
+        label: 'Permits Issued',
+        data: sortedMonths.map(m => monthMap[m]),
+        borderColor: '#1a4fa0',
+        backgroundColor: 'rgba(26,79,160,0.08)',
+        borderWidth: 2,
+        pointBackgroundColor: '#1a4fa0',
+        tension: 0.3,
+        fill: true
+      }]
+    },
+    options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}, responsive:true, maintainAspectRatio:true }
+  });
+
+  // 2. Type breakdown
+  const typeMap = {};
+  permits.forEach(p => { typeMap[p.permitType] = (typeMap[p.permitType]||0)+1; });
+  chartInstances.type = new Chart(document.getElementById('typeChart'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(typeMap),
+      datasets: [{ data: Object.values(typeMap), backgroundColor: PALETTE, borderWidth: 2 }]
+    },
+    options: { plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}, responsive:true, maintainAspectRatio:true }
+  });
+
+  // 3. Status distribution
+  const statMap = {};
+  permits.forEach(p => { statMap[p.status] = (statMap[p.status]||0)+1; });
+  const statColors = {Active:'#27ae60',Closed:'#7f8c8d',Expired:'#c0392b',Overdue:'#e67e22',Pending:'#1a4fa0'};
+  chartInstances.status = new Chart(document.getElementById('statusChart'), {
+    type: 'bar',
+    data: {
+      labels: Object.keys(statMap),
+      datasets: [{
+        data: Object.values(statMap),
+        backgroundColor: Object.keys(statMap).map(s => statColors[s]||'#bdc3c7'),
+        borderRadius: 3
+      }]
+    },
+    options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}, responsive:true, maintainAspectRatio:true }
+  });
+
+  // 4. Top 8 sites
+  const siteMap = {};
+  permits.forEach(p => { siteMap[p.siteName] = (siteMap[p.siteName]||0)+1; });
+  const topSites = Object.entries(siteMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  chartInstances.site = new Chart(document.getElementById('siteChart'), {
+    type: 'bar',
+    data: {
+      labels: topSites.map(([s])=>s),
+      datasets: [{ data: topSites.map(([,c])=>c), backgroundColor: '#1a4fa0', borderRadius:3 }]
+    },
+    options: {
+      indexAxis:'y',
+      plugins:{legend:{display:false}},
+      scales:{x:{beginAtZero:true,ticks:{stepSize:1}}},
+      responsive:true, maintainAspectRatio:true
+    }
+  });
+}
+
+/* ══════════════════════════════════════════════════════════
+   SITE RISK TABLE
+═══════════════════════════════════════════════════════════ */
+function renderSiteRisk(permits) {
+  const siteData = {};
+  permits.forEach(p => {
+    if (!siteData[p.siteName]) siteData[p.siteName] = {total:0,active:0,expired:0,overdue:0};
+    siteData[p.siteName].total++;
+    if (p.status==='Active')  siteData[p.siteName].active++;
+    if (p.status==='Expired') siteData[p.siteName].expired++;
+    if (p.status==='Overdue') siteData[p.siteName].overdue++;
+  });
+
+  const tbody = document.getElementById('siteRiskBody');
+  tbody.innerHTML = '';
+  Object.entries(siteData).sort((a,b)=>b[1].overdue-a[1].overdue).forEach(([site,d]) => {
+    const risk = d.overdue >= 2 ? ['HIGH','#c0392b'] : d.overdue === 1 ? ['MEDIUM','#e67e22'] : ['LOW','#27ae60'];
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${site}</strong></td>
+      <td>${d.total}</td>
+      <td>${d.active}</td>
+      <td>${d.expired}</td>
+      <td>${d.overdue}</td>
+      <td><span style="font-weight:700;color:${risk[1]}">${risk[0]}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ══════════════════════════════════════════════════════════
+   OVERDUE ALERTS TABLE
+═══════════════════════════════════════════════════════════ */
+function renderAlerts(permits, today) {
+  const alerts = permits.filter(p => ['Overdue','Expired'].includes(p.status));
+  const tbody = document.getElementById('alertBody');
+  tbody.innerHTML = '';
+  alerts.forEach(p => {
+    const end = new Date(p.endDate);
+    const daysOverdue = Math.ceil((today - end) / 86400000);
+    const statusClass = p.status === 'Overdue' ? 'badge-overdue' : 'badge-expired';
+    const tr = document.createElement('tr');
+    tr.className = 'alert-row';
+    tr.innerHTML = `
+      <td><code>${p.id}</code></td>
+      <td>${p.siteName}</td>
+      <td>${p.permitType}</td>
+      <td>${p.creator}</td>
+      <td><span class="badge ${statusClass}">${p.status}</span></td>
+      <td>${p.endDate}</td>
+      <td style="color:var(--hazard);font-weight:700">${daysOverdue > 0 ? '+'+daysOverdue+' days' : 'Today'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  if (!alerts.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#27ae60;padding:20px">✓ No overdue or expired permits</td></tr>';
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   FULL PERMIT TABLE
+═══════════════════════════════════════════════════════════ */
+function renderFullTable(permits) {
+  const tbody = document.getElementById('fullTableBody');
+  tbody.innerHTML = '';
+  const statusBadge = {
+    Active:'badge-active', Closed:'badge-closed',
+    Expired:'badge-expired', Overdue:'badge-overdue', Pending:'badge-pending'
+  };
+  permits.forEach(p => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><code>${p.id}</code></td>
+      <td>${p.siteName}</td>
+      <td>${p.creator}</td>
+      <td>${p.permitType}</td>
+      <td><span class="badge ${statusBadge[p.status]||''}">${p.status}</span></td>
+      <td>${p.startDate}</td>
+      <td>${p.endDate}</td>
+      <td>${p.durationDays}d</td>
+      <td style="color:var(--ink-soft);max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"
+          title="${p.description}">${p.description}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ══════════════════════════════════════════════════════════
+   AI SUMMARY — Claude API
+═══════════════════════════════════════════════════════════ */
+async function generateAiSummary(permits, period) {
+  // Build compact stats — don't send raw permit rows
+  const typeBreakdown = {};
+  const statusBreakdown = {};
+  const siteBreakdown = {};
+  const monthlyTrend = {};
+
+  permits.forEach(p => {
+    typeBreakdown[p.permitType] = (typeBreakdown[p.permitType]||0)+1;
+    statusBreakdown[p.status]   = (statusBreakdown[p.status]||0)+1;
+    siteBreakdown[p.siteName]   = (siteBreakdown[p.siteName]||0)+1;
+    const mo = p.startDate?.slice(0,7) || 'unknown';
+    monthlyTrend[mo] = (monthlyTrend[mo]||0)+1;
+  });
+
+  const overduePermits = permits
+    .filter(p => ['Overdue','Expired'].includes(p.status))
+    .map(p => ({ id:p.id, site:p.siteName, type:p.permitType, endDate:p.endDate }));
+
+  const stats = {
+    reportPeriod: period,
+    totalPermits: permits.length,
+    statusBreakdown,
+    typeBreakdown,
+    topSites: Object.entries(siteBreakdown).sort((a,b)=>b[1]-a[1]).slice(0,5)
+              .map(([site,count]) => ({ site, count })),
+    monthlyTrend,
+    overdueCount: overduePermits.length,
+    overduePermits: overduePermits.slice(0,5), // max 5 examples for token efficiency
+    averageDurationDays: permits.length
+      ? Math.round(permits.reduce((s,p)=>s+(p.durationDays||0),0)/permits.length) : 0
+  };
+
+  const prompt = `You are a permit-to-work safety analyst. Analyze the following permit statistics and write a structured executive summary with exactly four labeled sections:
+
+1. TREND ANALYSIS: describe permit volume patterns over the months and any notable changes.
+2. PERMIT TYPE BREAKDOWN: comment on the distribution of permit types and what it implies operationally.
+3. SITE RISK SUMMARY: identify which sites have the most activity or overdue permits and assess risk.
+4. OVERDUE & EXPIRED ALERTS: highlight the overdue/expired situation and recommend immediate action.
+
+Keep each section to 2–3 sentences. Be factual, direct, and safety-focused. Do not use markdown.
+
+Data: ${JSON.stringify(stats)}`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await response.json();
+    const text = data?.content?.[0]?.text || '';
+
+    if (text) {
+      // Format sections with bold labels
+      const formatted = text
+        .replace(/^(1\. TREND ANALYSIS:|TREND ANALYSIS:)/gm, '<strong>📈 Trend Analysis</strong><br>')
+        .replace(/^(2\. PERMIT TYPE BREAKDOWN:|PERMIT TYPE BREAKDOWN:)/gm, '<br><strong>🔧 Permit Type Breakdown</strong><br>')
+        .replace(/^(3\. SITE RISK SUMMARY:|SITE RISK SUMMARY:)/gm, '<br><strong>🏭 Site Risk Summary</strong><br>')
+        .replace(/^(4\. OVERDUE & EXPIRED ALERTS:|OVERDUE & EXPIRED ALERTS:|4\. OVERDUE AND EXPIRED ALERTS:)/gm, '<br><strong>⚠ Overdue &amp; Expired Alerts</strong><br>');
+
+      document.getElementById('aiSummary').innerHTML = formatted;
+    } else {
+      document.getElementById('aiSummary').textContent =
+        'AI summary could not be generated. Check your API key configuration.';
+    }
+  } catch (err) {
+    document.getElementById('aiSummary').textContent =
+      `AI summary unavailable: ${err.message}. Ensure the Anthropic API key is configured server-side.`;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   PDF EXPORT
+═══════════════════════════════════════════════════════════ */
+function exportPDF() {
+  const element = document.getElementById('reportBody');
+  const opt = {
+    margin:       [10, 10, 10, 10],
+    filename:     `permit-report-${new Date().toISOString().slice(0,10)}.pdf`,
+    image:        { type: 'jpeg', quality: 0.95 },
+    html2canvas:  { scale: 1, useCORS: true },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' },
+    pagebreak:    { mode: ['avoid-all','css','legacy'] }
+  };
+  // Temporarily hide the data bar for PDF
+  const bar = document.getElementById('dataBar');
+  bar.style.display = 'none';
+  html2pdf().set(opt).from(element).save().then(() => {
+    bar.style.display = '';
+  });
+}
+</script>
+</body>
+</html>

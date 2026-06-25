@@ -18,55 +18,63 @@
 				.Checked(true)
 				.HtmlAttributes(new { @name = "filterOption" })
 				.Label("Month/Year")
-				.Events(events => events.Change("onOptionChange"))
+				.Events(events => events
+					.Change("onOptionChange")
+				)
 			)
 		</div>
 		<div>
 			@(Html.Kendo().DropDownList()
-						.Name("ddlMonth")
-						.AutoWidth(true)
-						.Size(ComponentSize.Medium)
-						.Rounded(Rounded.Medium)
-						.FillMode(FillMode.Solid)
-						.DataTextField("text")
-						.DataValueField("value")
-						.DataSource(ds => ds
-						.Read(read => read.Action("GetDropdownMonths", "Reports"))
-						)
-						)
+				.Name("ddlMonth")
+				.AutoWidth(true)
+				.Size(ComponentSize.Medium)
+				.Rounded(Rounded.Medium)
+				.FillMode(FillMode.Solid)
+				.DataTextField("text")
+				.DataValueField("value")
+				.DataSource(ds => ds
+					.Read(read => read
+						.Action("GetDropdownMonths", "Reports")
+					)
+				)
+			)
 		</div>
 		<div class="ms-2">
 			@(Html.Kendo().DropDownList()
-						.Name("ddlYear")
-						.AutoWidth(true)
-						.Size(ComponentSize.Medium)
-						.Rounded(Rounded.Medium)
-						.FillMode(FillMode.Solid)
-						.DataTextField("text")
-						.DataValueField("value")
-						.DataSource(ds => ds
-						.Read(read => read.Action("GetDropdownYears", "Reports"))
-						)
-						)
+				.Name("ddlYear")
+				.AutoWidth(true)
+				.Size(ComponentSize.Medium)
+				.Rounded(Rounded.Medium)
+				.FillMode(FillMode.Solid)
+				.DataTextField("text")
+				.DataValueField("value")
+				.DataSource(ds => ds
+					.Read(read => read
+						.Action("GetDropdownYears", "Reports")
+					)
+				)
+			)
 		</div>
 	</div>
 
 	<div class="d-flex flex-row align-items-center mb-2">
 		<div class="me-3 label-width">
 			@(Html.Kendo().RadioButton()
-						.Name("option2")
-						.HtmlAttributes(new { @name = "filterOption" })
-						.Label("Date range")
-						.Events(events => events.Change("onOptionChange"))
-						)
+				.Name("option2")
+				.HtmlAttributes(new { @name = "filterOption" })
+				.Label("Date range")
+				.Events(events => events
+					.Change("onOptionChange")
+				)
+			)
 		</div>
 		<div>
 			@(Html.Kendo().DateRangePicker()
-						.Name("dateRange")
-						.Labels(false)
-						.Format("{0:dd/MM/yyyy}")
-						.DisableDates(DayOfWeek.Saturday, DayOfWeek.Sunday)
-						)
+				.Name("dateRange")
+				.Labels(false)
+				.Format("{0:dd/MM/yyyy}")
+				.DisableDates(DayOfWeek.Saturday, DayOfWeek.Sunday)
+			)
 		</div>
 		<div class="ms-3">
 			<a href="javascript:;" class="clear-range no-loading">Clear</a>
@@ -77,22 +85,22 @@
 		<div class="me-3 label-width">Location</div>
 		<div>
 			@(Html.Kendo().DropDownTree()
-						.Name("ddtLocation")
-						.Filter(FilterType.Contains)
-						.DataValueField("id")
-						.DataTextField("name")
-						.Placeholder("(select)")
-						.FillMode(FillMode.Solid)
-						.Rounded(Rounded.Medium)
-						.CheckAll(false)
-						.AutoClose(true)
-						.DataSource(ds => ds
-						.Read(read => read
+				.Name("ddtLocation")
+				.Filter(FilterType.Contains)
+				.DataValueField("id")
+				.DataTextField("name")
+				.Placeholder("(select)")
+				.FillMode(FillMode.Solid)
+				.Rounded(Rounded.Medium)
+				.CheckAll(false)
+				.AutoClose(true)
+				.DataSource(ds => ds
+					.Read(read => read
 						.Url($"/{companyId}/sites/hierarchical").Type(HttpVerbs.Get)
-						)
-						)
-						.HtmlAttributes(new { @style = "width:380px" })
-						)
+					)
+				)
+				.HtmlAttributes(new { @style = "width:380px" })
+			)
 		</div>
 	</div>
 
@@ -100,19 +108,19 @@
 		<div class="me-3 label-width">Certificate type</div>
 		<div>
 			@(Html.Kendo().DropDownList()
-						.Name("ddlCertificate")
-						.Size(ComponentSize.Medium)
-						.Rounded(Rounded.Medium)
-						.FillMode(FillMode.Solid)
-						.DataTextField("text")
-						.DataValueField("value")
-						.DataSource(ds => ds
-						.Read(read => read
+				.Name("ddlCertificate")
+				.Size(ComponentSize.Medium)
+				.Rounded(Rounded.Medium)
+				.FillMode(FillMode.Solid)
+				.DataTextField("text")
+				.DataValueField("value")
+				.DataSource(ds => ds
+					.Read(read => read
 						.Action("GetDropdownCertificates", "Reports")
-						)
-						)
-						.HtmlAttributes(new { @style = "width:380px" })
-						)
+					)
+				)
+				.HtmlAttributes(new { @style = "width:380px" })
+			)
 		</div>
 	</div>
 
@@ -120,25 +128,25 @@
 		<div class="me-3 label-width">Permit status</div>
 		<div>
 			@(Html.Kendo().DropDownList()
-						.Name("ddlPermitStatus")
-						.Size(ComponentSize.Medium)
-						.Rounded(Rounded.Medium)
-						.FillMode(FillMode.Solid)
-						.DataTextField("text")
-						.DataValueField("value")
-						.DataSource(ds => ds
-						.Read(read => read
+				.Name("ddlPermitStatus")
+				.Size(ComponentSize.Medium)
+				.Rounded(Rounded.Medium)
+				.FillMode(FillMode.Solid)
+				.DataTextField("text")
+				.DataValueField("value")
+				.DataSource(ds => ds
+					.Read(read => read
 						.Action("GetDropdownPermitStatus", "Reports").Type(HttpVerbs.Get)
-						)
-						)
-						.HtmlAttributes(new { @style = "width:380px" })
-						)
+					)
+				)
+				.HtmlAttributes(new { @style = "width:380px" })
+			)
 		</div>
 	</div>
 </div>
 
 <div class="d-flex flex-row align-items-center">
-	<button class="btn btn-primary view-report" type="button"><span class="mx-3">View report</span></button>
+	<button class="btn btn-sm btn-primary view-report" type="button"><span class="mx-3">View report</span></button>
 	<div class="ms-3">
 		<a href="javascript:;" class="clear-filter no-loading">Clear filter</a>
 	</div>
@@ -147,8 +155,7 @@
 <hr />
 
 <div class="grid-result">
-	@(
-		Html.Kendo().Grid<ReportGridModel>()
+	@(Html.Kendo().Grid<ReportGridModel>()
 		.Name("gridResult")
 		.ToolBar(toolbar =>
 		{
@@ -161,7 +168,8 @@
 			g.ShowFooter(true);
 			g.Messages(msg => msg.Empty("No data"));
 		})
-		.NoRecords(f => f.Template("<div class=\"my-3 text-center w-100 text-danger\">No data available at the moment</div>"))
+		.NoRecords(f => f
+			.Template("<div class=\"my-3 text-center w-100 text-danger\">No data available at the moment</div>"))
 		.Pageable()
 		.Sortable()
 		.Excel(e =>
@@ -172,47 +180,57 @@
 		.Columns(c =>
 		{
 			c.Bound(p => p.PermitHolderName)
-			.HideOnGroup(true)
-			.ClientGroupFooterTemplate("Num. of permits: #=count#")
-			.ClientFooterTemplate("Total permits: #=count#")
-			.Width(150);
-			c.Bound(p => p.Location).Width(150);
-			c.Bound(p => p.PermitNo).ClientTemplate($"<a href=\"/{Model.CompanyId}/permits/edit/#= Id #\" class=\"text-info\">#= PermitNo #</a>").Width(150);
-			c.Bound(p => p.PermitStatus).Width(150);
-			c.Bound(p => p.Certificates).Groupable(false).Width(150);
+				.HideOnGroup(true)
+				.ClientGroupFooterTemplate("Num. of permits: #=count#")
+				.ClientFooterTemplate("Total permits: #=count#")
+				.Width(150);
+
+			c.Bound(p => p.Location)
+				.Width(150);
+
+			c.Bound(p => p.PermitNo)
+				.ClientTemplate($"<a href=\"/{Model.CompanyId}/permits/edit/#= Id #\" class=\"text-info\">#= PermitNo #</a>")
+				.Width(150);
+			
+			c.Bound(p => p.PermitStatus)
+				.Width(150);
+			
+			c.Bound(p => p.Certificates)
+				.Groupable(false)
+				.Width(150);
+			
 			c.Bound(p => p.CreatedWhen)
-			.Hidden(true)
-			.ClientGroupHeaderTemplate("DATE: #=kendo.toString(value, 'dd MMM, yyyy')#")
-			.Format("{0:dd MMM, yyyy}")
-			.Width(130);
+				.Hidden(true)
+				.ClientGroupHeaderTemplate("DATE: #=kendo.toString(value, 'dd MMM, yyyy')#")
+				.Format("{0:dd MMM, yyyy}")
+				.Width(130);
 		})
 		.DataSource(ds => ds
-		.Custom()
-		.Group(grp =>
-		{
-			grp.AddDescending(f => f.CreatedWhen);
-																//grp.Add(f => f.Location);
-																//grp.Add(f => f.PermitStatus);
-		})
-		.Aggregates(agg =>
-		{
-			agg.Add(g => g.PermitHolderName).Count();
-																	//agg.Add(g => g.Location).Count();
-																	//agg.Add(g => g.PermitStatus).Count();
-		})
-		.Schema(s => s
-		.Model(m =>
-		{
-			m.Id(i => i.Id);
-		})
+			.Custom()
+			.Group(grp =>
+			{
+				grp.AddDescending(f => f.CreatedWhen);
+			})
+			.Aggregates(agg =>
+			{
+				agg.Add(g => g.PermitHolderName).Count();
+			})
+			.Schema(s => s
+				.Model(m =>
+				{
+					m.Id(i => i.Id);
+				})
+			)
+			.Transport(t =>
+			{
+				t.Read(r => r
+					.Action("GetReportGrid", "Reports", Model.GridParamaters)
+					.Type(HttpVerbs.Get)
+				);
+			})
+			.PageSize(25)
 		)
-		.Transport(t =>
-		{
-			t.Read(r => r.Action("GetReportGrid", "Reports", Model.GridParamaters).Type(HttpVerbs.Get));
-		})
-		.PageSize(25)
-		)
-		)
+	)
 </div>
 @Html.AntiForgeryToken()
 
