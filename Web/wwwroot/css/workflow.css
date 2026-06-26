@@ -2,14 +2,6 @@
 	.w-50 {
 		width: 100% !important;
 	}
-
-	.workflow-edit {
-		width: 50% !important;
-	}
-}
-
-.workflow-edit {
-	width: 100%;
 }
 
 .form-control {

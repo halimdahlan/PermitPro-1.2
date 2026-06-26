@@ -10,75 +10,87 @@
 
 @model WorkflowEditViewModel
 
-<div class="d-flex flex-column flex-md-row">
-	<div class="card shadow-sm workflow-edit me-0 me-md-3">
-		<div class="card-body">
-			<div id="div-panel">
-				<ul class="nav nav-tabs" id="myTab" role="tablist">
-					<li class="nav-item" role="presentation">
-						<button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general-tab-pane" type="button" role="tab" aria-controls="general-tab-pane" aria-selected="true">General</button>
-					</li>
-					<li class="nav-item" role="presentation">
-						<button class="nav-link" id="steps-tab" data-bs-toggle="tab" data-bs-target="#steps-tab-pane" type="button" role="tab" aria-controls="steps-tab-pane" aria-selected="false">Steps</button>
-					</li>
-				</ul>
-				<div class="tab-content" id="myTabContent">
-					<div class="tab-pane fade show active py-3" id="general-tab-pane" role="tabpanel" aria-labelledby="general-tab" tabindex="0">
-						<div class="d-flex flex-column form-edit-workflow">
-							<form id="frm" class="needs-validation" novalidate>
-								<div class="form-group mt-3">
-									<label class="form-label" for="workflowName">Workflow name</label>
-									<input type="text" id="workflowName" class="form-control" value="@Model.WorkflowName" required />
-									<div class="invalid-feedback ms-2">Enter the workflow name</div>
-								</div>
-								<div class="form-group">
-									<label class="form-label" for="workflowDescription">Description</label>
-									<textarea id="workflowDescription" class="form-control">@Model.WorkflowDescription</textarea>
-								</div>
-								<div>
-									<div class="form-group mb-3 d-flex flex-row align-items-center">
-										<label class="form-label me-3" for="workflowActive">Is active?</label>
-										@(Html.Kendo().Switch()
-																		.Name("workflowActive")
-																		.Size(ComponentSize.Small)
-																		.Messages(x => x.Checked("YES").Unchecked("NO")))
+<div class="row g-3">
+	<div class="col-12 col-lg-6">
+		<div class="card shadow-sm workflow-edit me-0 me-md-3">
+			<div class="card-body">
+				<div id="div-panel">
+					<ul class="nav nav-tabs" id="myTab" role="tablist">
+						<li class="nav-item" role="presentation">
+							<button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general-tab-pane" type="button" role="tab" aria-controls="general-tab-pane" aria-selected="true">Workflow Details</button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button class="nav-link" id="steps-tab" data-bs-toggle="tab" data-bs-target="#steps-tab-pane" type="button" role="tab" aria-controls="steps-tab-pane" aria-selected="false">Steps</button>
+						</li>
+					</ul>
+					<div class="tab-content" id="myTabContent">
+						<div class="tab-pane fade show active py-3" id="general-tab-pane" role="tabpanel" aria-labelledby="general-tab" tabindex="0">
+							<div class="d-flex flex-column form-edit-workflow">
+								<form id="frm" class="needs-validation" novalidate>
+									<div class="form-group mt-3">
+										<label class="form-label" for="workflowName">Name</label>
+										<input type="text" id="workflowName" class="form-control" value="@Model.WorkflowName" required />
+										<div class="invalid-feedback ms-2">Enter the workflow name</div>
 									</div>
-								</div>
-								<div>
-									<div class="form-group mb-3 d-flex flex-row align-items-center">
-										<label class="form-label me-3" for="workflowCertificate">For PTW with certificate?</label>
-										@(Html.Kendo().Switch()
-																		.Name("workflowCertificate")
-																		.Size(ComponentSize.Small)
-																		.Messages(x => x.Checked("YES").Unchecked("NO")))
+									<div class="form-group">
+										<label class="form-label" for="workflowDescription">Description</label>
+										<textarea id="workflowDescription" class="form-control">@Model.WorkflowDescription</textarea>
 									</div>
-								</div>
+									<div>
+										<div class="form-group mb-3 d-flex flex-row align-items-center">
+											<label class="form-label me-3" for="workflowActive">Is active?</label>
+											@(Html.Kendo()
+												.Switch()
+												.Name("workflowActive")
+												.Size(ComponentSize.Small)
+												.Messages(x => x
+													.Checked("YES")
+													.Unchecked("NO")
+												)
+											)
+										</div>
+									</div>
+									<div>
+										<div class="form-group mb-3 d-flex flex-row align-items-center">
+											<label class="form-label me-3" for="workflowCertificate">For PTW with certificate?</label>
+											@(Html.Kendo()
+												.Switch()
+												.Name("workflowCertificate")
+												.Size(ComponentSize.Small)
+												.Messages(x => x
+													.Checked("YES")
+													.Unchecked("NO")
+												)
+											)
+										</div>
+									</div>
 
-								<div id="plc"></div>
+									<div id="plc"></div>
 
-								<div class="d-flex flex-row justify-content-end mt-3">
-									<button type="button" class="btn btn-sm btn-primary btn-save"><span class="px-3">Save changes</span></button>
-								</div>
-								<input type="hidden" id="workflowId" value="@Model.WorkflowId" />
-							</form>
-						</div>
-					</div>
-					<div class="tab-pane fade py-3" id="steps-tab-pane" role="tabpanel" aria-labelledby="steps-tab" tabindex="0">
-						<div class="form-edit-workflow d-flex flex-column">
-							<div class="flex-grow-1">
-								<table id="tbl" class="table table-striped display pt-3 mb-3" style="width: 100% !important;">
-									<thead>
-										<tr>
-											<th data-orderable="false" style="width: 200px !important;">STEP NAME</th>
-											<th data-orderable="false" data-class-name="desc-column">DESCRIPTION</th>
-											<th data-orderable="false" data-class-name="text-center" style="width: 89px !important;">DURATION</th>
-											<th data-orderable="false" data-class-name="action-column text-right" style="text-align: right;">ACTIONS</th>
-										</tr>
-									</thead>
-								</table>
+									<div class="d-flex flex-row justify-content-end mt-3">
+										<button type="button" class="btn btn-sm btn-primary btn-save"><span class="px-3">Save changes</span></button>
+									</div>
+									<input type="hidden" id="workflowId" value="@Model.WorkflowId" />
+								</form>
 							</div>
-							<div class="d-flex flex-row justify-content-end">
-								<button class="btn btn-sm btn-primary mt-5" data-bs-toggle="modal" data-bs-target="#dlg"><span class="px-3">New workflow step</span></button>
+						</div>
+						<div class="tab-pane fade py-3" id="steps-tab-pane" role="tabpanel" aria-labelledby="steps-tab" tabindex="0">
+							<div class="form-edit-workflow d-flex flex-column">
+								<div class="flex-grow-1">
+									<table id="tbl" class="table table-striped display pt-3 mb-3" style="width: 100% !important;">
+										<thead>
+											<tr>
+												<th data-orderable="false" style="width: 200px !important;">STEP NAME</th>
+												<th data-orderable="false" data-class-name="desc-column">DESCRIPTION</th>
+												<th data-orderable="false" data-class-name="text-center" style="width: 89px !important;">DURATION</th>
+												<th data-orderable="false" data-class-name="action-column text-right" style="text-align: right;">ACTIONS</th>
+											</tr>
+										</thead>
+									</table>
+								</div>
+								<div class="d-flex flex-row justify-content-end">
+									<button class="btn btn-sm btn-primary mt-5" data-bs-toggle="modal" data-bs-target="#dlg"><span class="px-3">New workflow step</span></button>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -86,80 +98,86 @@
 			</div>
 		</div>
 	</div>
-	<div class="workflow-edit ms-0 ms-md-3">
-		<form id="frmEditStep" class="needs-validation" novalidate>
-			<div class="card shadow-sm form-workflow-step" style="display: none;">
-				<div class="card-header">
-					<h2 class="mb-0">Edit workflow step</h2>
-				</div>
-				<div class="card-body">
-					<ul class="nav nav-tabs" id="tabEditStep" role="tablist">
-						<li class="nav-item" role="presentation">
-							<button class="nav-link active" id="general-editStep-tab" data-bs-toggle="tab" data-bs-target="#general-editStep-tab-pane" type="button" role="tab" aria-controls="general-editStep-tab-pane" aria-selected="true">General</button>
-						</li>
-						<li class="nav-item" role="presentation">
-							<button class="nav-link" id="users-editStep-tab" data-bs-toggle="tab" data-bs-target="#users-editStep-tab-pane" type="button" role="tab" aria-controls="users-editStep-tab-pane" aria-selected="false">Approvers</button>
-						</li>
-					</ul>
-					<div class="tab-content" id="editStepTabContent">
-						<div class="tab-pane fade show active py-3" id="general-editStep-tab-pane" role="tabpanel" aria-labelledby="general-editStep-tab" tabindex="0">
-							<div class="form-group mb-3">
-								<label class="form-label" for="editStepName">Name</label>
-								<input type="text" id="editStepName" class="form-control" required />
-								<div class="invalid-feedback ms-2">Enter the workflow step name</div>
-							</div>
-							<div class="form-group mb-3">
-								<label class="form-label" for="editStepDescription">Description</label>
-								<textarea id="editStepDescription" rows="2" class="form-control"></textarea>
-							</div>
-							<div class="form-group mb-3">
-								<div class="d-flex flex-column flex-md-row justify-content-between">
-									<div class="w-100 me-3">
-										<label class="form-label" for="editStepDuration">Duration</label>
-										@(Html.Kendo().NumericTextBox()
-																		.Name("editStepDuration")
-																		.Format("0")
-																		.Value(0)
-																		.Min(0)
-																		.Max(500))
-									</div>
-									<div class="w-100 ms-3">
-										<label class="form-label" for="editStepDurationType">Duration Type</label>
-										<select id="editStepDurationType" class="form-select" required>
-											<option value="" selected disabled>(select)</option>
-											<option value="0">MINUTE</option>
-											<option value="1">HOUR</option>
-											<option value="2">DAY</option>
-										</select>
-										<div class="invalid-feedback ms-2">Select the duration type</div>
+
+	<div class="col-12 col-lg-6">
+		<div class="workflow-edit ms-0 ms-md-3">
+			<form id="frmEditStep" class="needs-validation" novalidate>
+				<div class="card shadow-sm form-workflow-step" style="display: none;">
+					<div class="card-header">
+						<h3 class="mb-0">Edit workflow step</h3>
+					</div>
+					<div class="card-body">
+						<ul class="nav nav-tabs" id="tabEditStep" role="tablist">
+							<li class="nav-item" role="presentation">
+								<button class="nav-link active" id="general-editStep-tab" data-bs-toggle="tab" data-bs-target="#general-editStep-tab-pane" type="button" role="tab" aria-controls="general-editStep-tab-pane" aria-selected="true">Step Details</button>
+							</li>
+							<li class="nav-item" role="presentation">
+								<button class="nav-link" id="users-editStep-tab" data-bs-toggle="tab" data-bs-target="#users-editStep-tab-pane" type="button" role="tab" aria-controls="users-editStep-tab-pane" aria-selected="false">Approvers</button>
+							</li>
+						</ul>
+						<div class="tab-content" id="editStepTabContent">
+							<div class="tab-pane fade show active py-3" id="general-editStep-tab-pane" role="tabpanel" aria-labelledby="general-editStep-tab" tabindex="0">
+								<div class="form-group mb-3">
+									<label class="form-label" for="editStepName">Name</label>
+									<input type="text" id="editStepName" class="form-control" required />
+									<div class="invalid-feedback ms-2">Enter the workflow step name</div>
+								</div>
+								<div class="form-group mb-3">
+									<label class="form-label" for="editStepDescription">Description</label>
+									<textarea id="editStepDescription" rows="2" class="form-control"></textarea>
+								</div>
+								<div class="form-group mb-3">
+									<div class="d-flex flex-column flex-md-row justify-content-between">
+										<div class="w-100 me-3">
+											<label class="form-label" for="editStepDuration">Duration</label>
+											@(Html.Kendo()
+												.NumericTextBox()
+												.Name("editStepDuration")
+												.Format("0")
+												.Value(0)
+												.Min(0)
+												.Max(500)
+											)
+										</div>
+										<div class="w-100 ms-3">
+											<label class="form-label" for="editStepDurationType">Duration Type</label>
+											<select id="editStepDurationType" class="form-select" required>
+												<option value="" selected disabled>(select)</option>
+												<option value="0">MINUTE</option>
+												<option value="1">HOUR</option>
+												<option value="2">DAY</option>
+											</select>
+											<div class="invalid-feedback ms-2">Select the duration type</div>
+										</div>
 									</div>
 								</div>
+								<div class="d-flex flex-row justify-content-end mt-4">
+									<button type="button" class="btn btn-sm btn-primary btn-save-edit-step"><span class="mx-3">Save Changes</span></button>
+								</div>
 							</div>
-							<div class="d-flex flex-row justify-content-end mt-4">
-								<button type="button" class="btn btn-sm btn-primary btn-save-edit-step"><span class="mx-3">Save Changes</span></button>
-							</div>
-						</div>
-						<div class="tab-pane fade py-3" id="users-editStep-tab-pane" role="tabpanel" aria-labelledby="users-editStep-tab" tabindex="0">
-							<table id="tblApprovers" class="table table-striped display" style="width: 100% !important;">
-								<thead>
-									<tr>
-										<th scope="col">NAME</th>
-										<th scope="col">EMAIL</th>
-										<th scope="col" data-class-name="text-center" style="width: 81px !important;">ACTIONS</th>
-									</tr>
-								</thead>
-							</table>
-							<div class="d-flex flex-row justify-content-end mt-4">
-								<button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#dlgUsers"><span class="mx-3">Add user</span></button>
+							<div class="tab-pane fade py-3" id="users-editStep-tab-pane" role="tabpanel" aria-labelledby="users-editStep-tab" tabindex="0">
+								<table id="tblApprovers" class="table table-striped display" style="width: 100% !important;">
+									<thead>
+										<tr>
+											<th scope="col">NAME</th>
+											<th scope="col">EMAIL</th>
+											<th scope="col" data-class-name="text-center" style="width: 81px !important;">ACTIONS</th>
+										</tr>
+									</thead>
+								</table>
+								<div class="d-flex flex-row justify-content-end mt-4">
+									<button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#dlgUsers"><span class="mx-3">Add user</span></button>
+								</div>
 							</div>
 						</div>
 					</div>
 				</div>
-			</div>
-			<input type="hidden" id="editStepId" value="" />
-		</form>
+				<input type="hidden" id="editStepId" value="" />
+			</form>
+		</div>
 	</div>
 </div>
+
 
 
 
@@ -192,12 +210,14 @@
 						<label class="form-label" for="stepDuration">Duration</label>
 						<div class="d-flex flex-row align-items-center">
 							<div class="me-3">
-								@(Html.Kendo().NumericTextBox()
-																.Name("stepDuration")
-																.Format("0")
-																.Value(0)
-																.Min(0)
-																.Max(500))
+								@(Html.Kendo()
+									.NumericTextBox()
+									.Name("stepDuration")
+									.Format("0")
+									.Value(0)
+									.Min(0)
+									.Max(500)
+								)
 							</div>
 							<div>
 								<select id="stepDurationType" class="form-select" required>
@@ -227,7 +247,7 @@
 	<div class="modal-dialog modal-dialog-centered">
 		<div class="modal-content">
 			<div class="modal-header">
-				<h1 class="modal-title mb-0" id="dlgUsersLabel">Select user</h1>
+				<h3 class="modal-title mb-0" id="dlgUsersLabel">Select user</h3>
 				<a href="#" class="no-loading text-dark" data-bs-dismiss="modal" aria-label="Close"><i class="fa-sharp fa-solid fa-xmark fa-xl"></i></a>
 			</div>
 			<div class="modal-body">
