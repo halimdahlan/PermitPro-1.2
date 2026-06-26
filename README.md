@@ -103,7 +103,12 @@ PermitPro-1.2/
 ### Recycle Bin & Soft Delete
 - All core entities implement `ISoftDeletable` — deletions are soft by default
 - Cascade soft-delete: removing a Company cascades to Sites, Workflows, Permits, Attachments, and WorkflowHistories
-- `RecycleBinController` exposes restore functionality for soft-deleted records
+- `RecycleBinController` exposes restore functionality for soft-deleted records across 5 tabs:
+  - **Permits** — company-scoped
+  - **Users** — company-scoped
+  - **Roles** — global entity (not company-scoped); shown across all tenants
+  - **Workflow Steps** — company-scoped
+  - **Companies** — visible to Super Users only
 - Cascade restore recovers children deleted within the same cascade operation (10-second window)
 
 ### App Settings
@@ -112,8 +117,14 @@ PermitPro-1.2/
 - Used for email server configuration, branding, and feature toggles
 
 ### Reporting & Export
-- Kendo UI grid-based reporting with Excel export
-- Permit and workflow summary dashboards
+- Kendo UI grid-based permit report with date range, location, certificate type, permit holder, and status filters
+- **Reports Dashboard** — activated on "View Report" click, showing:
+  - 5 KPI cards: Total, Pending, Approved, Closed, Overdue (overdue card highlights red when count > 0)
+  - Status distribution doughnut chart
+  - Monthly trend stacked bar chart (always last 12 months, independent of date filter)
+  - Top 8 locations horizontal bar chart
+- 4 report tabs: All Permits (Kendo Grid), Overdue (paginated, 20 per page), By Holder (with approval rate progress bar), By Location
+- Excel export via ClosedXML
 
 ### Audit & Security
 - All CRUD operations logged with timestamp and user (`AuditLog` entity)
