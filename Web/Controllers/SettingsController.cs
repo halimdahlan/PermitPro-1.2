@@ -2,6 +2,7 @@
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 using PermitPro.App.Controllers.Base;
 using PermitPro.App.Models.Ajax;
@@ -71,11 +72,17 @@ public class SettingsController : AppControllerBase
 		if (!ModelState.IsValid)
 			return BadRequest(ModelState);
 
+		var normalizedName = model.Name.Trim().ToLowerInvariant();
+		var duplicate = await _dbContext.AppSettingCategories
+			.AnyAsync(c => c.CompanyId == CompanyID && c.Name == normalizedName && c.Id != model.Id);
+		if (duplicate)
+			return Conflict($"A category with slug \"{normalizedName}\" already exists for this company.");
+
 		var category = new AppSettingCategory
 		{
 			Id = model.Id == Guid.Empty ? Guid.NewGuid() : model.Id,
 			CompanyId = CompanyID,
-			Name = model.Name.Trim().ToLowerInvariant(),
+			Name = normalizedName,
 			DisplayName = model.DisplayName.Trim(),
 			Description = model.Description,
 			Icon = model.Icon,
@@ -127,12 +134,18 @@ public class SettingsController : AppControllerBase
 		if (!ModelState.IsValid)
 			return BadRequest(ModelState);
 
+		var normalizedKey = model.Key.Trim().ToLowerInvariant();
+		var duplicate = await _dbContext.AppSettings
+			.AnyAsync(s => s.CompanyId == CompanyID && s.CategoryId == model.CategoryId && s.Key == normalizedKey && s.Id != model.Id);
+		if (duplicate)
+			return Conflict($"A setting with key \"{normalizedKey}\" already exists in this category.");
+
 		var setting = new AppSetting
 		{
 			Id = model.Id == Guid.Empty ? Guid.NewGuid() : model.Id,
 			CategoryId = model.CategoryId,
 			CompanyId = CompanyID,
-			Key = model.Key.Trim().ToLowerInvariant(),
+			Key = normalizedKey,
 			DisplayName = model.DisplayName.Trim(),
 			Value = model.Value,
 			DataType = model.DataType,

@@ -190,6 +190,43 @@ else
 	</div>
 </div>
 
+@* ── Alert modal ─────────────────────────────────────────────────────── *@
+<div class="modal fade" id="dlgAlert" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header bg-dark text-white">
+				<h3 class="modal-title fw-bold" id="dlgAlertTitle">Notice</h3>
+				<button type="button" class="btn btn-sm btn-clear" data-bs-dismiss="modal">
+					<i class="fa-regular fa-close fa-2x"></i>
+				</button>
+			</div>
+			<div class="modal-body" id="dlgAlertBody"></div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal">OK</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+@* ── Confirm modal ────────────────────────────────────────────────────── *@
+<div class="modal fade" id="dlgConfirm" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header bg-dark text-white">
+				<h3 class="modal-title fw-bold">Confirm</h3>
+				<button type="button" class="btn btn-sm btn-clear" data-bs-dismiss="modal">
+					<i class="fa-regular fa-close fa-2x"></i>
+				</button>
+			</div>
+			<div class="modal-body" id="dlgConfirmBody"></div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+				<button type="button" class="btn btn-sm btn-danger" id="dlgConfirmBtn">Confirm</button>
+			</div>
+		</div>
+	</div>
+</div>
+
 @section CustomCss {
 	<link rel="stylesheet" href="~/css/settings.css" />
 }
@@ -199,13 +236,32 @@ else
 	const companyId = '@companyId';
 	const antiForgeryToken = $('input[name="__RequestVerificationToken"]').val();
 
-	// Load all category panels on page load
 	$(() => {
 		$('[id^="stg-panel-"]').each(function () {
-			const categoryId = this.id.replace('stg-panel-', '');
-			loadSettings(categoryId);
+			loadSettings(this.id.replace('stg-panel-', ''));
+		});
+		$('#dlgConfirmBtn').on('click', function () {
+			$('#dlgConfirm').modal('hide');
+			if (_confirmCallback) { _confirmCallback(); _confirmCallback = null; }
 		});
 	});
+
+	// -------------------------------------------------------------------------
+	// Modal helpers
+	// -------------------------------------------------------------------------
+	const showAlert = (message, title = 'Notice') => {
+		$('#dlgAlertTitle').text(title);
+		$('#dlgAlertBody').text(message);
+		$('#dlgAlert').modal('show');
+	};
+
+	let _confirmCallback = null;
+	const showConfirm = (message, onConfirm, btnText = 'Confirm') => {
+		$('#dlgConfirmBody').text(message);
+		$('#dlgConfirmBtn').text(btnText);
+		_confirmCallback = onConfirm;
+		$('#dlgConfirm').modal('show');
+	};
 
 	// -------------------------------------------------------------------------
 	// Settings table
@@ -218,7 +274,7 @@ else
 		});
 	};
 
-	const renderSettingsTable =(categoryId, settings) => {
+	const renderSettingsTable = (categoryId, settings) => {
 		const panel = $(`#stg-panel-${categoryId}`);
 		if (!settings || settings.length === 0) {
 			panel.html('<p class="text-muted small mb-0 ps-1">No settings defined for this category.</p>');
@@ -302,18 +358,18 @@ else
 			icon: $('#catIcon').val().trim(),
 			sortOrder: parseInt($('#catSortOrder').val()) || 0
 		};
-		if (!payload.name || !payload.displayName) { alert('Name and Display Name are required.'); return; }
+		if (!payload.name || !payload.displayName) {
+			showAlert('Name and Display Name are required.', 'Validation');
+			return;
+		}
 
 		$('.loading').show();
-
 		$.ajax({
 			url: `/${companyId}/settings/savecategory`,
 			type: 'POST',
 			contentType: 'application/json',
 			data: JSON.stringify(payload),
-			headers: {
-				'RequestVerificationToken': antiForgeryToken
-			},
+			headers: { 'RequestVerificationToken': antiForgeryToken },
 			success: () => {
 				$('.loading').hide();
 				$('#categoryModal').modal('hide');
@@ -321,29 +377,26 @@ else
 			},
 			error: xhr => {
 				$('.loading').hide();
-				alert('Error: ' + xhr.responseText);
+				showAlert(xhr.responseText || 'An error occurred. Please try again.', 'Error');
 			}
 		});
 	};
 
 	const deleteCategory = (id, name) => {
-		if (!confirm(`Delete category "${name}" and all its settings? This cannot be undone.`)) return;
-
-		$('.loading').show();
-
-		$.ajax({
-			url: `/${companyId}/settings/deletecategory?id=${id}`,
-			type: 'DELETE',
-			headers: { 'RequestVerificationToken': antiForgeryToken },
-			success: () => {
-				$('.loading').hide();
-				location.reload();
+		showConfirm(
+			`Delete category "${name}" and all its settings? This cannot be undone.`,
+			() => {
+				$('.loading').show();
+				$.ajax({
+					url: `/${companyId}/settings/deletecategory?id=${id}`,
+					type: 'DELETE',
+					headers: { 'RequestVerificationToken': antiForgeryToken },
+					success: () => { $('.loading').hide(); location.reload(); },
+					error: xhr => { $('.loading').hide(); showAlert(xhr.responseText || 'An error occurred. Please try again.', 'Error'); }
+				});
 			},
-			error: xhr => {
-				$('.loading').hide();
-				alert('Error: ' + xhr.responseText);
-			}
-		});
+			'Delete'
+		);
 	};
 
 	// -------------------------------------------------------------------------
@@ -394,19 +447,18 @@ else
 			isEncrypted: $('#stgIsEncrypted').prop('checked'),
 			sortOrder: parseInt($('#stgSortOrder').val()) || 0
 		};
-
-		if (!payload.key || !payload.displayName) { alert('Key and Display Name are required.'); return; }
+		if (!payload.key || !payload.displayName) {
+			showAlert('Key and Display Name are required.', 'Validation');
+			return;
+		}
 
 		$('.loading').show();
-
 		$.ajax({
 			url: `/${companyId}/settings/savesetting`,
 			type: 'POST',
 			contentType: 'application/json',
 			data: JSON.stringify(payload),
-			headers: {
-				'RequestVerificationToken': antiForgeryToken
-			},
+			headers: { 'RequestVerificationToken': antiForgeryToken },
 			success: () => {
 				$('.loading').hide();
 				$('#settingModal').modal('hide');
@@ -414,31 +466,26 @@ else
 			},
 			error: xhr => {
 				$('.loading').hide();
-				alert('Error: ' + xhr.responseText);
+				showAlert(xhr.responseText || 'An error occurred. Please try again.', 'Error');
 			}
 		});
 	};
 
 	const deleteSetting = (id, categoryId) => {
-		if (!confirm('Delete this setting permanently?')) return;
-
-		$('.loading').show();
-
-		$.ajax({
-			url: `/${companyId}/settings/deletesetting?id=${id}`,
-			type: 'DELETE',
-			headers: {
-				'RequestVerificationToken': antiForgeryToken
+		showConfirm(
+			'Delete this setting permanently?',
+			() => {
+				$('.loading').show();
+				$.ajax({
+					url: `/${companyId}/settings/deletesetting?id=${id}`,
+					type: 'DELETE',
+					headers: { 'RequestVerificationToken': antiForgeryToken },
+					success: () => { $('.loading').hide(); loadSettings(categoryId); },
+					error: xhr => { $('.loading').hide(); showAlert(xhr.responseText || 'An error occurred. Please try again.', 'Error'); }
+				});
 			},
-			success: () => {
-				$('.loading').hide();
-				loadSettings(categoryId);
-			},
-			error: xhr => {
-				$('.loading').hide();
-				alert('Error: ' + xhr.responseText);
-			}
-		});
+			'Delete'
+		);
 	};
 </script>
 }

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using PermitPro.App.Models.Ajax;
 using PermitPro.App.ViewModels;
 using PermitPro.Core.Data;
 using PermitPro.Core.Entities;
@@ -21,6 +22,7 @@ public class AdminController : Controller
     private readonly ApplicationDbContext _db;
     private readonly ILogService _logService;
     private readonly IWebHostEnvironment _env;
+    private readonly IAppSettingsService _appSettings;
 
     private static readonly HashSet<string> _allowedLogoExts =
         new(StringComparer.OrdinalIgnoreCase) { ".png", ".jpg", ".jpeg", ".webp", ".svg" };
@@ -30,13 +32,15 @@ public class AdminController : Controller
         UserManager<UserInfo> userManager,
         ApplicationDbContext db,
         ILogService logService,
-        IWebHostEnvironment env)
+        IWebHostEnvironment env,
+        IAppSettingsService appSettings)
     {
         _signInManager = signInManager;
         _userManager = userManager;
         _db = db;
         _logService = logService;
         _env = env;
+        _appSettings = appSettings;
     }
 
 
@@ -300,6 +304,130 @@ public class AdminController : Controller
 
         TempData["SuccessMessage"] = $"Company \"{company.Name}\" has been deleted.";
         return Redirect("/admin/companies");
+    }
+
+
+    // ── Company settings ──────────────────────────────────────────────────────
+
+    [Authorize]
+    [HttpGet("/admin/companies/{id:guid}/settings")]
+    public async Task<IActionResult> CompanySettings(Guid id)
+    {
+        if (!IsSuperUser()) return Forbid();
+
+        var company = await _db.Companies.IgnoreQueryFilters().FirstOrDefaultAsync(c => c.Id == id);
+        if (company == null) return NotFound();
+
+        var categories = await _appSettings.GetCategoriesAsync(id);
+        return View(new AdminCompanySettingsViewModel
+        {
+            CompanyId = id,
+            CompanyName = company.Name,
+            CompanyLogoFileName = company.LogoFileName,
+            Categories = categories
+        });
+    }
+
+    [Authorize]
+    [HttpPost("/admin/companies/{id:guid}/settings/categories")]
+    public async Task<IActionResult> SaveCompanyCategory(Guid id, [FromBody] AjaxAppSettingCategoryModel model)
+    {
+        if (!IsSuperUser()) return Forbid();
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        var normalizedName = model.Name.Trim().ToLowerInvariant();
+        var duplicate = await _db.AppSettingCategories
+            .AnyAsync(c => c.CompanyId == id && c.Name == normalizedName && c.Id != model.Id);
+        if (duplicate)
+            return Conflict($"A category with slug \"{normalizedName}\" already exists for this company.");
+
+        var category = new AppSettingCategory
+        {
+            Id = model.Id == Guid.Empty ? Guid.NewGuid() : model.Id,
+            CompanyId = id,
+            Name = normalizedName,
+            DisplayName = model.DisplayName.Trim(),
+            Description = model.Description,
+            Icon = model.Icon,
+            SortOrder = model.SortOrder
+        };
+
+        await _appSettings.UpsertCategoryAsync(category);
+        return Ok(new { id = category.Id });
+    }
+
+    [Authorize]
+    [HttpDelete("/admin/companies/{id:guid}/settings/categories/{catId:guid}")]
+    public async Task<IActionResult> DeleteCompanyCategory(Guid id, Guid catId)
+    {
+        if (!IsSuperUser()) return Forbid();
+        await _appSettings.DeleteCategoryAsync(catId);
+        return Ok();
+    }
+
+    [Authorize]
+    [HttpGet("/admin/companies/{id:guid}/settings/items")]
+    public async Task<JsonResult> GetCompanySettings(Guid id, Guid categoryId)
+    {
+        if (!IsSuperUser()) return new JsonResult(Forbid());
+
+        var settings = await _appSettings.GetSettingsAsync(id, categoryId);
+        var result = settings.Select(s => new AjaxAppSettingModel
+        {
+            Id = s.Id,
+            CategoryId = s.CategoryId,
+            CompanyId = s.CompanyId,
+            Key = s.Key,
+            DisplayName = s.DisplayName,
+            Value = s.IsEncrypted ? null : s.Value,
+            DataType = s.DataType,
+            IsEncrypted = s.IsEncrypted,
+            SortOrder = s.SortOrder
+        });
+
+        return new JsonResult(result, new System.Text.Json.JsonSerializerOptions
+        {
+            PropertyNamingPolicy = null
+        });
+    }
+
+    [Authorize]
+    [HttpPost("/admin/companies/{id:guid}/settings/items")]
+    public async Task<IActionResult> SaveCompanySetting(Guid id, [FromBody] AjaxAppSettingModel model)
+    {
+        if (!IsSuperUser()) return Forbid();
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        var normalizedKey = model.Key.Trim().ToLowerInvariant();
+        var duplicate = await _db.AppSettings
+            .AnyAsync(s => s.CompanyId == id && s.CategoryId == model.CategoryId && s.Key == normalizedKey && s.Id != model.Id);
+        if (duplicate)
+            return Conflict($"A setting with key \"{normalizedKey}\" already exists in this category.");
+
+        var setting = new AppSetting
+        {
+            Id = model.Id == Guid.Empty ? Guid.NewGuid() : model.Id,
+            CategoryId = model.CategoryId,
+            CompanyId = id,
+            Key = normalizedKey,
+            DisplayName = model.DisplayName.Trim(),
+            Value = model.Value,
+            DataType = model.DataType,
+            IsEncrypted = model.IsEncrypted,
+            SortOrder = model.SortOrder
+        };
+
+        await _appSettings.UpsertSettingAsync(setting);
+        return Ok(new { id = setting.Id });
+    }
+
+    [Authorize]
+    [HttpDelete("/admin/companies/{id:guid}/settings/items/{settingId:guid}")]
+    public async Task<IActionResult> DeleteCompanySetting(Guid id, Guid settingId)
+    {
+        if (!IsSuperUser()) return Forbid();
+        await _appSettings.DeleteSettingAsync(settingId);
+        return Ok();
     }
 
 
