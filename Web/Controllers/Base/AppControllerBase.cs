@@ -3,6 +3,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.Caching.Memory;
 
 using PermitPro.Core.Data;
 using PermitPro.Core.Entities;
@@ -61,6 +62,8 @@ namespace PermitPro.App.Controllers.Base
 			}
 		}
 
+		private static readonly TimeSpan CompanyMetaCacheDuration = TimeSpan.FromMinutes(15);
+
 		// Makes CompanyID and company branding available in every view.
 		// Called by MVC after construction, so ViewData is writable here.
 		public override void OnActionExecuting(ActionExecutingContext context)
@@ -70,19 +73,41 @@ namespace PermitPro.App.Controllers.Base
 
 			if (_companyId != Guid.Empty)
 			{
-				var company = _dbContext.Companies
-					.Where(c => c.Id == _companyId)
-					.Select(c => new { c.Name, c.LogoFileName })
-					.FirstOrDefault();
+				var cache = context.HttpContext.RequestServices.GetService<IMemoryCache>();
+				var cacheKey = $"company:{_companyId}:meta";
 
-				if (company != null)
+				(string Name, string LogoFileName)? meta = null;
+
+				if (cache != null && cache.TryGetValue(cacheKey, out (string Name, string LogoFileName) cached))
 				{
-					ViewData["CompanyName"] = company.Name;
-					ViewData["CompanyLogoFileName"] = company.LogoFileName;
+					meta = cached;
+				}
+				else
+				{
+					var company = _dbContext.Companies
+						.Where(c => c.Id == _companyId)
+						.Select(c => new { c.Name, c.LogoFileName })
+						.FirstOrDefault();
+
+					if (company != null)
+					{
+						meta = (company.Name, company.LogoFileName);
+						cache?.Set(cacheKey, meta.Value, CompanyMetaCacheDuration);
+					}
+				}
+
+				if (meta.HasValue)
+				{
+					ViewData["CompanyName"] = meta.Value.Name;
+					ViewData["CompanyLogoFileName"] = meta.Value.LogoFileName;
 				}
 			}
 
 			base.OnActionExecuting(context);
 		}
+
+		// Call this from AdminController after editing or toggling a company.
+		public static void InvalidateCompanyMetaCache(IMemoryCache cache, Guid companyId)
+			=> cache?.Remove($"company:{companyId}:meta");
 	}
 }

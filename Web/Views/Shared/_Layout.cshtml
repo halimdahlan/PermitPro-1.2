@@ -337,10 +337,20 @@
 	}
 
 	<script>
+		let isMenuOpen = false;
+
 		$(document).ready(() => {
 			$('#userDropdown').click((e) => {
 				e.preventDefault();
-				$(this).dropdown('toggle');
+
+				if (isMenuOpen) {
+					$('#userDropdown').find('i').removeClass('fa-chevron-up').addClass('fa-chevron-down');
+				} else {
+					$('#userDropdown').find('i').removeClass('fa-chevron-down').addClass('fa-chevron-up');
+				}
+
+				$('#ddmUser').toggleClass('show');
+				isMenuOpen = !isMenuOpen;
 			});
 
 

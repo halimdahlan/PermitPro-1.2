@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using Microsoft.Extensions.Caching.Memory;
+
+using PermitPro.App.Controllers.Base;
 using PermitPro.App.Models.Ajax;
 using PermitPro.App.ViewModels;
 using PermitPro.Core.Data;
@@ -23,6 +26,7 @@ public class AdminController : Controller
     private readonly ILogService _logService;
     private readonly IWebHostEnvironment _env;
     private readonly IAppSettingsService _appSettings;
+    private readonly IMemoryCache _cache;
 
     private static readonly HashSet<string> _allowedLogoExts =
         new(StringComparer.OrdinalIgnoreCase) { ".png", ".jpg", ".jpeg", ".webp", ".svg" };
@@ -33,7 +37,8 @@ public class AdminController : Controller
         ApplicationDbContext db,
         ILogService logService,
         IWebHostEnvironment env,
-        IAppSettingsService appSettings)
+        IAppSettingsService appSettings,
+        IMemoryCache cache)
     {
         _signInManager = signInManager;
         _userManager = userManager;
@@ -41,6 +46,7 @@ public class AdminController : Controller
         _logService = logService;
         _env = env;
         _appSettings = appSettings;
+        _cache = cache;
     }
 
 
@@ -257,6 +263,7 @@ public class AdminController : Controller
         _db.Companies.Update(company);
         await _db.SaveChangesAsync();
 
+        AppControllerBase.InvalidateCompanyMetaCache(_cache, id);
         await _logService.LogMessageAsync(Core.Enums.LogTypeEnum.Information, "ADMIN_COMPANY_EDIT", $"Company '{company.Name}' updated.", CurrentUser());
 
         TempData["SuccessMessage"] = $"Company \"{company.Name}\" updated successfully.";
@@ -277,6 +284,7 @@ public class AdminController : Controller
         _db.Companies.Update(company);
         await _db.SaveChangesAsync();
 
+        AppControllerBase.InvalidateCompanyMetaCache(_cache, id);
         var state = company.IsActive ? "activated" : "deactivated";
         await _logService.LogMessageAsync(Core.Enums.LogTypeEnum.Information, "ADMIN_COMPANY_TOGGLE", $"Company '{company.Name}' {state}.", CurrentUser());
 

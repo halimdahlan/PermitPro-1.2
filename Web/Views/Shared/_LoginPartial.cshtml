@@ -7,86 +7,83 @@
 @inject ICurrentUserService _currentUserService
 
 @{
-    var user        = _currentUserService.GetCurrentUser();
-    var companyId   = ViewContext.RouteData.Values["company"] as string;
-    var profileImage = user?.ProfileImage ?? string.Empty;
+	var user = _currentUserService.GetCurrentUser();
+	var companyId = ViewContext.RouteData.Values["company"] as string;
+	var profileImage = user?.ProfileImage ?? string.Empty;
 
-    // Initials for avatar fallback
-    var initials = user != null
-        ? $"{user.FirstName?.FirstOrDefault()}{user.LastName?.FirstOrDefault()}".ToUpper()
-        : "?";
+	// Initials for avatar fallback
+	var initials = user != null
+		 ? $"{user.FirstName?.FirstOrDefault()}{user.LastName?.FirstOrDefault()}".ToUpper()
+		 : "?";
 
-    // Display the highest-priority role
-    var displayRole = User.IsInRole("Super User")        ? "Super User"
-                    : User.IsInRole("Portal Admin")      ? "Portal Admin"
-                    : User.IsInRole("Lead Permit Issuer")? "Lead Permit Issuer"
-                    : User.IsInRole("Permit Issuer")     ? "Permit Issuer"
-                    : User.IsInRole("Worker")            ? "Worker"
-                    : User.IsInRole("Contractor")        ? "Contractor"
-                    : "User";
+	// Display the highest-priority role
+	var displayRole = User.IsInRole("Super User") ? "Super User"
+						 : User.IsInRole("Portal Admin") ? "Portal Admin"
+						 : User.IsInRole("Lead Permit Issuer") ? "Lead Permit Issuer"
+						 : User.IsInRole("Permit Issuer") ? "Permit Issuer"
+						 : User.IsInRole("Worker") ? "Worker"
+						 : User.IsInRole("Contractor") ? "Contractor"
+						 : "User";
+
+	var arrowClass = "fa-chevron-down";
 }
 
 @if (_signInManager.IsSignedIn(User))
 {
-    <!-- Notifications -->
-    <a asp-controller="notifications" asp-action="index"
-       class="topbar-icon-btn no-loading" title="Notifications" style="position:relative;">
-        <i class="fa-solid fa-bell fa-sm"></i>
-        <span id="bellBadge"
-              style="display:none;position:absolute;top:2px;right:2px;min-width:16px;height:16px;
-                     padding:0 4px;border-radius:10px;background:#e74c3c;color:#fff;
-                     font-size:.6rem;font-weight:700;line-height:16px;text-align:center;
-                     pointer-events:none;"></span>
-    </a>
+	<!-- Notifications -->
+	<a asp-controller="notifications" asp-action="index" class="topbar-icon-btn no-loading" title="Notifications"
+		style="position:relative;">
+		<i class="fa-solid fa-bell fa-sm"></i>
+		<span id="bellBadge" style="display:none;position:absolute;top:2px;right:2px;min-width:16px;height:16px;
+		padding:0 4px;border-radius:10px;background:#e74c3c;color:#fff;
+		font-size:.6rem;font-weight:700;line-height:16px;text-align:center;
+		pointer-events:none;"></span>
+	</a>
 
-    <div class="topbar-vdivider"></div>
+	<div class="topbar-vdivider"></div>
 
-    <!-- User dropdown -->
-    <div class="dropdown">
-        <a href="#" id="userDropdown" class="topbar-user-pill no-loading dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" role="button">
-            @if (!string.IsNullOrEmpty(profileImage))
-            {
-                <img src="~/img/profiles/@profileImage"
-                     id="topbarUserAvatar"
-                     class="topbar-user-avatar"
-                     style="object-fit:cover;"
-                     alt="@user?.FirstName" />
-            }
-            else
-            {
-                <div class="topbar-user-avatar">@initials</div>
-            }
-            <div class="d-none d-md-block">
-                <div class="topbar-user-name">@user?.FirstName @user?.LastName</div>
-                <div class="topbar-user-role">@displayRole</div>
-            </div>
-        </a>
-        <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="min-width:220px;border-radius:10px;border-color:#e2e8f0;">
-            <li class="px-3 pt-2 pb-1">
-                <div style="font-size:.8rem;font-weight:600;color:#1a2b4a;">
-                    @user?.FirstName @user?.LastName
-                </div>
-                <div style="font-size:.72rem;color:#6b7c93;">@user?.Email</div>
-            </li>
-            <li><hr class="dropdown-divider my-1"></li>
-            <li>
-                <a href="/@companyId/account/profile"
-                   class="dropdown-item no-loading d-flex align-items-center gap-2"
-                   style="font-size:.82rem;">
-                    <i class="fa-solid fa-user fa-fw" style="color:#6b7c93;"></i> Profile
-                </a>
-            </li>
-            <li>
-                <a href="~/account/logout"
-                   class="dropdown-item d-flex align-items-center gap-2"
-                   style="font-size:.82rem;color:#e74c3c;">
-                    <i class="fa-solid fa-right-from-bracket fa-fw"></i> Logout
-                </a>
-            </li>
-        </ul>
-    </div>
+	<!-- User dropdown -->
+	<div class="dropdown">
+		<a href="#" id="userDropdown" class="topbar-user-pill no-loading">
+			@if (!string.IsNullOrEmpty(profileImage))
+			{
+				<img src="~/img/profiles/@profileImage" id="topbarUserAvatar" class="topbar-user-avatar" style="object-fit:cover;" alt="@user?.FirstName" />
+			}
+			else
+			{
+				<div class="topbar-user-avatar">@initials</div>
+			}
+			<div class="d-none d-md-block">
+				<div class="topbar-user-name">@user?.FirstName @user?.LastName</div>
+				<div class="topbar-user-role">@displayRole</div>
+			</div>
+			<i class="fa-solid fa-fw ms-auto text-black-50 text-end @arrowClass"></i>
+		</a>
+		<ul id="ddmUser" class="dropdown-menu dropdown-menu-end shadow">
+			<li class="px-3 pt-2 pb-1">
+				<div style="font-size:.8rem;font-weight:600;color:#1a2b4a;">
+					@user?.FirstName @user?.LastName
+				</div>
+				<div style="font-size:.72rem;color:#6b7c93;">@user?.Email</div>
+			</li>
+			<li>
+				<hr class="dropdown-divider my-1">
+			</li>
+			<li>
+				<a href="/@companyId/account/profile" class="dropdown-item no-loading d-flex align-items-center gap-2" style="font-size:.82rem;">
+					<i class="fa-solid fa-user fa-fw" style="color:#6b7c93;"></i> Profile
+				</a>
+			</li>
+			<li>
+				<a href="~/account/logout" class="dropdown-item d-flex align-items-center gap-2"
+					style="font-size:.82rem;color:#e74c3c;">
+					<i class="fa-solid fa-right-from-bracket fa-fw"></i> Logout
+				</a>
+			</li>
+		</ul>
+	</div>
 }
 else
 {
-    <a class="btn btn-sm btn-primary" asp-page="/Account/Login">Sign In</a>
+	<a class="btn btn-sm btn-primary" asp-page="/Account/Login">Sign In</a>
 }

@@ -151,19 +151,49 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
+	app.UseExceptionHandler("/error");
 	// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
 	app.UseHsts();
 }
 
-//app.Use(async (context, next) =>
-//{
-//	context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
-//	context.Response.Headers.Add("Content-Security-Policy", "default-src 'self' 'unsafe-inline' data: https: localhost:* ws://localhost:* wss://localhost:* http://localhost:* https://localhost:*;script-src 'self' 'unsafe-inline' data: https: localhost:* ws://localhost:* wss://localhost:* http://localhost:* https://localhost:*;");
-//	context.Response.Headers.Add("X-Content-Security-Policy", "default-src 'self' 'unsafe-inline' data: https: localhost:* ws://localhost:* wss://localhost:* http://localhost:* https://localhost:*;script-src 'self' 'unsafe-inline' data: https: localhost:* ws://localhost:* wss://localhost:* http://localhost:* https://localhost:*;");
-//	context.Response.Headers.Add("X-WebKit-CSP", "default-src 'self' 'unsafe-inline' data: https: localhost:* ws://localhost:* wss://localhost:* http://localhost:* https://localhost:*;script-src 'self' 'unsafe-inline' data: https: localhost:* ws://localhost:* wss://localhost:* http://localhost:* https://localhost:*;");
+// Intercept non-success status codes (404, 403, etc.) and render the error view.
+app.UseStatusCodePagesWithReExecute("/error/{0}");
 
-//	await next();
-//});
+app.Use(async (context, next) =>
+{
+	var headers = context.Response.Headers;
+
+	// Prevent MIME-type sniffing
+	headers.XContentTypeOptions = "nosniff";
+
+	// Block clickjacking
+	headers.XFrameOptions = "DENY";
+
+	// Limit referrer information sent to other origins
+	headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+
+	// Disable browser features not used by this app
+	headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
+
+	// Content Security Policy:
+	//   - All assets (JS, CSS, fonts, images) are served locally.
+	//   - cdn.jsdelivr.net is allowed for Chart.js loaded on the workflow overview.
+	//   - 'unsafe-inline' is required because Kendo UI and Razor emit inline scripts/styles.
+	//   - connect-src includes wss: for SignalR in production and ws: for development.
+	headers.ContentSecurityPolicy =
+		"default-src 'self'; " +
+		"script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.datatables.net https://cdnjs.cloudflare.com https://unpkg.com https://ka-f.webawesome.com https://maps.googleapis.com https://maps.gstatic.com; " +
+		"style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.datatables.net https://unpkg.com https://fonts.googleapis.com https://ka-f.webawesome.com https://maps.googleapis.com; " +
+		"img-src 'self' data: blob: https://unpkg.com https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.tile.openstreetmap.org; " +
+		"font-src 'self' data: https://fonts.gstatic.com https://ka-f.webawesome.com; " +
+		"connect-src 'self' data: ws: wss: https://ka-f.webawesome.com https://maps.googleapis.com https://maps.gstatic.com; " +
+		"worker-src 'self' blob:; " +
+		"frame-src 'none'; " +
+		"object-src 'none'; " +
+		"base-uri 'self';";
+
+	await next();
+});
 
 app.UseSession();
 app.UseDefaultFiles();

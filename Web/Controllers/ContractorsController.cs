@@ -53,19 +53,17 @@ public class ContractorsController : AppControllerBase
 		ViewBag.Locations = locations;
 
 		var roleContractor = _dbContext.Roles.FirstOrDefault(e => e.NormalizedName == "CONTRACTOR");
+		
+		if (roleContractor == null)
+			return NotFound("The Contractor role has not been seeded for this environment.");
 
-		if (roleContractor != null)
+		var model = new ContractorsViewModel
 		{
-			var model = new ContractorsViewModel
-			{
-				CompanyId = CompanyID,
-				Role = roleContractor
-			};
+			CompanyId = CompanyID,
+			Role = roleContractor
+		};
 
-			return View(model);
-		}
-
-		return View();
+		return View(model);
 	}
 
 
