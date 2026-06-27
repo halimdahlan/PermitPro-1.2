@@ -296,17 +296,22 @@ public class ReportsController : AppControllerBase
 
 		// Filtered set — used for KPI cards, donut chart, and location chart
 		IEnumerable<ChartPermitData> filtered = all;
+
 		if (useDateRange && startDate.HasValue && endDate.HasValue)
+		{
 			filtered = filtered.Where(p => p.CreatedWhen >= startDate.Value.Date && p.CreatedWhen <= endDate.Value.Date);
+		}
 		else if (!useDateRange)
 		{
 			if (!string.IsNullOrEmpty(month)) filtered = filtered.Where(p => p.CreatedWhen.ToString("MMMM") == month);
 			if (year > 0) filtered = filtered.Where(p => p.CreatedWhen.Year == year);
 		}
+
 		if (!string.IsNullOrEmpty(locationId)) filtered = filtered.Where(p => p.LocationId == locationId);
 		if (!string.IsNullOrEmpty(certificateType)) filtered = filtered.Where(p => p.Certificates.Contains(certificateType));
 		if (permitStatus >= 0) filtered = filtered.Where(p => (int)p.Status == permitStatus);
 		if (!string.IsNullOrEmpty(holderId)) filtered = filtered.Where(p => p.HolderUserId.Equals(holderId, StringComparison.OrdinalIgnoreCase));
+
 		var f = filtered.ToList();
 
 		var terminalStatuses = new[] { PermitStatusEnum.Closed, PermitStatusEnum.Rejected, PermitStatusEnum.ClosedNoAction };
@@ -370,6 +375,7 @@ public class ReportsController : AppControllerBase
 		// Monthly trend — always last 12 months; date filter is intentionally excluded
 		// so the trend chart retains context when a specific month/year is selected.
 		IEnumerable<ChartPermitData> trendBase = all;
+
 		if (!string.IsNullOrEmpty(locationId)) trendBase = trendBase.Where(p => p.LocationId == locationId);
 		if (!string.IsNullOrEmpty(certificateType)) trendBase = trendBase.Where(p => p.Certificates.Contains(certificateType));
 		if (permitStatus >= 0) trendBase = trendBase.Where(p => (int)p.Status == permitStatus);
@@ -377,12 +383,13 @@ public class ReportsController : AppControllerBase
 
 		var monthStart = new DateTime(now.Year, now.Month, 1).AddMonths(-11);
 		var trend = trendBase.Where(p => p.CreatedWhen >= monthStart).ToList();
-
 		var byMonth = new List<object>();
+
 		for (int i = 0; i < 12; i++)
 		{
 			var m = monthStart.AddMonths(i);
 			var mp = trend.Where(p => p.CreatedWhen.Year == m.Year && p.CreatedWhen.Month == m.Month).ToList();
+
 			byMonth.Add(new
 			{
 				label = m.ToString("MMM yy"),
@@ -392,7 +399,18 @@ public class ReportsController : AppControllerBase
 			});
 		}
 
-		return new JsonResult(new { summary, byMonth, byLocation, byHolder, overduePermits }, new JsonSerializerOptions { PropertyNamingPolicy = null });
+		return new JsonResult(new 
+		{ 
+			summary, 
+			byMonth, 
+			byLocation, 
+			byHolder, 
+			overduePermits 
+		}, 
+		new JsonSerializerOptions
+		{
+			PropertyNamingPolicy = null
+		});
 	}
 
 	#endregion
