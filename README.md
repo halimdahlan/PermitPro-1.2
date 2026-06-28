@@ -15,6 +15,7 @@ A multi-tenant, enterprise web application for managing **Permit-to-Work (PTW)**
 | **UI Components** | Kendo UI for ASP.NET MVC (Telerik) |
 | **Real-time** | ASP.NET Core SignalR |
 | **Background Jobs** | Hangfire 1.8.14 (currently disabled) |
+| **Rate Limiting** | ASP.NET Core built-in rate limiter (fixed-window, per-IP) |
 | **PDF Generation** | PuppeteerSharp 18.0.3 |
 | **Excel Export** | ClosedXML 0.105.0 |
 | **Email** | MailKit 4.17.0 + MimeKit 4.17.0 |
@@ -28,23 +29,30 @@ A multi-tenant, enterprise web application for managing **Permit-to-Work (PTW)**
 ```
 PermitPro-1.2/
 ├── Web/                        # ASP.NET Core MVC web application
-│   ├── Controllers/            # 21 active MVC controllers
+│   ├── Controllers/            # 23 active MVC controllers
 │   │   ├── Base/               # AppControllerBase (company scoping + ViewData)
-│   │   └── AdminController.cs  # Super Admin portal (login + company management)
+│   │   ├── AdminController.cs  # Super Admin portal (login + company management)
+│   │   ├── WorkflowController.cs   # Workflow CRUD + enhanced Overview/Manage/Builder
+│   │   ├── ErrorController.cs      # Custom error pages
+│   │   ├── MaintenanceController.cs
+│   │   ├── ScheduledTaskController.cs
+│   │   └── ToolsController.cs      # System menu management
 │   ├── Hubs/                   # SignalR hubs (NotificationHub)
 │   ├── Models/                 # AJAX request/response models, chart models
 │   ├── Services/               # Web-layer services (NotificationPushService)
-│   ├── ViewModels/             # 32 typed view models
+│   ├── ViewModels/             # 33 typed view models
 │   ├── Views/
-│   │   ├── Admin/              # Super Admin views (Login, Companies, CompanyForm)
+│   │   ├── Admin/              # Super Admin views (Login, Companies, CompanyForm, CompanySettings)
 │   │   ├── Shared/             # Layouts (_Layout, _LayoutAnon, _LayoutAdmin, _LayoutPdf)
-│   │   └── <feature>/          # Razor templates per feature area
+│   │   ├── Workflow/           # Index, Edit, Overview, Manage, Builder (original + enhanced)
+│   │   ├── Tools/              # System menu editor
+│   │   └── <feature>/          # Razor templates per feature area (20 view folders, 74 views)
 │   └── wwwroot/
 │       └── img/logos/          # Uploaded company logo files
 ├── Core/                       # Domain logic class library
 │   ├── Data/                   # ApplicationDbContext + soft-delete/restore logic
-│   ├── Entities/               # 20 active domain entities
-│   ├── Enums/                  # PermitStatus, WorkflowStatus, SiteType, etc.
+│   ├── Entities/               # 26 domain entities (including certificate and form subfolders)
+│   ├── Enums/                  # PermitStatus, WorkflowStatus, SiteType, DurationType, LogType, ContactType, EmailInfo
 │   ├── Interfaces/             # 13 service and entity interfaces
 │   ├── Services/               # 9 core service implementations
 │   ├── Filters/                # Authorization filters
@@ -84,6 +92,10 @@ PermitPro-1.2/
 - Configurable multi-step approval workflows per company
 - Workflow history and full audit trail
 - Background jobs for automatic permit closure and auto-resume logic (configurable threshold via `SUSPEND_AUTORESUME_DAYS`)
+- Enhanced three-page workflow UI (runs alongside original routes):
+  - **Overview** (`/workflow/overview`) — 4 KPI cards (Total, Active, Inactive, Permits Assigned), status doughnut chart, top-6 permits-by-workflow bar chart, summary Kendo grid
+  - **Manage** (`/workflow/manage`) — filter pills (ALL / ACTIVE / INACTIVE), Kendo grid with step count and permit count columns, inline "New Workflow" modal that redirects to Builder on create
+  - **Builder** (`/workflow/builder/{id}`) — two-column view: left = workflow info form with mini stat cards; right = visual step pipeline with inline Bootstrap collapse panels per step (General + Approvers tabs), Kendo grid approver picker modal
 
 ### Multi-Tenancy
 - Each company operates in an isolated namespace
@@ -106,7 +118,7 @@ PermitPro-1.2/
 - `RecycleBinController` exposes restore functionality for soft-deleted records across 5 tabs:
   - **Permits** — company-scoped
   - **Users** — company-scoped
-  - **Roles** — global entity (not company-scoped); shown across all tenants
+  - **Roles** — global entity (not company-scoped); shown across all tenants; includes `Description` and soft-delete audit fields
   - **Workflow Steps** — company-scoped
   - **Companies** — visible to Super Users only
 - Cascade restore recovers children deleted within the same cascade operation (10-second window)
@@ -114,7 +126,13 @@ PermitPro-1.2/
 ### App Settings
 - Per-company key-value configuration stored in `AppSettingCategory` / `AppSetting` entities
 - Settings are grouped by category and scoped by `CompanyId`
-- Used for email server configuration, branding, and feature toggles
+- Seeded with 3 default categories and 13 keys per company:
+
+| Category | Keys |
+|---|---|
+| **General** | `application_domain`, `user_create_limit`, `upload_max_file_size`, `upload_max_file_count`, `upload_allowed_file_types` |
+| **Email** | `smtp_server`, `smtp_port`, `sender_name`, `sender_email`, `email_username`, `email_password` (encrypted) |
+| **Workflow** | `suspended_autoresume_days` |
 
 ### Reporting & Export
 - Kendo UI grid-based permit report with date range, location, certificate type, permit holder, and status filters
@@ -125,6 +143,11 @@ PermitPro-1.2/
   - Top 8 locations horizontal bar chart
 - 4 report tabs: All Permits (Kendo Grid), Overdue (paginated, 20 per page), By Holder (with approval rate progress bar), By Location
 - Excel export via ClosedXML
+
+### System Menu Management
+- `SystemMenu` entity links menu items to roles, controlling sidebar visibility per user role
+- Portal Admins can edit menu visibility via `/tools/editsystemmenus`
+- Menu state evaluated server-side in `_SideMenuPartial.cshtml`
 
 ### Audit & Security
 - All CRUD operations logged with timestamp and user (`AuditLog` entity)
@@ -142,8 +165,12 @@ PermitPro-1.2/
 | **User** | Standard access — view and submit permits |
 | **Permit Issuer** | Can issue and approve permits |
 | **Lead Permit Issuer** | Senior issuer with elevated approval authority |
+| **Authorized Gas Tester** | Specialist role for gas-testing operations on confined space / hot work permits |
+| **Permit Holder / Contractor** | Combined external role — treated as contractor for access control |
 | **Worker** | Field worker — limited to assigned permits |
 | **Contractor** | External contractor — restricted access |
+
+Roles support soft-delete via `ISoftDeletable` and carry audit fields (`CreatedWhen`, `UpdatedWhen`, `CreatedBy`, `UpdatedBy`). The `IsSystemRole` flag marks roles that should not be deleted or renamed by tenant admins. Deleted roles are recoverable from the **Recycle Bin → Roles** tab.
 
 ---
 
@@ -250,12 +277,14 @@ Configurable certificate types mapped to permit form workflows.
 
 ## Database
 
-Entity Framework Core with SQL Server. Key entities:
+Entity Framework Core with SQL Server. Key entities (26 total):
 
 | Entity | Purpose |
 |---|---|
 | `Company` | Multi-tenant root; holds name, logo filename, and active state |
 | `Site` | Work sites with GPS coordinates |
+| `SitePermit` | Junction table linking sites to permits |
+| `UserSite` | Junction table linking users to sites |
 | `Permit` | Safety permits with status lifecycle |
 | `Workflow` / `WorkflowStep` | Approval workflow definitions |
 | `WorkflowHistory` | Audit trail of workflow transitions |
@@ -264,15 +293,18 @@ Entity Framework Core with SQL Server. Key entities:
 | `Attachment` | Files attached to permits |
 | `Notification` | User notification records (Title, Message, read/archived state) |
 | `AuditLog` | Full CRUD change log |
+| `LogInfo` | Application-level log records |
 | `Division` / `Department` | Organisational structure |
 | `Address` | Company address records |
-| `Contact` | Company contact records |
+| `Contact` | Company contact records (typed via `ContactTypeEnum`) |
 | `PermitNumber` | Sequential permit numbering per company |
 | `SystemMenu` | Role-based menu visibility configuration |
 | `AppSettingCategory` | Per-company grouping for key-value settings |
 | `AppSetting` | Per-company key-value configuration (unique on CompanyId + CategoryId + Key) |
+| `HotWork` / `ConfinedSpace` | Certificate sub-entities (in `Entities/Certificates/`) |
+| `FormSectionInfo` | Permit form section metadata (in `Entities/Forms/`) |
 
-All core entities support soft-delete via `ISoftDeletable`. Hard deletes are not performed by the application by default (`UseSoftDelete = true`).
+All core entities support soft-delete via `ISoftDeletable`. Hard deletes are not performed by the application by default (`UseSoftDelete = true`). `Role` (via ASP.NET Identity) also implements `ISoftDeletable` with full audit fields.
 
 ### Migration history
 
@@ -324,3 +356,4 @@ Deployment user: `[YOUR_WEB_DEPLOY_USERNAME]`
 - All audit events are written to `AuditLog` and are non-deletable by application users
 - JWT `SecretKey` must be stored securely and never committed to source control
 - The Super Admin portal (`/admin/*`) is protected by the `SUPERUSER` role check on every action — regular tenant users are rejected at login, not just redirected
+- Authentication endpoints are rate-limited: **10 requests per 5-minute window per IP** (policy: `"auth"`, HTTP 429 on breach) — applied via ASP.NET Core's built-in `UseRateLimiter` middleware
