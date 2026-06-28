@@ -13,7 +13,7 @@
 }
 
 input[type="text"].form-control {
-	/*min-width: 450px;*/
+	font-family: 'Poppins', sans-serif;
 }
 
 .form-control {
@@ -78,4 +78,13 @@ input[type="text"].form-control {
 
 .k-column-title {
   font-size: 14px !important;
+}
+
+.k-grid a {
+	text-decoration: none !important;
+	color: rgba(var(--bs-link-color-rgb), var(--bs-link-opacity,1));
+}
+
+.k-grid a:hover {
+	color: var(--bs-btn-disabled-bg);
 }

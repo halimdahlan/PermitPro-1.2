@@ -205,7 +205,7 @@ table.table thead tr td {
 	}
 
 @media (min-width: 768px) {
-	.navbar-vertical.navbar-expand-md .navbar-nav .nav .nav-link {
+	#sidebar .navbar-nav .nav .nav-link {
 		padding-left: 3.5rem !important;
 	}
 }
@@ -687,11 +687,112 @@ body, input, select, textarea, button {
 .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 2px; }
 
 /* ── Responsive ──────────────────────────────────────────── */
-@media (max-width: 768px) {
-    .sidebar { transform: translateX(-100%); }
+@media (max-width: 767.98px) {
     .main-content { margin-left: 0; }
 }
 
 .form-select {
 	background-image: var(--icon-caret), var(--icon-caret) !important;
+}
+
+/* ── Fixed sidebar (replaces DashKit navbar-vertical + fixed-start) ── */
+@media (min-width: 768px) {
+    nav#sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: var(--sidebar-w);
+        overflow-y: auto;
+        z-index: 1030;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        align-items: flex-start;
+    }
+
+    nav#sidebar > .container-fluid {
+        flex-direction: column;
+        align-items: stretch;
+        flex: 1;
+        padding: 1.5rem 0.75rem;
+        min-height: 100%;
+    }
+
+    nav#sidebar .navbar-collapse {
+        flex-direction: column;
+        align-items: flex-start;
+        flex-grow: 1;
+        width: 100%;
+    }
+
+    nav#sidebar .navbar-nav {
+        flex-direction: column !important;
+        width: 100%;
+    }
+
+    .main-content {
+        margin-left: var(--sidebar-w);
+        min-height: 100vh;
+    }
+}
+
+/* ── Bootstrap utility shims (classes previously provided by DashKit) ── */
+
+.btn-clear {
+    background: transparent;
+    border: none;
+    padding: 0.25rem;
+    color: inherit;
+    opacity: 0.75;
+    cursor: pointer;
+    line-height: 1;
+}
+.btn-clear:hover { opacity: 1; }
+
+.sidebar-heading {
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    padding: 0 0.25rem;
+    margin-bottom: .25rem;
+}
+
+.avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--pp-accent);
+    color: #fff;
+    font-weight: 700;
+}
+
+a:link, a:visited {
+	text-decoration: none !important;
+}
+
+a:hover {
+	color: var(--bs-btn-disabled-bg);
+}
+
+.k-grid a {
+	text-decoration: none !important;
+	color: rgba(var(--bs-link-color-rgb), var(--bs-link-opacity,1));
+}
+
+.k-grid a:hover {
+	color: var(--bs-btn-disabled-bg);
+}
+
+.k-calendar, .k-title, .k-button {
+	font-family: 'Poppins', sans-serif !important;
+}
+
+.k-pager-numbers li {
+	margin-inline-start: 0 !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-family: var(--font) !important;
 }

@@ -45,9 +45,16 @@
 			.NoRecords(true)
 			.Columns(c =>
 			{
-				c.Bound(p => p.PermitNumber).ClientTemplate($"<a href=\"/{Model.CompanyId}/permits/edit/#= Id #\" class=\"text-info\">#= PermitNumber #</a>").Width(130);
+				c.Bound(p => p.PermitNumber)
+					.ClientTemplate(
+						$"<a href=\"/{Model.CompanyId}/permits/edit/#= Id #\">#= PermitNumber #</a>"
+					)
+					.Width(130);
+
 				c.Bound(p => p.Description);
-				c.Bound(p => p.Location).Width(200);
+
+				c.Bound(p => p.Location)
+					.Width(200);
 
 				c.Bound(p => p.StartDate)
 					.ClientTemplate(
@@ -69,15 +76,38 @@
 					)
 					.Width(130);
 
-				c.Bound(p => p.Certificates).Encoded(false).HeaderHtmlAttributes(new { @class = "text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(130);
-				c.Bound(p => p.StatusBadge).Encoded(false).HeaderHtmlAttributes(new { @class = "text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(120);
-				c.Bound(p => p.DateSubmitted).Visible(false).Format("{0:dd MMM, yyyy}").Width(170);
-				c.Bound(p => p.SubmittedBy).ClientTemplate("<div>#= SubmittedBy #</div><div class=\"fs-6 text-secondary\">on #= kendo.toString(DateSubmitted, 'dd MMM, yyyy') #</div>").Width(150);
+				c.Bound(p => p.Certificates)
+					.Encoded(false)
+					.HeaderHtmlAttributes(new { @class = "text-center" })
+					.HtmlAttributes(new { @class = "text-center" })
+					.Width(130);
+
+				c.Bound(p => p.StatusBadge)
+					.Encoded(false)
+					.HeaderHtmlAttributes(new { @class = "text-center" })
+					.HtmlAttributes(new { @class = "text-center" })
+					.Width(120);
+
+				c.Bound(p => p.DateSubmitted)
+					.Visible(false)
+					.Format("{0:dd MMM, yyyy}")
+					.Width(170);
+
+				c.Bound(p => p.SubmittedBy)
+					.ClientTemplate(
+						"<div>#= SubmittedBy #</div><div class=\"text-secondary\" style=\"font-size:11px;\">on #= kendo.toString(DateSubmitted, 'dd MMM, yyyy') #</div>"
+					)
+					.Width(150);
 
 				c.Template(
-					$"<a href=\"/{Model.CompanyId}/permits/edit/#=Id#\" class=\"no-loading text-secondary me-3\"><i class=\"fa-solid fa-money-check-pen fa-lg\"></i></a>" +
-					"<a href=\"javascript:;\" onclick=\"confirmDelete('#=Id#','#=PermitNumber#')\" class=\"no-loading text-danger\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>"
-				).Title("ACTION").HeaderHtmlAttributes(new { @class = "text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(100);
+						$"<a href=\"/{Model.CompanyId}/permits/edit/#=Id#\" class=\"no-loading text-secondary me-3\"><i class=\"fa-solid fa-money-check-pen fa-lg\"></i></a>" +
+						"<a href=\"javascript:;\" onclick=\"confirmDelete('#=Id#','#=PermitNumber#')\" class=\"no-loading text-danger\"><i class=\"fa-solid fa-trash-xmark fa-lg\"></i></a>"
+					)
+					.Title("ACTION")
+					.HeaderHtmlAttributes(new { @class = "text-center" })
+					.HtmlAttributes(new { @class = "text-center" })
+					.Width(100);
+
 			})
 			.Pageable()
 			.Sortable()
@@ -106,13 +136,13 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header bg-warning">
-        <h2 class="modal-title" id="dlgPermitConfirmDeleteLabel" style="font-weight:600;">Confirm Delete <span class="mb-2 text-danger" id="permitNumber"></span></h2>
-        <button type="button" class="btn btn-clear" data-bs-dismiss="modal" aria-label="Close">
-					<i class="fa-regular fa-close fa-2x"></i>
-				</button>
+			<h6 class="modal-title w-100" id="dlgPermitConfirmDeleteLabel" style="font-weight:600;">Confirm Delete <span class="mb-2 text-danger" id="permitNumber"></span></h6>
+			<button type="button" class="btn btn-clear" data-bs-dismiss="modal" aria-label="Close">
+				<i class="fa-regular fa-close"></i>
+			</button>
       </div>
-      <div class="modal-body mb-0 fs-4">
-				You are about to delete this permit. Are you sure?
+      <div class="modal-body mb-0">
+			You are about to delete this permit. Are you sure?
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">No</button>

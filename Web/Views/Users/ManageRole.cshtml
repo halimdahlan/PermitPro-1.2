@@ -24,7 +24,7 @@
 
 					<div class="row g-3 mb-3">
 						<div class="col">
-							<label class="form-label small fw-semibold">Role Name <span class="text-danger">*</span></label>
+							<label class="form-label">Role Name <span class="text-danger">*</span></label>
 							<input asp-for="Name" class="form-control" placeholder="i.e. SUPERVISOR" />
 							<span asp-validation-for="Name" class="text-danger small"></span>
 						</div>
@@ -32,7 +32,7 @@
 
 					<div class="row g-3 mb-3">
 						<div class="col">
-							<label class="form-label small fw-semibold">Description</label>
+							<label class="form-label">Description</label>
 							<textarea asp-for="Description" class="form-control" rows="3" placeholder="(optional)"></textarea>
 							<span asp-validation-for="Description" class="text-danger small"></span>
 						</div>
@@ -40,19 +40,18 @@
 
 					<div class="row g-3">
 						<div class="col">
-							<input asp-for="IsSystemRole" class="form-check-input" type="checkbox"/>
+							<input asp-for="IsSystemRole" class="form-check-input" type="checkbox" />
 							<label class="form-check-label ms-2" for="IsActive">Is system role?</label>
 						</div>
 					</div>
-
-				</div>
-				<div class="card-footer d-flex align-items-center justify-content-between">
-					<a href="/@companyId/users/roles" role="button" class="btn btn-sm btn-outline-secondary">
-						<span class="mx-3"><i class="fa-solid fa-arrow-left me-3"></i> Cancel</span>
-					</a>
-					<button type="submit" class="btn btn-sm btn-primary">
-						<span class="mx-3">Save Changes</span>
-					</button>
+					<div class="mt-4 d-flex align-items-center justify-content-between">
+						<a href="/@companyId/users/roles" role="button" class="btn btn-sm btn-outline-secondary">
+							<span class="mx-3"><i class="fa-solid fa-arrow-left me-2"></i> Cancel</span>
+						</a>
+						<button type="submit" class="btn btn-sm btn-primary">
+							<span class="mx-3">Save Changes</span>
+						</button>
+					</div>
 				</div>
 			</div>
 		</form>
@@ -62,7 +61,7 @@
 	{
 		<div class="col-12 col-lg-6">
 			<div class="card shadow-sm h-100">
-				<div class="card-header fs-4 fw-bold text-uppercase">
+				<div class="card-header fs-6 fw-medium text-uppercase">
 					List of users in this role
 				</div>
 				<div class="card-body d-flex flex-column justify-content-between">
@@ -76,12 +75,16 @@
 								{
 									@foreach (var name in Model.UsersInRole)
 									{
-										<tr><td>@name</td></tr>
+										<tr>
+											<td>@name</td>
+										</tr>
 									}
 								}
 								else
 								{
-									<tr><td class="text-center text-muted fst-italic">No users assigned to this role.</td></tr>
+									<tr>
+										<td class="text-center text-muted fst-italic">No users assigned to this role.</td>
+									</tr>
 								}
 							</tbody>
 						</table>
@@ -91,17 +94,17 @@
 						{
 							<span>Total: <strong>@Model.UsersInRole.Count</strong> user@((Model.UsersInRole.Count > 1) ? "s" : "")</span>
 						}
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
+		}
+
+	</div>
+
+
+	@section Scripts {
+		@{
+			await Html.RenderPartialAsync("_ValidationScriptsPartial");
+		}
 	}
-
-</div>
-
-
-@section Scripts {
-	@{
-		await Html.RenderPartialAsync("_ValidationScriptsPartial");
-	}
-}

@@ -120,7 +120,7 @@ public class UsersController : AppControllerBase
 
 		model.Roles = userRoles;
 		model.MaxNumOfUsers = _systemConfiguration.UserCreateLimit;
-		model.HasExceededLimit = totalUsers > _systemConfiguration.UserCreateLimit;
+		model.HasExceededLimit = totalUsers > _systemConfiguration.UserCreateLimit || totalUsers == _systemConfiguration.UserCreateLimit;
 		model.OriginFromContractors = !string.IsNullOrEmpty(org) && org == "c";
 
 		return View(model);

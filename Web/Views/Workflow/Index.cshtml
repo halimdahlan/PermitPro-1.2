@@ -33,49 +33,72 @@
 	@(Html.Kendo()
 		.Grid<WorkflowGridViewModel>()
 		.Name("grid")
-		.ToolBar(tb => tb.Search())
+		.ToolBar(tb => tb
+			.Search()
+		)
 		.NoRecords()
 		.Pageable()
 		.Sortable()
 		.DataSource(ds => ds
-		.Custom()
-		.Schema(s => s
-		.Model(m =>
-		{
-			m.Id(i => i.Id);
-		})
-		)
-		.Transport(t =>
-		{
-			t.Read(r => r.Url($"/{companyId}/workflow/grid").Type(HttpVerbs.Get));
-		})
-		.PageSize(20)
+			.Custom()
+			.Schema(s => s
+				.Model(m =>
+				{
+					m.Id(i => i.Id);
+				})
+			)
+			.Transport(t =>
+			{
+				t.Read(r => r.Url($"/{companyId}/workflow/grid").Type(HttpVerbs.Get));
+			})
+			.PageSize(20)
 		)
 		.Columns(c =>
 		{
-			c.Bound(f => f.Name).ClientTemplate(
-			$"<a href=\"/{companyId}/workflow/edit/#=Id#\" class=\"text-info\">#=Name#</a>");
+			c.Bound(f => f.Name)
+				.ClientTemplate(
+			$"<a href=\"/{companyId}/workflow/edit/#=Id#\">#=Name#</a>"
+				);
 
 			c.Bound(f => f.Description);
 
-			c.Bound(f => f.IsActive).Sortable(false).ClientTemplate(
-			"# if (IsActive) { #" +
-			"    <i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-success\"></i>" +
-			"# } else { #" +
-			"    <i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-warning\"></i>" +
-			"# } #").HeaderHtmlAttributes(new { @class = "grid-header text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(120);
+			c.Bound(f => f.IsActive)
+				.Sortable(false)
+				.ClientTemplate(
+					"# if (IsActive) { #" +
+					"    <i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-success\"></i>" +
+					"# } else { #" +
+					"    <i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-warning\"></i>" +
+					"# } #"
+				).HeaderHtmlAttributes(new { @class = "grid-header text-center" })
+				.HtmlAttributes(new { @class = "text-center" })
+				.Width(120);
 
-			c.Bound(f => f.HasCertificates).Sortable(false).ClientTemplate(
-			"# if (HasCertificates) { #" +
-			"    <i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-success\"></i>" +
-			"# } else { #" +
-			"    &nbsp;" +
-			"# } #").HeaderHtmlAttributes(new { @class = "grid-header text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(200);
+			c.Bound(f => f.HasCertificates)
+				.Sortable(false)
+				.ClientTemplate(
+					"# if (HasCertificates) { #" +
+					"    <i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-success\"></i>" +
+					"# } else { #" +
+					"    &nbsp;" +
+					"# } #"
+				)
+				.HeaderHtmlAttributes(new { @class = "grid-header text-center" })
+				.HtmlAttributes(new { @class = "text-center" })
+				.Width(200);
 
-			c.Bound(f => f.CreatedWhen).Format("{0:dd MMM, yyyy}").Width(150);
-			c.Bound(f => f.ActionIcons).Sortable(false).Encoded(false).HeaderHtmlAttributes(new { @class = "grid-header text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(110);
+			c.Bound(f => f.CreatedWhen)
+				.Format("{0:dd MMM, yyyy}")
+				.Width(150);
+
+			c.Bound(f => f.ActionIcons)
+				.Sortable(false)
+				.Encoded(false)
+				.HeaderHtmlAttributes(new { @class = "grid-header text-center" })
+				.HtmlAttributes(new { @class = "text-center" })
+				.Width(110);
 		})
-		)
+	)
 </div>
 
 <!--
@@ -103,16 +126,16 @@
 		<div class="modal-content">
 			<form id="frmNew" method="post" class="needs-validation" onsubmit="return false" novalidate>
 				<div class="modal-header bg-dark text-white">
-					<h2 class="modal-title mb-0 fw-bold" id="dlgNewLabel">New workflow</h2>
+					<h6 class="modal-title mb-0 w-100" id="dlgNewLabel">New workflow</h6>
 					<a href="#" class="no-loading text-secondary" data-bs-dismiss="modal" aria-label="Close"><i class="fa-sharp fa-solid fa-xmark fa-xl"></i></a>
 				</div>
 				<div class="modal-body">
-					<div class="form-group">
-						<label for="workflowName" class="form-label">Name</label>
+					<div class="form-group mb-3">
+						<label for="workflowName" class="form-label">Name <span class="text-danger">*</span></label>
 						<input id="workflowName" type="text" class="form-control" required />
 						<div class="ms-2 invalid-feedback">Enter a workflow name</div>
 					</div>
-					<div class="form-group">
+					<div class="form-group mb-3">
 						<label for="workflowDescription" class="form-label">Description</label>
 						<textarea id="workflowDescription" rows="2" class="form-control"></textarea>
 					</div>

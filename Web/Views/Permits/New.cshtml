@@ -43,8 +43,12 @@
 						<a asp-controller="permits" asp-action="index"><i class="fa-sharp fa-solid fa-chevrons-left me-2"></i> Back</a>
 					</div>
 					<div>
-						<button type="button" class="btn btn-sm btn-secondary btn-draft me-3"><span class="mx-3">Save as draft</span></button>
-						<button type="button" class="btn btn-sm btn-primary btn-approval"><span class="mx-3">Submit for approval</span></button>
+						<button type="button" class="btn btn-sm btn-secondary btn-draft me-3">
+							<span class="mx-3"><i class="fa-sharp fa-light fa-floppy-disk me-2"></i>Save as draft</span>
+						</button>
+						<button type="button" class="btn btn-sm btn-primary btn-approval">
+							<span class="mx-3"><i class="fa-sharp fa-light fa-check-to-slot me-2"></i>Submit for approval</span>
+						</button>
 					</div>
 				</div>
 			</div>
@@ -53,7 +57,7 @@
 	</div>
 
 	<div class="ms-0 ms-md-5 attached-certs mt-5 mt-md-0">
-		<h3>ATTACHED CERTIFICATES</h3>
+		<h6 class="fw-semibold">ATTACHED CERTIFICATES</h6>
 		<ul class="list-group shadow-sm selected-certs">
 			<li class="list-group-item fade show">
 				<span>No associated certificate attached</span>
@@ -66,8 +70,12 @@
 			<a asp-controller="permits" asp-action="index"><i class="fa-sharp fa-solid fa-chevrons-left me-2"></i> Back</a>
 		</div>
 		<div>
-			<button type="button" class="btn btn-sm btn-secondary btn-draft me-3"><span class="mx-3">Save as draft</span></button>
-			<button type="button" class="btn btn-sm btn-primary btn-approval"><span class="mx-3">Submit for approval</span></button>
+			<button type="button" class="btn btn-sm btn-secondary btn-draft me-3">
+				<span class="mx-3"><i class="fa-sharp fa-light fa-floppy-disk me-2"></i>Save as draft</span>
+			</button>
+			<button type="button" class="btn btn-sm btn-primary btn-approval">
+				<span class="mx-3"><i class="fa-light fa-check-to-slot me-2"></i>Submit for approval</span>
+			</button>
 		</div>
 	</div>
 </div>
@@ -1961,6 +1969,10 @@
 
 			$('#endDateTime').data('kendoDatePicker').min(e.sender.value());
 			$('#endDateTime').data('kendoDatePicker').max(endDate);
+		};
+
+
+		const dsOnRequestEnd = (e) => {
 		};
 
 

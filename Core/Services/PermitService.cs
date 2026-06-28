@@ -228,6 +228,7 @@ public class PermitService : IPermitService
 							IsArchived = false,
 							NotificationUser = approver,
 						});
+
 						await _pushService.PushAsync(approver.Id, "Approval Required", $"You have a pending approval task for {permitNoCreate}.");
 					}
 				}
@@ -408,13 +409,18 @@ public class PermitService : IPermitService
 						};
 
 						var renderedHtml = template.Render(templateData);
-						await _messageService.SendEmailAsync(new EmailInfo
+
+						try
 						{
-							Name = approverName,
-							Email = approver.Email,
-							Subject = $"Pending approval task for {permitNoUpdate}",
-							Body = renderedHtml
-						});
+							await _messageService.SendEmailAsync(new EmailInfo
+							{
+								Name = approverName,
+								Email = approver.Email,
+								Subject = $"Pending approval task for {permitNoUpdate}",
+								Body = renderedHtml
+							}, companyId);
+						}
+						catch {}
 
 						_dbContext.Notifications.Add(new Notification
 						{
@@ -620,7 +626,8 @@ public class PermitService : IPermitService
 					var permitNoNext = string.Format("PTW{0:000000}", permit.RunningNumber);
 					foreach (var nextApprover in nextApprovers)
 					{
-						var nextLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host.Value}/{permit.Company?.Id}/permits/{permit.Id}/edit";
+						var nextLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host.Value}/{permit.Company?.Id}/permits//edit/{permit.Id}";
+						
 						_dbContext.Notifications.Add(new Notification
 						{
 							Title = "Approval Required",
@@ -630,6 +637,7 @@ public class PermitService : IPermitService
 							IsArchived = false,
 							NotificationUser = nextApprover,
 						});
+
 						await _pushService.PushAsync(nextApprover.Id, "Approval Required", $"You have a pending approval task for {permitNoNext}.");
 					}
 				}
@@ -663,7 +671,8 @@ public class PermitService : IPermitService
 				if (creator != null)
 				{
 					var approvedPermitNo = string.Format("PTW{0:000000}", permit.RunningNumber);
-					var approvedLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host.Value}/{permit.Company?.Id}/permits/{permit.Id}/edit";
+					var approvedLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host.Value}/{permit.Company?.Id}/permits/edit/{permit.Id}";
+					
 					_dbContext.Notifications.Add(new Notification
 					{
 						Title = "Permit Approved",
@@ -673,6 +682,7 @@ public class PermitService : IPermitService
 						IsArchived = false,
 						NotificationUser = creator,
 					});
+
 					await _pushService.PushAsync(creator.Id, "Permit Approved", $"{approvedPermitNo} has been fully approved.");
 				}
 			}
@@ -709,7 +719,8 @@ public class PermitService : IPermitService
 			if (rejCreator != null)
 			{
 				var rejPermitNo = string.Format("PTW{0:000000}", permit.RunningNumber);
-				var rejLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host.Value}/{permit.Company?.Id}/permits/{permit.Id}/edit";
+				var rejLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host.Value}/{permit.Company?.Id}/permits/edit/{permit.Id}";
+				
 				_dbContext.Notifications.Add(new Notification
 				{
 					Title = "Permit Rejected",
@@ -719,6 +730,7 @@ public class PermitService : IPermitService
 					IsArchived = false,
 					NotificationUser = rejCreator,
 				});
+
 				await _pushService.PushAsync(rejCreator.Id, "Permit Rejected", $"{rejPermitNo} has been rejected.");
 			}
 

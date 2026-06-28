@@ -44,12 +44,16 @@
 		.Columns(c =>
 		{
 			c.Bound(p => p.Name)
-				.ClientTemplate($"<a href=\"/{Model.CompanyId}/users/edit/#=Id#?org=c\" class=\"text-info\">#=Name#</a>")
+				.ClientTemplate($"<a href=\"/{Model.CompanyId}/users/edit/#=Id#?org=c\">#=Name#</a>")
 				.Width(250);
 
 			c.Bound(p => p.Email);
 
-			c.Bound(p => p.IsSecured).Encoded(false).HeaderHtmlAttributes(new { @class = "text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(140);
+			c.Bound(p => p.IsSecured)
+				.Encoded(false)
+				.HeaderHtmlAttributes(new { @class = "text-center" })
+				.HtmlAttributes(new { @class = "text-center" })
+				.Width(140);
 
 			c.Bound(p => p.IsActive)
 				.ClientTemplate(
@@ -58,12 +62,22 @@
 					"# } else { #" +
 					"    <i class=\"fa-sharp fa-solid fa-circle-check fa-lg text-warning\"></i>" +
 					"# } #"
-					)
-					.HeaderHtmlAttributes(new { @class = "text-center" }).HtmlAttributes(new { @class = "text-center" }).Width(130);
+				)
+				.HeaderHtmlAttributes(new { @class = "text-center" })
+				.HtmlAttributes(new { @class = "text-center" })
+				.Width(130);
 
-			c.Bound(p => p.CreatedWhen).Format("{0:dd MMM, yyyy}").Width(150);
+			c.Bound(p => p.CreatedWhen)
+				.Format("{0:dd MMM, yyyy}")
+				.Width(150);
 
-			c.Bound(p => p.ActionIcons).Sortable(false).Exportable(false).Encoded(false).HeaderHtmlAttributes(new { @class = "text-center" }).Width(80);
+			c.Bound(p => p.ActionIcons)
+				.Sortable(false)
+				.Exportable(false)
+				.Encoded(false)
+				.HeaderHtmlAttributes(new { @class = "text-center" })
+				.Width(80);
+
 		})
 		.DataSource(ds => ds
 			.Custom()

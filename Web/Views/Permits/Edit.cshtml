@@ -21,11 +21,11 @@
 		<div class="alert alert-@Model.AlertBgColor" role="alert">
 			<div class="d-flex flex-row align-items-center">
 				<div>
-					<a class="me-3 text-white" href="/@Model.CompanyId/permits"><i class="fa-sharp fa-regular fa-chevron-left fa-xl"></i></a>
+					<a class="me-3 text-dark" href="/@Model.CompanyId/permits"><i class="fa-sharp fa-regular fa-chevron-left fa-xl"></i></a>
 				</div>
-				<h2 class="mb-0">@Model.PermitNo</h2>
+				<h5 class="mb-0">@Model.PermitNo</h5>
 				<div class="w-100 text-end">
-					<span>@Model.PermitStatusDisplay</span>
+					<span class="fw-semibold fs-6">@Model.PermitStatusDisplay</span>
 				</div>
 			</div>
 		</div>
@@ -72,9 +72,15 @@
 				<div>
 					@if (Model.PermitStatus == PermitPro.Core.Enums.PermitStatusEnum.Draft)
 					{
-						<button type="button" class="btn btn-sm btn-secondary btn-draft me-2"><span class="mx-3">Save as draft</span></button>
-						<button type="button" class="btn btn-sm btn-primary btn-approval me-4"><span class="mx-3">Submit for approval</span></button>
-						<button type="button" class="btn btn-sm btn-danger btn-delete" data-id="@Model.PermitId"><span class="mx-3">Delete</span></button>
+						<button type="button" class="btn btn-secondary btn-draft me-2">
+							<span class="mx-3"><i class="fa-sharp fa-light fa-floppy-disk me-2"></i>Save as draft</span>
+						</button>
+						<button type="button" class="btn btn-primary btn-approval me-4">
+							<span class="mx-3"><i class="fa-sharp fa-light fa-check-to-slot me-2"></i>Submit for approval</span>
+						</button>
+						<button type="button" class="btn btn-outline-danger btn-delete" data-id="@Model.PermitId">
+							<span class="mx-3"><i class="fa-sharp fa-light fa-trash-can me-2"></i>Delete</span>
+						</button>
 					}
 				</div>
 			</div>
@@ -84,7 +90,7 @@
 
 	<div class="ms-0 ms-md-5 attached-certs mt-5 mt-md-0">
 		<div>
-			<h3>ATTACHED CERTIFICATES</h3>
+			<h6 class="fw-semibold">ATTACHED CERTIFICATES</h6>
 			<ul class="list-group shadow-sm selected-certs">
 				<li class="list-group-item fade show">
 					<span>No associated certificate attached</span>
@@ -95,7 +101,7 @@
 		@if (Model.PermitStatus == PermitPro.Core.Enums.PermitStatusEnum.Pending && Model.ExecuteWorkflowAction)
 		{
 			<div class="mt-5">
-				<h3>PERMIT APPROVAL</h3>
+				<h6 class="fw-semibold">PERMIT APPROVAL</h6>
 				<div class="card shadow-sm">
 					<div class="card-body">
 						<div class="form-group mb-3">
@@ -127,7 +133,7 @@
 			Model.PermitStatus == PermitPro.Core.Enums.PermitStatusEnum.Approved)
 		{
 			<div class="mt-5">
-				<h3>SUSPEND PERMIT</h3>
+				<h6 class="fw-semibold">SUSPEND PERMIT</h6>
 				<div class="card shadow-sm">
 					<div class="card-body">
 						<div class="d-flex flex-row align-items-center" style="height:38px;">
@@ -194,7 +200,7 @@
 		@if (Model.PermitStatus == PermitPro.Core.Enums.PermitStatusEnum.Draft || Model.PermitStatus == PermitPro.Core.Enums.PermitStatusEnum.Closed)
 		{
 			<div class="mt-5">
-				<button class="btn btn-sm btn-info shadow-sm btn-export" type="button">
+				<button class="btn btn-sm btn-primary shadow-sm btn-export" type="button">
 					<span class="mx-3">Export to PDF <i class="fa-duotone fa-file-pdf fa-xl ms-2"></i></span>
 				</button>
 			</div>
@@ -204,7 +210,7 @@
 		@if (Model.PermitStatus == PermitPro.Core.Enums.PermitStatusEnum.Approved)
 		{
 			<div class="mt-5">
-				<button class="btn btn-sm btn-info shadow-sm btn-export" type="button">
+				<button class="btn btn-sm btn-primary shadow-sm btn-export" type="button">
 					<span class="mx-3">Export to PDF <i class="fa-duotone fa-file-pdf fa-xl ms-2"></i></span>
 				</button>
 			</div>
@@ -251,9 +257,15 @@
 		<div>
 			@if (Model.PermitStatus == PermitPro.Core.Enums.PermitStatusEnum.Draft)
 			{
-				<button type="button" class="btn btn-sm btn-secondary btn-draft me-2"><span class="mx-2">Save as draft</span></button>
-				<button type="button" class="btn btn-sm btn-primary btn-approval me-4"><span class="mx-3">Submit for approval</span></button>
-				<button type="button" class="btn btn-sm btn-danger btn-delete" data-id="@Model.PermitId"><span class="mx-3">Delete</span></button>
+				<button type="button" class="btn btn-secondary btn-draft me-2">
+					<span class="mx-2"><i class="fa-sharp fa-light fa-floppy-disk me-2"></i>Save as draft</span>
+				</button>
+				<button type="button" class="btn btn-primary btn-approval me-4">
+					<span class="mx-3"><i class="fa-light fa-check-to-slot me-2"></i>Submit for approval</span>
+				</button>
+				<button type="button" class="btn btn-outline-danger btn-delete" data-id="@Model.PermitId">
+					<span class="mx-3"><i class="fa-sharp fa-light fa-trash-can me-2"></i>Delete</span>
+				</button>
 			}
 		</div>
 	</div>
@@ -386,8 +398,15 @@
 			var permitStartDateTime = moment(_permitInfo.general.startDateTime);
 			var permitEndDateTime = moment(_permitInfo.general.endDateTime);
 
-			$('#ddtLocation').data('kendoDropDownTree').value('@Model.Location.Id.ToString().ToLower()');
-			$('#ddtLocation').data('kendoDropDownTree').text('@Model.Location.Name');
+			//$('#ddtLocation').data('kendoDropDownTree').value('@Model.Location.Id.ToString().ToLower()');
+			//$('#ddtLocation').data('kendoDropDownTree').text('@Model.Location.Name');
+
+			const ddtLocation = $('#ddtLocation').data('kendoDropDownTree');
+			//ddtLocation.dataSource.filter({});
+			ddtLocation.value('@Model.Location.Id.ToString().ToLower()');
+			ddtLocation.trigger("change");	
+
+			//console.log($('#ddtLocation').data('kendoDropDownTree').value());
 
 			$('#tbPermitDesc').data('kendoTextArea').value(_permitInfo.general.description);
 			$('#startDateTime').data('kendoDatePicker').value(permitStartDateTime.format('DD/MM/YYYY'));
@@ -433,7 +452,7 @@
 						//li += '    <span class="avatar-title rounded-circle bg-info">A</span>';
 						//li += '  </div>';
 						li += '  <img title=" (A) Hot Work " src="/img/icons/certs/hotwork.png" style="width:24px;height:24px;" />';
-						li += '  <h4 class="ms-3 mb-0">HOT WORK</h4>';
+						li += '  <h6 class="ms-3 mb-0">HOT WORK</h6>';
 						li += '</div>';
 						li += '<div class="ms-5">';
 						li += '  <a href="#dlgFormA" class="no-loading" data-bs-toggle="modal" data-bs-target="#dlgFormA"><i class="fa-sharp fa-solid fa-pen-to-square"></i></a>';
@@ -497,7 +516,7 @@
 						// li += '    <span class="avatar-title rounded-circle bg-info">B</span>';
 						// li += '  </div>';
 						li += '  <img title=" (B) Confined Space " src="/img/icons/certs/confinedspace.png" style="width:24px;height:24px;" />';
-						li += '  <h4 class="ms-3 mb-0">CONFINED SPACE</h4>';
+						li += '  <h6 class="ms-3 mb-0">CONFINED SPACE</h6>';
 						li += '</div>';
 						li += '<div class="ms-5">';
 						li += '  <a href="#dlgFormB" class="no-loading" data-bs-toggle="modal" data-bs-target="#dlgFormB"><i class="fa-sharp fa-solid fa-pen-to-square"></i></a>';
@@ -665,7 +684,7 @@
 						// li += '    <span class="avatar-title rounded-circle bg-info">C</span>';
 						// li += '  </div>';
 						li += '  <img title=" (C) Radiation " src="/img/icons/certs/radiation.png" style="width:24px;height:24px;" />';
-						li += '  <h4 class="ms-3 mb-0">RADIATION</h4>';
+						li += '  <h6 class="ms-3 mb-0">RADIATION</h6>';
 						li += '</div>';
 						li += '<div class="ms-5">';
 						li += '  <a href="#dlgFormC" class="no-loading" data-bs-toggle="modal" data-bs-target="#dlgFormC"><i class="fa-sharp fa-solid fa-pen-to-square"></i></a>';
@@ -719,7 +738,7 @@
 						// li += '    <span class="avatar-title rounded-circle bg-info">D</span>';
 						// li += '  </div>';
 						li += '  <img title=" (D) Excavation " src="/img/icons/certs/excavation.png" style="width:24px;height:24px;" />';
-						li += '  <h4 class="ms-3 mb-0">EXCAVATION</h4>';
+						li += '  <h6 class="ms-3 mb-0">EXCAVATION</h6>';
 						li += '</div>';
 						li += '<div class="ms-5">';
 						li += '  <a href="#dlgFormD" class="no-loading" data-bs-toggle="modal" data-bs-target="#dlgFormD"><i class="fa-sharp fa-solid fa-pen-to-square"></i></a>';
@@ -763,7 +782,7 @@
 						// li += '    <span class="avatar-title rounded-circle bg-info">E</span>';
 						// li += '  </div>';
 						li += '  <img title=" (E) Isolation " src="/img/icons/certs/isolation.png" style="width:24px;height:24px;" />';
-						li += '  <h4 class="ms-3 mb-0">ISOLATION</h4>';
+						li += '  <h6 class="ms-3 mb-0">ISOLATION</h6>';
 						li += '</div>';
 						li += '<div class="ms-5">';
 						li += '  <a href="#dlgFormE" class="no-loading" data-bs-toggle="modal" data-bs-target="#dlgFormE"><i class="fa-sharp fa-solid fa-pen-to-square"></i></a>';
@@ -825,7 +844,7 @@
 						// li += '    <span class="avatar-title rounded-circle bg-info">F</span>';
 						// li += '  </div>';
 						li += '  <img title=" (F) method Statement " src="/img/icons/certs/methodstatement.png" style="width:24px;height:24px;" />';
-						li += '  <h4 class="ms-3 mb-0">METHOD STATEMENT</h4>';
+						li += '  <h6 class="ms-3 mb-0">METHOD STATEMENT</h6>';
 						li += '</div>';
 						li += '<div class="ms-5">';
 						li += '  <a href="#dlgFormF" class="no-loading" data-bs-toggle="modal" data-bs-target="#dlgFormF"><i class="fa-sharp fa-solid fa-pen-to-square"></i></a>';
@@ -844,7 +863,7 @@
 						// li += '    <span class="avatar-title rounded-circle bg-info">G</span>';
 						// li += '  </div>';
 						li += '  <img title=" (G) Lifting & Hoisting " src="/img/icons/certs/liftinghoisting.png" style="width:24px;height:24px;" />';
-						li += '  <h4 class="ms-3 mb-0">LIFTING &amp; HOISTING</h4>';
+						li += '  <h6 class="ms-3 mb-0">LIFTING &amp; HOISTING</h6>';
 						li += '</div>';
 						li += '<div class="ms-5">';
 						li += '  <a href="#dlgFormG" class="no-loading" data-bs-toggle="modal" data-bs-target="#dlgFormG"><i class="fa-sharp fa-solid fa-pen-to-square"></i></a>';
@@ -863,7 +882,7 @@
 						// li += '    <span class="avatar-title rounded-circle bg-info">H</span>';
 						// li += '  </div>';
 						li += '  <img title=" (H) Override " src="/img/icons/certs/override.png" style="width:24px;height:24px;" />';
-						li += '  <h4 class="ms-3 mb-0">OVERRIDE</h4>';
+						li += '  <h6 class="ms-3 mb-0">OVERRIDE</h6>';
 						li += '</div>';
 						li += '<div class="ms-5">';
 						li += '  <a href="#dlgFormH" class="no-loading" data-bs-toggle="modal" data-bs-target="#dlgFormH"><i class="fa-sharp fa-solid fa-pen-to-square"></i></a>';
@@ -3181,7 +3200,7 @@
 			//html += '					<span class="avatar-title rounded-circle bg-info">' + data[1] + '</span>';
 			//html += '				</div>';
 			html += '            <img title="(' + data[1] + ') ' + data[2] + '" src="/img/icons/certs/' + imgName + '.png" style="width:24px;height:24px" />';
-			html += '				<h4 class="ms-3 mb-0">' + data[2] + '</h4>';
+			html += '				<h6 class="ms-3 mb-0">' + data[2] + '</h6>';
 			html += '			</div>';
 			html += '			<div class="ms-5">';
 			html += '				<a href="#dlgForm' + data[1] + '" class="no-loading" data-bs-toggle="modal" data-bs-target="#dlgForm' + data[1] + '"><i class="fa-sharp fa-solid fa-pen-to-square"></i></a>';
@@ -3265,6 +3284,12 @@
 			$('#endDateTime').data('kendoDatePicker').max(endDate);
 
 			//$('#endDateTime').data('kendoDatePicker').min(e.sender.value());
+		};
+
+
+		const dsOnRequestEnd = (e) => {
+			var loc = $('#ddtLocation').data('kendoDropDownTree');
+			loc.value('@Model.Location.Id');
 		};
 
 

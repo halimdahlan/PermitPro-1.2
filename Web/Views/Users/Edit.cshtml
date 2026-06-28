@@ -13,31 +13,31 @@
 			@Html.AntiForgeryToken()
 			<div class="card shadow-sm">
 				<div class="card-header">
-					<h4 class="fw-bold mb-0 text-uppercase">General Info</h4>
+					<h6 class="mb-0 text-uppercase">General Info</h6>
 				</div>
 				<div class="card-body">
 					<div class="row g-3 mb-3">
 						<div class="col-6">
-							<label class="form-label small fw-semibold">First Name <span class="text-danger">*</span></label>
+							<label class="form-label">First Name <span class="text-danger">*</span></label>
 							<input asp-for="UserInfoForm.FirstName" class="form-control" placeholder="John"/>
 							<span asp-validation-for="UserInfoForm.FirstName" class="text-danger small"></span>
 						</div>
 						<div class="col-6">
-							<label class="form-label small fw-semibold">Last Name <span class="text-danger">*</span></label>
+							<label class="form-label">Last Name <span class="text-danger">*</span></label>
 							<input asp-for="UserInfoForm.LastName" class="form-control" placeholder="Doe"/>
 							<span asp-validation-for="UserInfoForm.LastName" class="text-danger small"></span>
 						</div>
 					</div>
 					<div class="row g-3 mb-3">
 						<div class="col">
-							<label class="form-label small fw-semibold">Email <span class="text-danger">*</span></label>
+							<label class="form-label">Email <span class="text-danger">*</span></label>
 							<input readonly asp-for="UserInfoForm.Email" class="form-control" placeholder="i.e. john.doe@email.com"/>
 							<span asp-validation-for="UserInfoForm.Email" class="text-danger small"></span>
 						</div>
 					</div>
 					<div class="row g-3 mb-3">
 						<div class="col-6">
-							<label class="form-label small fw-semibold">Designation</label>
+							<label class="form-label">Designation</label>
 							<input asp-for="UserInfoForm.Designation" class="form-control" />
 							<span asp-validation-for="UserInfoForm.Designation" class="text-danger small"></span>
 						</div>
@@ -91,12 +91,12 @@
 							<label class="form-check-label ms-2" for="IsActive">Is Active?</label>
 						</div>
 					</div>
-				</div>
-				<div class="card-footer text-body-secondary d-flex justify-content-between">
-					<a href="/@Model.UserInfoForm?.CompanyID/@((Model.UserInfoForm!.OriginFromContractors) ? "contractors" : "users")" role="button" class="btn btn-sm btn-outline-secondary">
-						<span class="mx-3"><i class="fa-solid fa-arrow-left me-3"></i> Cancel</span>
-					</a>
-					<button type="submit" class="btn btn-sm btn-primary"><span class="mx-3">Save Changes</span></button>
+					<div class="mt-4 text-body-secondary d-flex align-items-center justify-content-between">
+						<a href="/@Model.UserInfoForm?.CompanyID/@((Model.UserInfoForm!.OriginFromContractors) ? "contractors" : "users")" role="button" class="btn btn-sm btn-outline-secondary">
+							<span class="mx-3"><i class="fa-solid fa-arrow-left me-2"></i>Cancel</span>
+						</a>
+						<button type="submit" class="btn btn-sm btn-primary"><span class="mx-3">Save Changes</span></button>
+					</div>
 				</div>
 			</div>
 			<input id="hidLocations" type="hidden" asp-for="UserInfoForm.Locations" />
@@ -112,27 +112,27 @@
 		<form method="post" action="/@Model.UserInfoForm?.CompanyID/password/@Model.UserInfoForm?.Id">
 			<div class="card shadow-sm">
 				<div class="card-header">
-					<h4 class="mb-0 fw-bold text-uppercase">Set Password</h4>
+					<h6 class="mb-0 text-uppercase">Set Password</h6>
 				</div>
 				<div class="card-body">
 					<div class="row g-3 mb-3">
 						<div class="col">
-							<label class="form-label small fw-semibold">New password <span class="text-danger">*</span></label>
+							<label class="form-label">New password <span class="text-danger">*</span></label>
 							<input type="password" asp-for="UserPasswordForm.NewPassword" class="form-control"/>
 							<span asp-validation-for="UserPasswordForm.NewPassword" class="text-danger small"></span>
 						</div>
 					</div>
 					<div class="row g-3">
 						<div class="col">
-							<label class="form-label small fw-semibold">Confirm password <span class="text-danger">*</span></label>
+							<label class="form-label">Confirm password <span class="text-danger">*</span></label>
 							<input type="password" asp-for="UserPasswordForm.ConfirmPassword" class="form-control"/>
 							<span asp-validation-for="UserPasswordForm.ConfirmPassword" class="text-danger small"></span>
 						</div>
 					</div>
-				</div>
-					<div class="card-footer text-body-secondary d-flex justify-content-end">
+					<div class="mt-4 text-body-secondary d-flex justify-content-end">
 						<button type="submit" class="btn btn-sm btn-primary"><span class="mx-3">Save Password</span></button>
 					</div>
+				</div>
 			</div>
 			<input type="hidden" asp-for="UserPasswordForm.IsContractors" />
 		</form>

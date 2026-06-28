@@ -71,7 +71,7 @@
 		{
 			c.Bound(f => f.Name)
 				.ClientTemplate(
-					$"<a href=\"/{Model.CompanyId}/users/edit/#=Id#\" class=\"text-info\">#=Name#</a>"
+					$"<a href=\"/{Model.CompanyId}/users/edit/#=Id#\">#=Name#</a>"
 				)
 				.Width(250);
 
@@ -252,7 +252,7 @@
 	<div class="modal-dialog modal-dialog-centered">
 		<div class="modal-content">
 			<div class="modal-header">
-				<h2 class="modal-title" id="dlgConfirmLabel" style="font-weight:600;">Confirm delete</h2>
+				<h6 class="modal-title w-100" id="dlgConfirmLabel" style="font-weight:600;">Confirm delete</h6>
 				<a href="#" class="no-loading text-dark" data-bs-dismiss="modal" aria-label="Close"><i class="fa-sharp fa-solid fa-xmark fa-xl"></i></a>
 			</div>
 			<div class="modal-body">
@@ -272,7 +272,7 @@
 	<div class="modal-dialog modal-dialog-centered">
 		<div class="modal-content">
 			<div class="modal-header bg-warning">
-				<h2 class="modal-title" id="dlgLimitReachedLabel" style="font-weight:600;">User Creation Limit</h2>
+				<h6 class="modal-title w-100" id="dlgLimitReachedLabel" style="font-weight:600;">User Creation Limit</h6>
 				<a href="#" class="no-loading text-dark" data-bs-dismiss="modal" aria-label="Close"><i class="fa-sharp fa-solid fa-xmark fa-xl"></i></a>
 			</div>
 			<div class="modal-body">

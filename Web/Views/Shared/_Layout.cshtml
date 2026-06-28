@@ -16,14 +16,11 @@
 	<!-- FontAwesome -->
 	<link href="~/lib/fontawesome/css/all.min.css" rel="stylesheet">
 
-	<!-- Libs CSS -->
-	<link rel="stylesheet" href="~/themes/dashkit/css/libs.bundle.css" />
-
-	<!-- Theme CSS -->
-	<link rel="stylesheet" href="~/themes/dashkit/css/theme.bundle.css" />
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
 
 	<!-- jQuery -->
-	<script nonce="3xecut3" src="~/lib/jquery/jquery.min.js"></script>
+	<script nonce="3xecut3" src="~/lib/jquery/jquery.js"></script>
 
 	<!-- Numeral -->
 	<script nonce="3xecut3" src="~/lib/numeral.js/numeral.min.js"></script>
@@ -43,10 +40,10 @@
 	<script nonce="3xecut3" src="~/lib/kendo-ui/js/kendo.aspnetmvc.min.js"></script>
 
 	<!-- Web Awesome -->
-	<!--
+	<!---->
 	<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.8.0/styles/webawesome.css" />
 	<script type="module" src="https://ka-f.webawesome.com/webawesome@3.8.0/webawesome.loader.js"></script>
-	-->
+	
 
 	<!-- Bootstrap -->
 	<!--
@@ -75,7 +72,7 @@
 		</div>
 	</div>
 	<!-- NAVIGATION -->
-	<nav class="navbar navbar-vertical fixed-start navbar-expand-md navbar-light" id="sidebar">
+	<nav class="navbar navbar-expand-md navbar-light" id="sidebar">
 		<div class="container-fluid">
 
 			<!-- Toggler -->
@@ -85,7 +82,7 @@
 
 			<!-- Brand -->
 			<div class="navbar-brand">
-				<div>
+				<div class="d-flex flex-column align-items-center">
 					<div class="app-logo d-none d-md-block">
 						@if (ViewData["CompanyLogoFileName"] != null)
 						{
@@ -127,11 +124,9 @@
 
 				<!-- Form -->
 				<form class="mt-4 mb-3 d-md-none">
-					<div class="input-group input-group-rounded input-group-merge input-group-reverse">
+					<div class="input-group">
+						<span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
 						<input class="form-control" type="search" placeholder="Search" aria-label="Search">
-						<div class="input-group-text">
-							<span class="fe fe-search"></span>
-						</div>
 					</div>
 				</form>
 
@@ -176,12 +171,12 @@
 		<div class="modal-dialog modal-dialog-centered">
 			<div class="modal-content">
 				<div class="modal-header bg-warning">
-					<h2 class="modal-title" id="dlgConfirmDeleteItemLabel" style="font-weight:600;">Confirm Delete</h2>
+					<h6 class="modal-title w-100" id="dlgConfirmDeleteItemLabel" style="font-weight:600;">Confirm Delete</h6>
 					<button type="button" class="btn btn-sm btn-clear" data-bs-dismiss="modal" aria-label="Close">
-						<i class="fa-regular fa-close fa-2x"></i>
+						<i class="fa-regular fa-close fa-xl"></i>
 					</button>
 				</div>
-				<div class="modal-body mb-0 fs-4">
+				<div class="modal-body mb-0">
 					You are about to delete this item. Are you sure?
 				</div>
 				<div class="modal-footer">
@@ -197,12 +192,12 @@
 		<div class="modal-dialog modal-dialog-centered">
 			<div class="modal-content">
 				<div class="modal-header bg-warning">
-					<h2 class="modal-title" id="dlgDeleteWarnWorkflowLabel" style="font-weight:600;">Delete Warning</h2>
+					<h6 class="modal-title w-100" id="dlgDeleteWarnWorkflowLabel" style="font-weight:600;">Delete Warning</h6>
 					<button type="button" class="btn btn-sm btn-clear" data-bs-dismiss="modal" aria-label="Close">
-						<i class="fa-regular fa-close fa-2x"></i>
+						<i class="fa-regular fa-close fa-xl"></i>
 					</button>
 				</div>
-				<div class="modal-body mb-0 fs-4">
+				<div class="modal-body mb-0">
 					WARNING! There are one or more permits attached to this workflow. Consider deactivating the workflow instead of deleting it.
 				</div>
 				<div class="modal-footer">
@@ -219,12 +214,12 @@
 		<div class="modal-dialog modal-dialog-centered">
 			<div class="modal-content">
 				<div class="modal-header bg-warning">
-					<h2 class="modal-title" id="dlgDeleteWarnUserLabel" style="font-weight:600;">Delete Warning</h2>
+					<h6 class="modal-title w-100" id="dlgDeleteWarnUserLabel" style="font-weight:600;">Delete Warning</h6>
 					<button type="button" class="btn btn-sm btn-clear" data-bs-dismiss="modal" aria-label="Close">
-						<i class="fa-regular fa-close fa-2x"></i>
+						<i class="fa-regular fa-close fa-xl"></i>
 					</button>
 				</div>
-				<div class="modal-body mb-0 fs-4">
+				<div class="modal-body mb-0">
 					WARNING! There are one or more permits attached to this user. Consider deactivating the user instead of deleting it.
 				</div>
 				<div class="modal-footer">
@@ -241,12 +236,12 @@
 		<div class="modal-dialog modal-dialog-centered">
 			<div class="modal-content">
 				<div class="modal-header bg-warning">
-					<h2 class="modal-title" id="dlgDeleteWarnLocLabel" style="font-weight:600;">Delete Warning</h2>
+					<h6 class="modal-title w-100" id="dlgDeleteWarnLocLabel" style="font-weight:600;">Delete Warning</h6>
 					<button type="button" class="btn btn-sm btn-clear" data-bs-dismiss="modal" aria-label="Close">
-						<i class="fa-regular fa-close fa-2x"></i>
+						<i class="fa-regular fa-close fa-xl"></i>
 					</button>
 				</div>
-				<div class="modal-body mb-0 fs-3">
+				<div class="modal-body mb-0">
 					WARNING! There are one or more permits and/or users attached to this location. Consider deactivating the location instead of deleting it.
 				</div>
 				<div class="modal-footer">
@@ -263,12 +258,12 @@
 		<div class="modal-dialog modal-dialog-centered">
 			<div class="modal-content">
 				<div class="modal-header bg-warning">
-					<h2 class="modal-title" id="dlgDeleteWarnRoleLabel" style="font-weight:600;">Delete Warning</h2>
+					<h6 class="modal-title w-100" id="dlgDeleteWarnRoleLabel" style="font-weight:600;">Delete Warning</h6>
 					<button type="button" class="btn btn-sm btn-clear" data-bs-dismiss="modal" aria-label="Close">
-						<i class="fa-regular fa-close fa-2x"></i>
+						<i class="fa-regular fa-close fa-xl"></i>
 					</button>
 				</div>
-				<div class="modal-body mb-0 fs-3">
+				<div class="modal-body mb-0">
 					WARNING! There are one or more users attached to this role.
 				</div>
 				<div class="modal-footer">
@@ -285,12 +280,8 @@
 
 	@await RenderSectionAsync("Scripts", required: false)
 
-	<!-- JAVASCRIPT -->
-	<!-- Vendor JS -->
-	<script nonce="3xecut3" src="~/themes/dashkit/js/vendor.bundle.js"></script>
-
-	<!-- Theme JS -->
-	<script nonce="3xecut3" src="~/themes/dashkit/js/theme.bundle.js"></script>
+	<!-- Bootstrap JS -->
+	<script nonce="3xecut3" src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
 
 	@if (User.Identity?.IsAuthenticated == true)
 	{

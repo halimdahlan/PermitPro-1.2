@@ -24,21 +24,21 @@
 						</li>
 					</ul>
 					<div class="tab-content" id="myTabContent">
-						<div class="tab-pane fade show active py-3" id="general-tab-pane" role="tabpanel" aria-labelledby="general-tab" tabindex="0">
-							<div class="d-flex flex-column form-edit-workflow">
+						<div class="tab-pane fade show active" id="general-tab-pane" role="tabpanel" aria-labelledby="general-tab" tabindex="0">
+							<div class="d-flex flex-column form-edit-workflow mt-3">
 								<form id="frm" class="needs-validation" novalidate>
-									<div class="form-group mt-3">
+									<div class="form-group mb-3">
 										<label class="form-label" for="workflowName">Name <span class="text-danger">*</span></label>
 										<input type="text" id="workflowName" class="form-control" value="@Model.WorkflowName" required />
 										<div class="invalid-feedback ms-2">Enter the workflow name</div>
 									</div>
-									<div class="form-group">
+									<div class="form-group mb-3">
 										<label class="form-label" for="workflowDescription">Description</label>
 										<textarea id="workflowDescription" class="form-control">@Model.WorkflowDescription</textarea>
 									</div>
 									<div>
 										<div class="form-group mb-3 d-flex flex-row align-items-center">
-											<label class="form-label me-3" for="workflowActive">Is active?</label>
+											<label class="form-label me-3 mb-0" for="workflowActive">Is active?</label>
 											@(Html.Kendo()
 												.Switch()
 												.Name("workflowActive")
@@ -52,7 +52,7 @@
 									</div>
 									<div>
 										<div class="form-group mb-3 d-flex flex-row align-items-center">
-											<label class="form-label me-3" for="workflowCertificate">For PTW with certificate?</label>
+											<label class="form-label me-3 mb-0" for="workflowCertificate">For PTW with certificate?</label>
 											@(Html.Kendo()
 												.Switch()
 												.Name("workflowCertificate")
@@ -74,7 +74,7 @@
 								</form>
 							</div>
 						</div>
-						<div class="tab-pane fade py-3" id="steps-tab-pane" role="tabpanel" aria-labelledby="steps-tab" tabindex="0">
+						<div class="tab-pane fade" id="steps-tab-pane" role="tabpanel" aria-labelledby="steps-tab" tabindex="0">
 							<div class="form-edit-workflow d-flex flex-column">
 								<div class="flex-grow-1">
 									<table id="tbl" class="table table-striped display pt-3 mb-3" style="width: 100% !important;">
@@ -104,7 +104,7 @@
 			<form id="frmEditStep" class="needs-validation" novalidate>
 				<div class="card shadow-sm form-workflow-step" style="display: none;">
 					<div class="card-header">
-						<h3 class="mb-0">Edit workflow step</h3>
+						<h6 class="mb-0">Edit workflow step</h6>
 					</div>
 					<div class="card-body">
 						<ul class="nav nav-tabs" id="tabEditStep" role="tablist">
@@ -116,7 +116,7 @@
 							</li>
 						</ul>
 						<div class="tab-content" id="editStepTabContent">
-							<div class="tab-pane fade show active py-3" id="general-editStep-tab-pane" role="tabpanel" aria-labelledby="general-editStep-tab" tabindex="0">
+							<div class="tab-pane fade show active pt-3" id="general-editStep-tab-pane" role="tabpanel" aria-labelledby="general-editStep-tab" tabindex="0">
 								<div class="form-group mb-3">
 									<label class="form-label" for="editStepName">Name <span class="text-danger">*</span></label>
 									<input type="text" id="editStepName" class="form-control" required />
@@ -155,7 +155,7 @@
 									<button type="button" class="btn btn-sm btn-primary btn-save-edit-step"><span class="mx-3">Save Changes</span></button>
 								</div>
 							</div>
-							<div class="tab-pane fade py-3" id="users-editStep-tab-pane" role="tabpanel" aria-labelledby="users-editStep-tab" tabindex="0">
+							<div class="tab-pane fade pt-3" id="users-editStep-tab-pane" role="tabpanel" aria-labelledby="users-editStep-tab" tabindex="0">
 								<table id="tblApprovers" class="table table-striped display" style="width: 100% !important;">
 									<thead>
 										<tr>
@@ -178,7 +178,7 @@
 	</div>
 </div>
 
-<div class="d-flex flex-row align-items-center justify-content-between">
+<div class="d-flex flex-row align-items-center justify-content-between mt-3">
 	<a asp-controller="workflow" asp-action="index">
 		<i class="fa-sharp fa-solid fa-chevrons-left me-2"></i> Back
 	</a>
@@ -189,17 +189,17 @@
 	<div class="modal-dialog modal-dialog-centered">
 		<div class="modal-content">
 			<form id="frmStep" class="needs-validation" novalidate>
-				<div class="modal-header">
-					<h1 class="modal-title" id="dlgLabel">New workflow step</h1>
-					<a href="#" class="no-loading text-dark" data-bs-dismiss="modal" aria-label="Close"><i class="fa-sharp fa-solid fa-xmark fa-xl"></i></a>
+				<div class="modal-header bg-dark">
+					<h6 class="modal-title w-100 text-white" id="dlgLabel">New workflow step</h6>
+					<a href="#" class="no-loading text-white" data-bs-dismiss="modal" aria-label="Close"><i class="fa-sharp fa-solid fa-xmark fa-xl"></i></a>
 				</div>
 				<div class="modal-body">
-					<div class="form-group">
-						<label class="form-label" for="stepName">Step name</label>
+					<div class="form-group mb-3">
+						<label class="form-label" for="stepName">Step name <span class="text-danger">*</span></label>
 						<input type="text" id="stepName" class="form-control" required />
 						<div class="invalid-feedback ms-2">Enter the workflow step name</div>
 					</div>
-					<div class="form-group">
+					<div class="form-group mb-3">
 						<label class="form-label">Description</label>
 						<textarea id="stepDescription" class="form-control"></textarea>
 					</div>
@@ -243,9 +243,9 @@
 <div class="modal fade" id="dlgUsers" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="dlgUsersLabel" aria-hidden="true">
 	<div class="modal-dialog modal-dialog-centered">
 		<div class="modal-content">
-			<div class="modal-header">
-				<h3 class="modal-title mb-0" id="dlgUsersLabel">Select user</h3>
-				<a href="#" class="no-loading text-dark" data-bs-dismiss="modal" aria-label="Close"><i class="fa-sharp fa-solid fa-xmark fa-xl"></i></a>
+			<div class="modal-header bg-dark">
+				<h6 class="modal-title mb-0 w-100 text-white" id="dlgUsersLabel">Select user</h6>
+				<a href="#" class="no-loading text-white" data-bs-dismiss="modal" aria-label="Close"><i class="fa-sharp fa-solid fa-xmark fa-xl"></i></a>
 			</div>
 			<div class="modal-body">
 				<table id="tblUsers" class="table table-striped display" style="width: 100% !important;">

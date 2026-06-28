@@ -95,7 +95,7 @@ public static class GeneralHelper
 		if (status == "SUSPENDED" || status == "KIV") statusBg = "warning";
 		if (status == "CLOSED") statusBg = "info";
 
-		return $"<span class=\"badge fs-5 bg-{statusBg}\">{status}</span>";
+		return $"<span class=\"badge bg-{statusBg}\">{status}</span>";
 	}
 
 

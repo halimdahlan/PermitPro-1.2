@@ -15,7 +15,7 @@
 				<div class="my-3">
 					<i class="fa-regular fa-triangle-exclamation" style="font-size: 2.5rem;"></i>
 				</div>
-				<div class="text-center p-3 fs-3" style="font-family: 'Poppins';">
+				<div class="text-center p-3 fs-6">
 					You have reached the user creation limit of <strong>@Model.MaxNumOfUsers</strong> users.<br />
 					If you would like to increase this limit, please contact the system administrator.
 				</div>
@@ -37,26 +37,26 @@ else
 					<div class="card-body">
 						<div class="row g-3 mb-3">
 							<div class="col-6">
-								<label class="form-label small fw-semibold">First Name <span class="text-danger">*</span></label>
+								<label class="form-label">First Name <span class="text-danger">*</span></label>
 								<input asp-for="FirstName" class="form-control" placeholder="John"/>
 								<span asp-validation-for="FirstName" class="text-danger small"></span>
 							</div>
 							<div class="col-6">
-								<label class="form-label small fw-semibold">Last Name <span class="text-danger">*</span></label>
+								<label class="form-label">Last Name <span class="text-danger">*</span></label>
 								<input asp-for="LastName" class="form-control" placeholder="Doe"/>
 								<span asp-validation-for="LastName" class="text-danger small"></span>
 							</div>
 						</div>
 						<div class="row g-3 mb-3">
 							<div class="col">
-								<label class="form-label small fw-semibold">Email <span class="text-danger">*</span></label>
+								<label class="form-label">Email <span class="text-danger">*</span></label>
 								<input asp-for="Email" class="form-control" placeholder="i.e. john.doe@email.com"/>
 								<span asp-validation-for="Email" class="text-danger small"></span>
 							</div>
 						</div>
 						<div class="row g-3 mb-3">
 							<div class="col-6">
-								<label class="form-label small fw-semibold">Designation</label>
+								<label class="form-label">Designation</label>
 								<input asp-for="Designation" class="form-control" />
 								<span asp-validation-for="Designation" class="text-danger small"></span>
 							</div>
@@ -78,7 +78,9 @@ else
 											.DataValueField("id")
 											.DataTextField("name")
 											.Placeholder("(select locations)")
-											.Events(events => events.Change("onChangeSites"))
+											.Events(events => events
+												.Change("onChangeSites")
+											)
 											.FillMode(FillMode.Outline)
 											.Rounded(Rounded.Large)
 											.CheckAll(false)
@@ -89,7 +91,8 @@ else
 											)
 											.DataSource(ds => ds
 												.Read(read => read
-													.Url($"/api/data/{Model.CompanyID}/sites/hierarchical").Type(HttpVerbs.Get)
+													.Url($"/api/data/{Model.CompanyID}/sites/hierarchical")
+													.Type(HttpVerbs.Get)
 												)
 											)
 									)
@@ -101,29 +104,25 @@ else
 								<label class="form-check-label ms-2" for="IsActive">Is Active?</label>
 							</div>
 						</div>
-						<div class="row g-3 my-3">
-							<div class="col">
-								<h4 class="mb-0 fw-bold">Set Password</h4>
-							</div>
-						</div>
 						<div class="row g-3">
+							<h6 class="mb-0">Set Password</h6>
 							<div class="col-6">
-								<label class="form-label small fw-semibold">New password <span class="text-danger">*</span></label>
+								<label class="form-label">New password <span class="text-danger">*</span></label>
 								<input type="password" asp-for="NewPassword" class="form-control"/>
 								<span asp-validation-for="NewPassword" class="text-danger small"></span>
 							</div>
 							<div class="col-6">
-								<label class="form-label small fw-semibold">Confirm password <span class="text-danger">*</span></label>
+								<label class="form-label">Confirm password <span class="text-danger">*</span></label>
 								<input type="password" asp-for="ConfirmPassword" class="form-control"/>
 								<span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
 							</div>
 						</div>
-					</div>
-					<div class="card-footer text-body-secondary d-flex justify-content-between">
-						<a href="/@Model.CompanyID/@((Model.OriginFromContractors) ? "contractors" : "users")" role="button" class="btn btn-sm btn-outline-secondary">
-							<span class="mx-3"><i class="fa-solid fa-arrow-left me-3"></i> Cancel</span>
-						</a>
-						<button type="submit" class="btn btn-sm btn-primary"><span class="mx-3">Save Changes</span></button>
+						<div class="mt-5 text-body-secondary d-flex align-items-center justify-content-between">
+							<a href="/@Model.CompanyID/@((Model.OriginFromContractors) ? "contractors" : "users")" role="button" class="btn btn-sm btn-outline-secondary">
+								<span class="mx-3"><i class="fa-solid fa-arrow-left me-2"></i>Cancel</span>
+							</a>
+							<button type="submit" class="btn btn-sm btn-primary"><span class="mx-3">Save Changes</span></button>
+						</div>
 					</div>
 				</div>
 				<input id="hidLocations" type="hidden" asp-for="Locations" />

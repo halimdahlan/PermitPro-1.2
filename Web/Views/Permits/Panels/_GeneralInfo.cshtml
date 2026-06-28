@@ -3,8 +3,8 @@
 @model EditPermitViewModel
 
 <h2 class="accordion-header">
-	<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-		<h3 class="mb-0">General Information</h3>
+	<button class="accordion-button fw-semibold text-uppercase" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+		General Information
 	</button>
 </h2>
 <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionPermit">
@@ -20,7 +20,9 @@
 				.DataValueField("id")
 				.DataTextField("name")
 				.Placeholder("(select location)")
-				.Events(events => events.Change("onChangeSites"))
+				.Events(events => events
+					.Change("onChangeSites")
+				)
 				.FillMode(FillMode.Outline)
 				.Rounded(Rounded.Large)
 				.CheckAll(false)
@@ -29,6 +31,7 @@
 					.Read(read => read
 						.Url($"/api/data/{Model.CompanyId}/sites/hierarchical").Type(HttpVerbs.Get)
 					)
+					.Events(ev => ev.RequestEnd("dsOnRequestEnd"))
 				)
 			)
 		</div>
