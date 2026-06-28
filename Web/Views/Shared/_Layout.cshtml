@@ -48,13 +48,6 @@
 	<script type="module" src="https://ka-f.webawesome.com/webawesome@3.8.0/webawesome.loader.js"></script>
 	-->
 
-	<!-- JAVASCRIPT -->
-	<!-- Vendor JS -->
-	<script nonce="3xecut3" src="~/themes/dashkit/js/vendor.bundle.js"></script>
-
-	<!-- Theme JS -->
-	<script nonce="3xecut3" src="~/themes/dashkit/js/theme.bundle.js"></script>
-
 	<!-- Bootstrap -->
 	<!--
 	<script src="https://cdn.jsdelivr.net/npm/@@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
@@ -292,6 +285,13 @@
 
 	@await RenderSectionAsync("Scripts", required: false)
 
+	<!-- JAVASCRIPT -->
+	<!-- Vendor JS -->
+	<script nonce="3xecut3" src="~/themes/dashkit/js/vendor.bundle.js"></script>
+
+	<!-- Theme JS -->
+	<script nonce="3xecut3" src="~/themes/dashkit/js/theme.bundle.js"></script>
+
 	@if (User.Identity?.IsAuthenticated == true)
 	{
 		var _companyIdForBadge = ViewContext.RouteData.Values["company"] as string;
@@ -340,7 +340,7 @@
 		let isMenuOpen = false;
 
 		$(document).ready(() => {
-			$('#userDropdown').click((e) => {
+			$('#userDropdownX').click((e) => {
 				e.preventDefault();
 
 				if (isMenuOpen) {

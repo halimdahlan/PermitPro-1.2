@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -13,6 +14,7 @@ using PermitPro.Core.Interceptors;
 using PermitPro.Core.Interfaces;
 
 using System.Text;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 var appConfig = builder.Configuration;
@@ -136,6 +138,22 @@ builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
 builder.Services.AddSingleton(ptwSettings!);
 builder.Services.AddSingleton(jwtSettings!);
 
+// Rate-limit auth endpoints: 10 requests per 5-minute window per IP.
+// Identity's per-account lockout (3 attempts) handles brute-force per user;
+// this policy handles distributed/credential-stuffing attacks at the IP level.
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddFixedWindowLimiter("auth", opt =>
+    {
+        opt.PermitLimit = 10;
+        opt.Window = TimeSpan.FromMinutes(5);
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 0;
+    });
+});
+
 // Add PermitPro custom services
 builder.Services.AddPermitProServices();
 builder.Services.AddScoped<INotificationPushService, NotificationPushService>();
@@ -158,6 +176,8 @@ else
 
 // Intercept non-success status codes (404, 403, etc.) and render the error view.
 app.UseStatusCodePagesWithReExecute("/error/{0}");
+
+app.UseRateLimiter();
 
 app.Use(async (context, next) =>
 {

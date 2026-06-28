@@ -44,7 +44,7 @@
 
 	<!-- User dropdown -->
 	<div class="dropdown">
-		<a href="#" id="userDropdown" class="topbar-user-pill no-loading">
+		<a href="#" id="userDropdown" class="topbar-user-pill no-loading dropdown-toggle" bs-data-toggle="dropdown" aria-expanded="false" role="button">
 			@if (!string.IsNullOrEmpty(profileImage))
 			{
 				<img src="~/img/profiles/@profileImage" id="topbarUserAvatar" class="topbar-user-avatar" style="object-fit:cover;" alt="@user?.FirstName" />
@@ -57,9 +57,8 @@
 				<div class="topbar-user-name">@user?.FirstName @user?.LastName</div>
 				<div class="topbar-user-role">@displayRole</div>
 			</div>
-			<i class="fa-solid fa-fw ms-auto text-black-50 text-end @arrowClass"></i>
 		</a>
-		<ul id="ddmUser" class="dropdown-menu dropdown-menu-end shadow">
+		<ul class="dropdown-menu dropdown-menu-end shadow">
 			<li class="px-3 pt-2 pb-1">
 				<div style="font-size:.8rem;font-weight:600;color:#1a2b4a;">
 					@user?.FirstName @user?.LastName

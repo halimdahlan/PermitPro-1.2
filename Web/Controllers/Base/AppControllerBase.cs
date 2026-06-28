@@ -19,6 +19,10 @@ namespace PermitPro.App.Controllers.Base
 		private readonly ISystemConfigurationService _systemConfigService;
 		private Guid _companyId;
 
+		// Set in constructor when the company route segment is present but unparseable.
+		// Acted on in OnActionExecutionAsync so we can await and properly short-circuit.
+		private bool _shouldSignOut;
+
 		public Guid CompanyID
 		{
 			get { return _companyId; }
@@ -36,36 +40,37 @@ namespace PermitPro.App.Controllers.Base
 			_signInManager = signInManager;
 			_systemConfigService = systemConfigurationService;
 
-			//Guid company = Guid.Empty;
 			_companyId = Guid.Empty;
 
-			var controllerName = (string)_httpContextAccessor.HttpContext.GetRouteValue("controller");
 			var routeValue = _httpContextAccessor!.HttpContext!.GetRouteValue("company");
 
 			if (routeValue != null)
 			{
-				//company = Guid.Parse(routeValue.ToString());
 				_ = Guid.TryParse(routeValue.ToString(), out _companyId);
 
 				if (_companyId == Guid.Empty)
-				{
-					_signInManager.SignOutAsync().Wait();
-					_httpContextAccessor!.HttpContext!.Response.Redirect("/account/login");
-				}
-				else
-				{
-					//if (controllerName.ToLower() != "landing" && !_systemConfigService.HasAccess(controllerName))
-					//{
-					//	_httpContextAccessor!.HttpContext!.Response.Redirect($"/{_companyId}/restricted/accessdenied");
-					//}
-				}
+					_shouldSignOut = true;
 			}
 		}
 
 		private static readonly TimeSpan CompanyMetaCacheDuration = TimeSpan.FromMinutes(15);
 
+		// Async entry point: handles sign-out/redirect before action executes.
+		// base.OnActionExecutionAsync calls OnActionExecuting (ViewData setup) then next().
+		public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+		{
+			if (_shouldSignOut)
+			{
+				await _signInManager.SignOutAsync();
+				context.Result = new RedirectResult("/account/login");
+				return;
+			}
+
+			await base.OnActionExecutionAsync(context, next);
+		}
+
 		// Makes CompanyID and company branding available in every view.
-		// Called by MVC after construction, so ViewData is writable here.
+		// Called by base.OnActionExecutionAsync before invoking next().
 		public override void OnActionExecuting(ActionExecutingContext context)
 		{
 			ViewData["CompanyId"] = CompanyID;

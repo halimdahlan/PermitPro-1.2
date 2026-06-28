@@ -5,6 +5,7 @@ using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -138,6 +139,7 @@ public class AccountController : Controller
 
 	[HttpPost("account/login")]
 	[ValidateAntiForgeryToken]
+	[EnableRateLimiting("auth")]
 	public async Task<IActionResult> Login(SignInViewModel model)
 	{
 		var companies = _context.Companies
@@ -234,6 +236,7 @@ public class AccountController : Controller
 
 	[HttpPost("account/forgot")]
 	[ValidateAntiForgeryToken]
+	[EnableRateLimiting("auth")]
 	public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
 	{
 		if (!ModelState.IsValid)
@@ -325,6 +328,7 @@ public class AccountController : Controller
 
 	[HttpPost("account/reset-password")]
 	[ValidateAntiForgeryToken]
+	[EnableRateLimiting("auth")]
 	public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
 	{
 		if (!ModelState.IsValid)
@@ -746,6 +750,7 @@ public class AccountController : Controller
 	/// </summary>
 	[HttpPost("api/auth/token")]
 	[AllowAnonymous]
+	[EnableRateLimiting("auth")]
 	public async Task<IActionResult> GetToken([FromBody] TokenRequest request)
 	{
 		var user = _context.Users

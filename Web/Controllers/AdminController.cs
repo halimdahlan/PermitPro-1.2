@@ -3,6 +3,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 using Microsoft.Extensions.Caching.Memory;
@@ -63,6 +64,7 @@ public class AdminController : Controller
 
     [HttpPost("/admin/login")]
     [ValidateAntiForgeryToken]
+    [EnableRateLimiting("auth")]
     public async Task<IActionResult> Login(AdminLoginViewModel model)
     {
         if (!ModelState.IsValid)
