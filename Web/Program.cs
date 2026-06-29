@@ -116,7 +116,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 		{
 			context.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddDays(30);
 		}
-		
+
 		return Task.CompletedTask;
 	};
 });
@@ -145,20 +145,20 @@ builder.Services.AddSingleton(jwtSettings!);
 // this policy handles distributed/credential-stuffing attacks at the IP level.
 builder.Services.AddRateLimiter(options =>
 {
-    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+	options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-    options.AddFixedWindowLimiter("auth", opt =>
-    {
-        opt.PermitLimit = 10;
-        opt.Window = TimeSpan.FromMinutes(5);
-        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        opt.QueueLimit = 0;
-    });
+	options.AddFixedWindowLimiter("auth", opt =>
+	{
+		opt.PermitLimit = 10;
+		opt.Window = TimeSpan.FromMinutes(5);
+		opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+		opt.QueueLimit = 0;
+	});
 });
 
 // Health checks
 builder.Services.AddHealthChecks()
-    .AddSqlServer(connectionString!, name: "sqlserver", timeout: TimeSpan.FromSeconds(5));
+	.AddSqlServer(connectionString!, name: "sqlserver", timeout: TimeSpan.FromSeconds(5));
 
 // Response caching for read-only endpoints
 builder.Services.AddResponseCaching();
