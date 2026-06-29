@@ -26,16 +26,19 @@ public class DashboardController : AppControllerBase
 	private readonly ApplicationDbContext _dbContext;
 	private readonly JsonSerializerOptions _jsonOptions;
 	private readonly ICurrentUserService _currentUserService;
+	private readonly ILogger<DashboardController> _logger;
 
 	public DashboardController(
 		ApplicationDbContext dbContext
 		, IHttpContextAccessor httpContextAccessor
 		, SignInManager<UserInfo> signInManager
 		, ICurrentUserService currentUserService
-		, ISystemConfigurationService systemConfigurationService) : base(dbContext, httpContextAccessor, signInManager, systemConfigurationService)
+		, ISystemConfigurationService systemConfigurationService
+		, ILogger<DashboardController> logger) : base(dbContext, httpContextAccessor, signInManager, systemConfigurationService)
 	{
 		_dbContext = dbContext;
 		_currentUserService = currentUserService;
+		_logger = logger;
 
 		_jsonOptions = new JsonSerializerOptions
 		{
@@ -46,14 +49,14 @@ public class DashboardController : AppControllerBase
 
 	#region "Views"
 
-	public IActionResult Index(Guid company)
+	public async Task<IActionResult> Index(Guid company, CancellationToken cancellationToken)
 	{
-		var permits = _dbContext.Permits
+		var permits = await _dbContext.Permits
 			.AsNoTracking()
 			.Include(e => e.Company)
 			.Include(e => e.Site)
 			.Where(e => e.Company.Id == company && e.PermitWorkflowStep != null && e.Site != null)
-			.ToList();
+			.ToListAsync(cancellationToken);
 
 		var allCount = permits.Count;
 
@@ -101,10 +104,11 @@ public class DashboardController : AppControllerBase
 			.ToList();
 
 		var creatorIds = recentPermitsRaw.Select(e => e.CreatedBy.ToString()).ToHashSet();
-		var userNames = _dbContext.Users
+		var userNames = await _dbContext.Users
+			.AsNoTracking()
 			.IgnoreQueryFilters()
 			.Where(u => creatorIds.Contains(u.Id))
-			.ToDictionary(u => u.Id, u => $"{u.FirstName} {u.LastName}");
+			.ToDictionaryAsync(u => u.Id, u => $"{u.FirstName} {u.LastName}", cancellationToken);
 
 		var recentPermits = recentPermitsRaw
 			.Select(e => new DashboardRecentPermit
@@ -115,19 +119,20 @@ public class DashboardController : AppControllerBase
 				SiteName = e.Site?.Name ?? "—",
 				RequestedByName = userNames.TryGetValue(e.CreatedBy.ToString(), out var name) ? name : "—",
 				Status = e.PermitStatus,
-				CreatedWhen = GeneralHelper.GetDateInTimeZone(e.CreatedWhen)
+				CreatedWhen = GeneralHelper.GetDateInTimeZone(e.CreatedWhen),
+				CompanyId = company
 			})
 			.ToList();
 
 		// Recent activity from AuditLog (last 5 for this company)
-		var recentActivity = _dbContext.AuditLogs
+		var recentActivity = (await _dbContext.AuditLogs
 			.AsNoTracking()
 			.Include(e => e.AuditLogUser)
 			.ThenInclude(u => u.UserCompany)
 			.Where(e => e.LogType == LogTypeEnum.Information && e.AuditLogUser != null && e.AuditLogUser.UserCompany != null && e.AuditLogUser.UserCompany.Id == company)
 			.OrderByDescending(e => e.CreatedWhen)
 			.Take(3)
-			.ToList()
+			.ToListAsync(cancellationToken))
 			.Select(e => new DashboardActivityItem
 			{
 				IconClass = GetActivityIcon(e.Category, e.LogType),
@@ -197,7 +202,8 @@ public class DashboardController : AppControllerBase
 	#region "API"
 
 	[HttpGet("{company}/dashboard/charts/donut/permit/status")]
-	public IActionResult GetDashboardDonutChartData(Guid company, string startDate, string endDate)
+	[ResponseCache(Duration = 30, VaryByQueryKeys = ["startDate", "endDate"])]
+	public async Task<IActionResult> GetDashboardDonutChartData(Guid company, string startDate, string endDate, CancellationToken cancellationToken)
 	{
 		try
 		{
@@ -213,9 +219,9 @@ public class DashboardController : AppControllerBase
 				query = query.Where(e => e.CreatedWhen >= rangeStart && e.CreatedWhen <= rangeEnd);
 			}
 
-			var allPermits = query.Count();
+			var allPermits = await query.CountAsync(cancellationToken);
 
-			var groups = query
+			var groups = await query
 				.GroupBy(e => e.PermitStatus)
 				.Select(e => new
 				{
@@ -224,7 +230,7 @@ public class DashboardController : AppControllerBase
 					Count = e.Count(),
 					Color = GeneralHelper.GetCategoryColor(e.Key),
 				})
-				.ToList();
+				.ToListAsync(cancellationToken);
 
 			return new JsonResult(groups, _jsonOptions);
 		}
@@ -236,7 +242,8 @@ public class DashboardController : AppControllerBase
 
 
 	[HttpGet("{company}/dashboard/charts/bar/permit/location")]
-	public IActionResult GetDashboardBarChartDataByLocation(Guid company, string startDate, string endDate)
+	[ResponseCache(Duration = 30, VaryByQueryKeys = ["startDate", "endDate"])]
+	public async Task<IActionResult> GetDashboardBarChartDataByLocation(Guid company, string startDate, string endDate, CancellationToken cancellationToken)
 	{
 		try
 		{
@@ -252,7 +259,7 @@ public class DashboardController : AppControllerBase
 				query = query.Where(e => e.CreatedWhen >= rangeStart && e.CreatedWhen <= rangeEnd);
 			}
 
-			var groups = query
+			var groups = await query
 				.GroupBy(e => e.Site.Name)
 				.Select(e => new BarChartModel
 				{
@@ -261,7 +268,7 @@ public class DashboardController : AppControllerBase
 					TotalPending = e.Count(f => f.PermitStatus == PermitStatusEnum.Pending),
 					TotalActive = e.Count(f => f.PermitStatus != PermitStatusEnum.Draft && f.PermitStatus != PermitStatusEnum.KIV && f.PermitStatus != PermitStatusEnum.Closed && f.PermitStatus != PermitStatusEnum.Suspended),
 				})
-				.ToList();
+				.ToListAsync(cancellationToken);
 
 			return new JsonResult(groups, _jsonOptions);
 		}

@@ -3,6 +3,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -34,6 +35,7 @@ public class PermitService : IPermitService
 	private readonly ILogService _logService;
 	private readonly INotificationPushService _pushService;
 	private readonly IAppSettingsService _appSettings;
+	private readonly ILogger<PermitService> _logger;
 
 	public PermitService(
 		ApplicationDbContext context
@@ -44,7 +46,8 @@ public class PermitService : IPermitService
 		, ICurrentUserService currentUserService
 		, ILogService logService
 		, INotificationPushService pushService
-		, IAppSettingsService appSettingsService)
+		, IAppSettingsService appSettingsService
+		, ILogger<PermitService> logger)
 	{
 		_dbContext = context;
 		_ptwSettings = ptwSettings;
@@ -55,6 +58,7 @@ public class PermitService : IPermitService
 		_logService = logService;
 		_pushService = pushService;
 		_appSettings = appSettingsService;
+		_logger = logger;
 	}
 
 

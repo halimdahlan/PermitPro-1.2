@@ -24,6 +24,7 @@ namespace PermitPro.App.Controllers;
 public class ReportsController : AppControllerBase
 {
 	private readonly ApplicationDbContext _dbContext;
+	private readonly ILogger<ReportsController> _logger;
 
 
 	public ReportsController(
@@ -31,9 +32,11 @@ public class ReportsController : AppControllerBase
 		, IHttpContextAccessor httpContextAccessor
 		, SignInManager<UserInfo> signInManager
 		, ISystemConfigurationService systemConfigurationService
+		, ILogger<ReportsController> logger
 	) : base(dbContext, httpContextAccessor, signInManager, systemConfigurationService)
 	{
 		_dbContext = dbContext;
+		_logger = logger;
 	}
 
 
@@ -133,29 +136,33 @@ public class ReportsController : AppControllerBase
 	}
 
 
-	public JsonResult GetDropdownPermitHolders(Guid company)
+	[ResponseCache(Duration = 60, VaryByQueryKeys = ["company"])]
+	public async Task<JsonResult> GetDropdownPermitHolders(Guid company, CancellationToken cancellationToken)
 	{
-		var holderGuids = _dbContext.Permits
+		var holderGuids = await _dbContext.Permits
+			.AsNoTracking()
 			.Where(p => p.Company.Id == company && p.PermitWorkflowStep != null)
 			.Select(p => p.CreatedBy)
 			.Distinct()
-			.ToList();
+			.ToListAsync(cancellationToken);
 
 		var holderIds = holderGuids.Select(g => g.ToString().ToLower()).ToList();
 
-		var holders = _dbContext.Users
+		var holders = await _dbContext.Users
+			.AsNoTracking()
 			.Where(u => holderIds.Contains(u.Id))
 			.Select(u => new { text = (u.FirstName + " " + u.LastName).Trim(), value = u.Id })
 			.OrderBy(u => u.text)
-			.ToList<object>();
+			.ToListAsync(cancellationToken);
 
 		return Json(new object[] { new { text = "(select)", value = "" } }.Concat(holders));
 	}
 
 
-	public JsonResult GetReportGrid(Guid company)
+	public async Task<JsonResult> GetReportGrid(Guid company, CancellationToken cancellationToken)
 	{
-		var rawPermits = _dbContext.Permits
+		var rawPermits = await _dbContext.Permits
+			.AsNoTracking()
 			.Include(e => e.Site)
 			.Where(e => e.Company.Id == company && e.PermitWorkflowStep != null && e.Site != null)
 			.OrderByDescending(e => e.CreatedWhen)
@@ -171,13 +178,14 @@ public class ReportsController : AppControllerBase
 				LocationId = e.Site.Id,
 				PermitStatusEnum = e.PermitStatus,
 			})
-			.ToList();
+			.ToListAsync(cancellationToken);
 
 		var holderIds = rawPermits.Select(p => p.PermitHolderId).Distinct().ToList();
-		var holderNames = _dbContext.Users
+		var holderNames = await _dbContext.Users
+			.AsNoTracking()
 			.Where(u => holderIds.Contains(u.Id))
 			.Select(u => new { u.Id, FullName = (u.FirstName + " " + u.LastName).Trim() })
-			.ToDictionary(u => u.Id, u => u.FullName);
+			.ToDictionaryAsync(u => u.Id, u => u.FullName, cancellationToken);
 
 		var certMap = new Dictionary<string, string>(StringComparer.Ordinal)
 		{
@@ -228,7 +236,7 @@ public class ReportsController : AppControllerBase
 		return new JsonResult(list, new JsonSerializerOptions { PropertyNamingPolicy = null });
 	}
 
-	public JsonResult GetChartData(
+	public async Task<JsonResult> GetChartData(
 		Guid company,
 		bool useDateRange = false,
 		string month = "",
@@ -238,18 +246,21 @@ public class ReportsController : AppControllerBase
 		string locationId = "",
 		string certificateType = "",
 		int permitStatus = -1,
-		string holderId = "")
+		string holderId = "",
+		CancellationToken cancellationToken = default)
 	{
-		var permitsRaw = _dbContext.Permits
+		var permitsRaw = await _dbContext.Permits
+			.AsNoTracking()
 			.Include(e => e.Site)
 			.Where(e => e.Company.Id == company && e.PermitWorkflowStep != null && e.Site != null)
-			.ToList();
+			.ToListAsync(cancellationToken);
 
 		var holderGuids = permitsRaw.Select(p => p.CreatedBy.ToString().ToLower()).Distinct().ToList();
-		var holderNames = _dbContext.Users
+		var holderNames = await _dbContext.Users
+			.AsNoTracking()
 			.Where(u => holderGuids.Contains(u.Id))
 			.Select(u => new { u.Id, Name = (u.FirstName + " " + u.LastName).Trim() })
-			.ToDictionary(u => u.Id, u => u.Name);
+			.ToDictionaryAsync(u => u.Id, u => u.Name, cancellationToken);
 
 		var all = new List<ChartPermitData>();
 		foreach (var p in permitsRaw)

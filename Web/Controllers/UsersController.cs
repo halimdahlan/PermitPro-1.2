@@ -55,6 +55,7 @@ public class UsersController : AppControllerBase
 	public IActionResult Index(Guid company)
 	{
 		var userRoles = _dbContext.Roles
+			.AsNoTracking()
 			.Where(e => e.NormalizedName != "SUPERUSER")
 			.Select(e => new
 			{
@@ -67,6 +68,7 @@ public class UsersController : AppControllerBase
 		ViewBag.UserRoles = userRoles;
 
 		var sites = _dbContext.Sites
+			.AsNoTracking()
 			.Include(e => e.SiteCompany)
 			.Where(e => e.IsActive == true && e.SiteType == SiteTypeEnum.Site && e.SiteCompany.Id == company);
 

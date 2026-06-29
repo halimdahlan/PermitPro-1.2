@@ -1,3 +1,5 @@
+using HealthChecks.SqlServer;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
@@ -154,6 +156,13 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
+// Health checks
+builder.Services.AddHealthChecks()
+    .AddSqlServer(connectionString!, name: "sqlserver", timeout: TimeSpan.FromSeconds(5));
+
+// Response caching for read-only endpoints
+builder.Services.AddResponseCaching();
+
 // Add PermitPro custom services
 builder.Services.AddPermitProServices();
 builder.Services.AddScoped<INotificationPushService, NotificationPushService>();
@@ -178,6 +187,7 @@ else
 app.UseStatusCodePagesWithReExecute("/error/{0}");
 
 app.UseRateLimiter();
+app.UseResponseCaching();
 
 app.Use(async (context, next) =>
 {
@@ -233,5 +243,6 @@ app.MapControllerRoute(
 app.MapHub<NotificationHub>("/{company}/notificationHub");
 
 app.MapRazorPages();
+app.MapHealthChecks("/health");
 
 app.Run();

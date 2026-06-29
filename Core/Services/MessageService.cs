@@ -1,5 +1,7 @@
 using MailKit.Net.Smtp;
 
+using Microsoft.Extensions.Logging;
+
 using MimeKit;
 
 using PermitPro.Core.Data;
@@ -14,13 +16,15 @@ public class MessageService : IMessageService
 	private readonly IAppSettingsService _appSettings;
 	private readonly ILogService _logService;
 	private readonly ICurrentUserService _currentUserService;
+	private readonly ILogger<MessageService> _logger;
 
-	public MessageService(ApplicationDbContext dbContext, IAppSettingsService appSettings, ILogService logService, ICurrentUserService currentUserService)
+	public MessageService(ApplicationDbContext dbContext, IAppSettingsService appSettings, ILogService logService, ICurrentUserService currentUserService, ILogger<MessageService> logger)
 	{
 		_dbContext = dbContext;
 		_appSettings = appSettings;
 		_logService = logService;
 		_currentUserService = currentUserService;
+		_logger = logger;
 	}
 
 	public async Task SendEmailAsync(EmailInfo emailInfo)
@@ -67,11 +71,13 @@ public class MessageService : IMessageService
 			await client.SendAsync(mailMessage);
 			await client.DisconnectAsync(true);
 
+			_logger.LogInformation("Email sent to {RecipientName} ({RecipientEmail}) via {SmtpServer}", recipientName, recipientEmail, server);
 			var logMessage = $"Email has been sent to: {recipientName} ({recipientEmail}).";
 			await _logService.LogMessageAsync(Enums.LogTypeEnum.Information, "SENDEMAIL", logMessage, currentUser!);
 		}
 		catch (Exception ex)
 		{
+			_logger.LogError(ex, "Failed to send email to {RecipientName} ({RecipientEmail}) via {SmtpServer}", recipientName, recipientEmail, server);
 			var logMessage = $"Error sending email to: {recipientName} ({recipientEmail}). Error: {ex.Message}";
 			await _logService.LogMessageAsync(Enums.LogTypeEnum.Error, "SENDEMAIL", logMessage, currentUser!);
 		}
@@ -121,11 +127,13 @@ public class MessageService : IMessageService
 			await client.SendAsync(mailMessage);
 			await client.DisconnectAsync(true);
 
+			_logger.LogInformation("Email sent to {RecipientName} ({RecipientEmail}) for company {CompanyId}", recipientName, recipientEmail, companyId);
 			var logMessage = $"Email has been sent to: {recipientName} ({recipientEmail}).";
 			await _logService.LogMessageAsync(Enums.LogTypeEnum.Information, "SENDEMAIL", logMessage, currentUser!);
 		}
 		catch (Exception ex)
 		{
+			_logger.LogError(ex, "Failed to send email to {RecipientName} ({RecipientEmail}) for company {CompanyId}", recipientName, recipientEmail, companyId);
 			var logMessage = $"Error sending email to: {recipientName} ({recipientEmail}). Error: {ex.Message}";
 			await _logService.LogMessageAsync(Enums.LogTypeEnum.Error, "SENDEMAIL", logMessage, currentUser!);
 		}

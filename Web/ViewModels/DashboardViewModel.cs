@@ -35,6 +35,7 @@ namespace PermitPro.App.ViewModels
 	public class DashboardRecentPermit
 	{
 		public Guid Id { get; set; }
+		public Guid CompanyId { get; set; }
 		public string PermitNumber { get; set; } = string.Empty;
 		public string PermitDescription { get; set; } = string.Empty;
 		public string SiteName { get; set; } = string.Empty;

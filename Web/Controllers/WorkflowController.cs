@@ -54,9 +54,10 @@ public class WorkflowController : AppControllerBase
 
 
 	[Route("{company}/workflow/edit/{id}")]
-	public IActionResult Edit(string id)
+	public async Task<IActionResult> Edit(string id, CancellationToken cancellationToken)
 	{
-		var workflow = _dbContext.Workflows
+		var workflow = await _dbContext.Workflows
+			.AsNoTracking()
 			.Include(e => e.WorkflowSteps)
 			.Where(e => e.Id.ToString().ToLower() == id)
 			.Select(e => new WorkflowEditViewModel
@@ -67,7 +68,7 @@ public class WorkflowController : AppControllerBase
 				WorkflowIsActive = e.IsActive,
 				WorkflowHasCertificate = e.HasCertificate,
 			})
-			.FirstOrDefault();
+			.FirstOrDefaultAsync(cancellationToken);
 
 		return View(workflow);
 	}
@@ -92,9 +93,10 @@ public class WorkflowController : AppControllerBase
 	#region "GET"
 
 	[HttpGet("{company}/workflow/workflows")]
-	public IActionResult GetWorkflows(Guid company)
+	public async Task<IActionResult> GetWorkflows(Guid company, CancellationToken cancellationToken)
 	{
-		var workflows = _dbContext.Workflows
+		var workflows = await _dbContext.Workflows
+			.AsNoTracking()
 			.Include(e => e.WorkflowCompany)
 			.Where(e => e.WorkflowCompany.Id == company)
 			.OrderByDescending(e => e.CreatedWhen)
@@ -110,7 +112,7 @@ public class WorkflowController : AppControllerBase
 				CreatedWhenTicks = GeneralHelper.FormatDateTimeTicks(GeneralHelper.GetDateInTimeZone(e.CreatedWhen)),
 				UpdatedWhenTicks = GeneralHelper.FormatDateTimeTicks(e.UpdatedWhen),
 			})
-			.ToList();
+			.ToListAsync(cancellationToken);
 
 		return Ok(new
 		{
@@ -120,9 +122,10 @@ public class WorkflowController : AppControllerBase
 
 
 	[HttpGet("{company}/workflow/workflows/{workflowId}/steps")]
-	public ActionResult GetWorkflowSteps(Guid company, Guid workflowId)
+	public async Task<ActionResult> GetWorkflowSteps(Guid company, Guid workflowId, CancellationToken cancellationToken)
 	{
-		var workflowSteps = _dbContext.WorkflowSteps
+		var workflowSteps = await _dbContext.WorkflowSteps
+			.AsNoTracking()
 			.Where(e => e.WorkflowStepWorkflow.Id == workflowId)
 			.OrderBy(e => e.StepOrder)
 			.Select(e => new
@@ -137,7 +140,7 @@ public class WorkflowController : AppControllerBase
 				e.IsLast,
 				NumOfSteps = _dbContext.WorkflowSteps.Count(x => x.WorkflowStepWorkflow.Id == workflowId)
 			})
-			.ToList();
+			.ToListAsync(cancellationToken);
 
 		return Ok(new
 		{
@@ -147,9 +150,10 @@ public class WorkflowController : AppControllerBase
 
 
 	[HttpGet("{company}/workflow/steps/{id}")]
-	public async Task<ActionResult<object>> GetWorkflowStepById(Guid company, Guid id)
+	public async Task<ActionResult<object>> GetWorkflowStepById(Guid company, Guid id, CancellationToken cancellationToken)
 	{
 		var workflowStep = await _dbContext.WorkflowSteps
+			.AsNoTracking()
 			.Include(e => e.Approvers)
 			.Select(e => new
 			{
@@ -179,16 +183,16 @@ public class WorkflowController : AppControllerBase
 					})
 					.ToList()
 			})
-			.FirstOrDefaultAsync(e => e.Id == id);
+			.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
 
 		return workflowStep;
 	}
 
 
 	[HttpGet("{company}/workflow/grid")]
-	public JsonResult GetWorkflowsGrid(Guid company)
+	public async Task<JsonResult> GetWorkflowsGrid(Guid company, CancellationToken cancellationToken)
 	{
-		var workflows = _dbContext.Workflows
+		var workflows = await _dbContext.Workflows
 			.AsNoTracking()
 			.Include(e => e.WorkflowCompany)
 			.Include(e => e.WorkflowPermits)
@@ -205,7 +209,7 @@ public class WorkflowController : AppControllerBase
 				ActionIcons = WorkflowsGridActionIcons(e.Id.ToString(), company, e.WorkflowPermits.Any()),
 				HasPermits = e.WorkflowPermits.Any()
 			})
-			.ToList();
+			.ToListAsync(cancellationToken);
 
 		return new JsonResult(workflows, new JsonSerializerOptions
 		{
