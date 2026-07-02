@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 using PermitPro.App.Controllers.Base;
 using PermitPro.App.Models.Ajax;
@@ -29,6 +30,9 @@ public class UsersController : AppControllerBase
 	private readonly UserManager<UserInfo> _userManager;
 	private readonly RoleManager<Role> _roleManager;
 	private readonly IWebHostEnvironment _webHostEnvironment;
+	private readonly IMemoryCache _cache;
+
+	private static readonly TimeSpan DropdownCacheDuration = TimeSpan.FromMinutes(10);
 
 	//private readonly JsonSerializerOptions _jsonOptions;
 
@@ -40,6 +44,7 @@ public class UsersController : AppControllerBase
 		, UserManager<UserInfo> userManager
 		, RoleManager<Role> roleManager
 		, IWebHostEnvironment webHostEnvironment
+		, IMemoryCache cache
 	) : base(dbContext, httpContextAccessor, signInManager, systemConfigurationService)
 	{
 		_dbContext = dbContext;
@@ -49,37 +54,40 @@ public class UsersController : AppControllerBase
 		_userManager = userManager;
 		_roleManager = roleManager;
 		_webHostEnvironment = webHostEnvironment;
+		_cache = cache;
 	}
 
 	[HttpGet("{company}/users")]
 	public IActionResult Index(Guid company)
 	{
-		var userRoles = _dbContext.Roles
-			.AsNoTracking()
-			.Where(e => e.NormalizedName != "SUPERUSER")
-			.Select(e => new
-			{
-				e.Id,
-				e.Name,
-			})
-			.ToList();
+		var rolesCacheKey = "roles:dropdown";
+		if (!_cache.TryGetValue(rolesCacheKey, out object userRolesRaw))
+		{
+			userRolesRaw = _dbContext.Roles
+				.AsNoTracking()
+				.Where(e => e.NormalizedName != "SUPERUSER")
+				.Select(e => new { e.Id, e.Name })
+				.ToList();
+			_cache.Set(rolesCacheKey, userRolesRaw, DropdownCacheDuration);
+		}
 
+		var userRoles = ((IEnumerable<dynamic>)userRolesRaw!).ToList();
 		userRoles.Insert(0, new { Id = string.Empty, Name = "(select a role)" });
 		ViewBag.UserRoles = userRoles;
 
-		var sites = _dbContext.Sites
-			.AsNoTracking()
-			.Include(e => e.SiteCompany)
-			.Where(e => e.IsActive == true && e.SiteType == SiteTypeEnum.Site && e.SiteCompany.Id == company);
+		var sitesCacheKey = $"sites:dropdown:{company}";
+		if (!_cache.TryGetValue(sitesCacheKey, out object locationsRaw))
+		{
+			locationsRaw = _dbContext.Sites
+				.AsNoTracking()
+				.Include(e => e.SiteCompany)
+				.Where(e => e.IsActive == true && e.SiteType == SiteTypeEnum.Site && e.SiteCompany.Id == company)
+				.Select(e => new { Id = e.Id.ToString(), e.Name })
+				.ToList();
+			_cache.Set(sitesCacheKey, locationsRaw, DropdownCacheDuration);
+		}
 
-		var locations = sites
-			.Select(e => new
-			{
-				Id = e.Id.ToString(),
-				e.Name,
-			})
-			.ToList();
-
+		var locations = ((IEnumerable<dynamic>)locationsRaw!).ToList();
 		locations.Insert(0, new { Id = string.Empty, Name = "All" });
 		ViewBag.Locations = locations;
 

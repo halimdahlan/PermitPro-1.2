@@ -18,6 +18,7 @@ public static class CommonExtensions
 		services.AddScoped<ISystemConfigurationService, SystemConfigurationService>();
 		services.AddScoped<ITemplateService, RazorViewsTemplateService>();
 		services.AddScoped<IPermitService, PermitService>();
+		services.AddScoped<IPermitPdfService, PermitPdfService>();
 		services.AddScoped<IUserService, UserService>();
 		services.AddScoped<IMessageService, MessageService>();
 		services.AddScoped<ILogService, LogService>();

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 using PermitPro.App.Controllers.Base;
 using PermitPro.App.Models.Reports;
@@ -15,8 +15,6 @@ using PermitPro.Core.Entities;
 using PermitPro.Core.Helpers;
 using PermitPro.Core.Enums;
 using PermitPro.Core.Interfaces;
-
-using System.Text.Json;
 
 namespace PermitPro.App.Controllers;
 
@@ -198,15 +196,22 @@ public class ReportsController : AppControllerBase
 
 		foreach (var permit in rawPermits)
 		{
-			JObject json = JObject.Parse(permit.PermitForm);
+			using var doc = JsonDocument.Parse(permit.PermitForm);
+			var general = doc.RootElement.GetProperty("general");
 
-			var dtmStart = json["general"]?["startDateTime"] as JValue;
-			var dtmEnd   = json["general"]?["endDateTime"]   as JValue;
+			var dtmStart = general.TryGetProperty("startDateTime", out var s) && s.ValueKind != JsonValueKind.Null ? s.GetString() : null;
+			var dtmEnd   = general.TryGetProperty("endDateTime",   out var e) && e.ValueKind != JsonValueKind.Null ? e.GetString() : null;
 
-			var certs = json["general"]?["certificates"]?.Children()
-				.Select(c => certMap.TryGetValue(c["name"]?.ToString() ?? "", out var letter) ? letter : null)
-				.Where(l => l != null)
-				.ToList() ?? new List<string>();
+			var certs = new List<string>();
+			if (general.TryGetProperty("certificates", out var certsEl) && certsEl.ValueKind == JsonValueKind.Array)
+			{
+				foreach (var c in certsEl.EnumerateArray())
+				{
+					if (c.TryGetProperty("name", out var n) &&
+						certMap.TryGetValue(n.GetString() ?? "", out var letter))
+						certs.Add(letter);
+				}
+			}
 
 			var dtm = GeneralHelper.GetDateInTimeZone(permit.CreatedWhen);
 
@@ -227,8 +232,8 @@ public class ReportsController : AppControllerBase
 				PermitStatusEnum = (int)permit.PermitStatusEnum,
 			};
 
-			if (dtmStart?.Value != null) data.StartDate = DateTime.Parse(dtmStart.ToString()).ToLocalTime();
-			if (dtmEnd?.Value != null) data.EndDate = DateTime.Parse(dtmEnd.ToString()).ToLocalTime();
+			if (!string.IsNullOrEmpty(dtmStart)) data.StartDate = DateTime.Parse(dtmStart).ToLocalTime();
+			if (!string.IsNullOrEmpty(dtmEnd))   data.EndDate   = DateTime.Parse(dtmEnd).ToLocalTime();
 
 			list.Add(data);
 		}
@@ -266,18 +271,19 @@ public class ReportsController : AppControllerBase
 		foreach (var p in permitsRaw)
 		{
 			if (string.IsNullOrWhiteSpace(p.PermitForm)) continue;
-			JObject json = JObject.Parse(p.PermitForm);
+			using var doc = JsonDocument.Parse(p.PermitForm);
+			var general = doc.RootElement.GetProperty("general");
 
-			var dtmStart = json["general"]?["startDateTime"] as JValue;
-			var dtmEnd   = json["general"]?["endDateTime"]   as JValue;
+			var dtmStart = general.TryGetProperty("startDateTime", out var s2) && s2.ValueKind != JsonValueKind.Null ? s2.GetString() : null;
+			var dtmEnd   = general.TryGetProperty("endDateTime",   out var e2) && e2.ValueKind != JsonValueKind.Null ? e2.GetString() : null;
 
 			var certs = new List<string>();
-			var certsToken = json["general"]?["certificates"];
-			if (certsToken != null)
+			if (general.TryGetProperty("certificates", out var certsEl2) && certsEl2.ValueKind == JsonValueKind.Array)
 			{
-				foreach (var cert in certsToken.Children())
+				foreach (var cert in certsEl2.EnumerateArray())
 				{
-					var letter = cert["name"]?.ToString() switch
+					if (!cert.TryGetProperty("name", out var certName)) continue;
+					var letter = certName.GetString() switch
 					{
 						"hotwork" => "A", "confinedspace" => "B", "radiation" => "C",
 						"excavation" => "D", "isolation" => "E", "methodStatement" => "F",
@@ -300,8 +306,8 @@ public class ReportsController : AppControllerBase
 				LocationId = p.Site?.Id.ToString() ?? string.Empty,
 				LocationName = p.Site?.Name ?? string.Empty,
 				Certificates = string.Join(",", certs),
-				StartDate = dtmStart?.Value != null ? DateTime.Parse(dtmStart.ToString()).ToLocalTime() : null,
-				EndDate = dtmEnd?.Value != null ? DateTime.Parse(dtmEnd.ToString()).ToLocalTime() : null,
+				StartDate = !string.IsNullOrEmpty(dtmStart) ? DateTime.Parse(dtmStart).ToLocalTime() : null,
+				EndDate   = !string.IsNullOrEmpty(dtmEnd)   ? DateTime.Parse(dtmEnd).ToLocalTime()   : null,
 			});
 		}
 

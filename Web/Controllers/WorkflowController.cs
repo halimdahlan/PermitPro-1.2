@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 using PermitPro.App.Controllers.Base;
 using PermitPro.App.Models.Ajax;
@@ -24,6 +25,9 @@ public class WorkflowController : AppControllerBase
 	private readonly ApplicationDbContext _dbContext;
 	private readonly UserManager<UserInfo> _userManager;
 	private readonly ICurrentUserService _currentUserService;
+	private readonly IMemoryCache _cache;
+
+	private static readonly TimeSpan WorkflowCacheDuration = TimeSpan.FromMinutes(5);
 
 	public WorkflowController(
 		ApplicationDbContext dbContext
@@ -32,11 +36,13 @@ public class WorkflowController : AppControllerBase
 		, ISystemConfigurationService systemConfigurationService
 		, UserManager<UserInfo> userManager
 		, ICurrentUserService currentUserService
+		, IMemoryCache cache
 		) : base(dbContext, httpContextAccessor, signInManager, systemConfigurationService)
 	{
 		_userManager = userManager;
 		_dbContext = dbContext;
 		_currentUserService = currentUserService;
+		_cache = cache;
 	}
 
 	#region "Views"
@@ -95,29 +101,32 @@ public class WorkflowController : AppControllerBase
 	[HttpGet("{company}/workflow/workflows")]
 	public async Task<IActionResult> GetWorkflows(Guid company, CancellationToken cancellationToken)
 	{
-		var workflows = await _dbContext.Workflows
-			.AsNoTracking()
-			.Include(e => e.WorkflowCompany)
-			.Where(e => e.WorkflowCompany.Id == company)
-			.OrderByDescending(e => e.CreatedWhen)
-			.Select(e => new
-			{
-				e.Id,
-				WorkflowName = e.Name,
-				WorkflowDesc = e.Description,
-				e.IsActive,
-				e.HasCertificate,
-				CreatedWhen = GeneralHelper.GetDateInTimeZone(e.CreatedWhen).ToString("dd MMM, yyyy"),
-				UpdatedWhen = e.UpdatedWhen.Value.ToLocalTime().ToString("dd MMM, yyyy"),
-				CreatedWhenTicks = GeneralHelper.FormatDateTimeTicks(GeneralHelper.GetDateInTimeZone(e.CreatedWhen)),
-				UpdatedWhenTicks = GeneralHelper.FormatDateTimeTicks(e.UpdatedWhen),
-			})
-			.ToListAsync(cancellationToken);
-
-		return Ok(new
+		var cacheKey = $"workflows:{company}";
+		if (!_cache.TryGetValue(cacheKey, out object cached))
 		{
-			Data = workflows
-		});
+			cached = await _dbContext.Workflows
+				.AsNoTracking()
+				.Include(e => e.WorkflowCompany)
+				.Where(e => e.WorkflowCompany.Id == company)
+				.OrderByDescending(e => e.CreatedWhen)
+				.Select(e => new
+				{
+					e.Id,
+					WorkflowName = e.Name,
+					WorkflowDesc = e.Description,
+					e.IsActive,
+					e.HasCertificate,
+					CreatedWhen = GeneralHelper.GetDateInTimeZone(e.CreatedWhen).ToString("dd MMM, yyyy"),
+					UpdatedWhen = e.UpdatedWhen.Value.ToLocalTime().ToString("dd MMM, yyyy"),
+					CreatedWhenTicks = GeneralHelper.FormatDateTimeTicks(GeneralHelper.GetDateInTimeZone(e.CreatedWhen)),
+					UpdatedWhenTicks = GeneralHelper.FormatDateTimeTicks(e.UpdatedWhen),
+				})
+				.ToListAsync(cancellationToken);
+
+			_cache.Set(cacheKey, cached, WorkflowCacheDuration);
+		}
+
+		return Ok(new { Data = cached });
 	}
 
 
@@ -272,6 +281,8 @@ public class WorkflowController : AppControllerBase
 
 			await _dbContext.SaveChangesAsync();
 
+			InvalidateWorkflowCache(company);
+
 			return Ok(new
 			{
 				HasError = false,
@@ -374,6 +385,8 @@ public class WorkflowController : AppControllerBase
 
 			_dbContext.Workflows.Update(workflow);
 			await _dbContext.SaveChangesAsync();
+
+			InvalidateWorkflowCache(company);
 
 			return Ok(new
 			{
@@ -537,6 +550,8 @@ public class WorkflowController : AppControllerBase
 
 			await _dbContext.SaveChangesAsync();
 
+			InvalidateWorkflowCache(company);
+
 			return Ok(new
 			{
 				HasError = false,
@@ -650,4 +665,6 @@ public class WorkflowController : AppControllerBase
 
 	#endregion
 
+	private void InvalidateWorkflowCache(Guid company)
+		=> _cache.Remove($"workflows:{company}");
 }

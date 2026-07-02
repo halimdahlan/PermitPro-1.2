@@ -20,6 +20,7 @@ A multi-tenant, enterprise web application for managing **Permit-to-Work (PTW)**
 | **Excel Export** | ClosedXML 0.105.0 |
 | **Email** | MailKit 4.17.0 + MimeKit 4.17.0 |
 | **Templating** | Scriban.Signed 5.10.0 |
+| **JSON** | System.Text.Json (primary); Newtonsoft.Json 13.0.3 (PDF template mapping only) |
 | **API Docs** | Swashbuckle / Swagger (referenced, not configured) |
 
 ---
@@ -38,7 +39,7 @@ PermitPro-1.2/
 │   │   ├── ScheduledTaskController.cs
 │   │   └── ToolsController.cs      # System menu management
 │   ├── Hubs/                   # SignalR hubs (NotificationHub)
-│   ├── Models/                 # AJAX request/response models, chart models
+│   ├── Models/                 # AJAX request/response models, chart models, typed permit request models
 │   ├── Services/               # Web-layer services (NotificationPushService)
 │   ├── ViewModels/             # 33 typed view models
 │   ├── Views/
@@ -53,8 +54,8 @@ PermitPro-1.2/
 │   ├── Data/                   # ApplicationDbContext + soft-delete/restore logic
 │   ├── Entities/               # 26 domain entities (including certificate and form subfolders)
 │   ├── Enums/                  # PermitStatus, WorkflowStatus, SiteType, DurationType, LogType, ContactType, EmailInfo
-│   ├── Interfaces/             # 13 service and entity interfaces
-│   ├── Services/               # 9 core service implementations
+│   ├── Interfaces/             # 14 service and entity interfaces
+│   ├── Services/               # 10 core service implementations
 │   ├── Filters/                # Authorization filters
 │   ├── Helpers/                # Email, JWT, PTW settings helpers
 │   ├── Interceptors/           # EF Core audit interceptor
@@ -79,6 +80,7 @@ PermitPro-1.2/
   - Upload a company logo (PNG, JPG, WebP, SVG — max 2 MB)
 - Company logo is displayed in the tenant sidebar; falls back to a helmet-safety icon if none is set
 - Dedicated `_LayoutAdmin` layout with a minimal dark navigation bar
+- Super admins have no assigned `UserCompany`; all service calls that need a company ID resolve it automatically from the `{company}` route segment instead
 
 ### Permit Management
 - Create and manage safety permits across 8 certificate types:
@@ -86,7 +88,7 @@ PermitPro-1.2/
   - Method Statement, Lifting & Hoisting, Override
 - Permit lifecycle: Draft → Pending → Approved → Suspended → KIV → Closed / ClosedNoAction / Overdue / Rejected
 - File attachments (PDF, DOCX, JPG, PNG — up to 5 files, 3 MB each)
-- PDF export of permit documents via headless Chrome
+- PDF export of permit documents via headless Chrome (isolated in `PermitPdfService`)
 
 ### Workflow Engine
 - Configurable multi-step approval workflows per company
@@ -102,6 +104,9 @@ PermitPro-1.2/
 - Tenant route pattern: `/{company}/{controller}/{action}`
 - All data scoped to the tenant company
 - Company name and logo injected into every tenant view via `AppControllerBase`
+- `ICurrentUserService.GetCurrentCompanyId()` resolves the active company for any service call:
+  - Normal users → their assigned `UserCompany.Id`
+  - Super admins (no assigned company) → `{company}` route value from the current request URL
 
 ### Real-time Notifications
 - SignalR `NotificationHub` pushes live notifications to connected users
@@ -148,6 +153,25 @@ PermitPro-1.2/
 - `SystemMenu` entity links menu items to roles, controlling sidebar visibility per user role
 - Portal Admins can edit menu visibility via `/tools/editsystemmenus`
 - Menu state evaluated server-side in `_SideMenuPartial.cshtml`
+
+### Performance & Caching
+`IMemoryCache` is used across several hot paths to avoid repeated database round-trips:
+
+| Cache key pattern | TTL | Invalidation |
+|---|---|---|
+| `company:{id}:meta` | 15 min | `AdminController` on company edit/toggle |
+| `appsettings:cats:{companyId}` | 30 min | `AppSettingsService` on category write |
+| `appsettings:vals:{companyId}` | 30 min | `AppSettingsService` on setting write |
+| `user:{userId}:roles` | 2 min | `CurrentUserService.InvalidateRolesCache()` |
+| `workflows:{companyId}` | 5 min | `WorkflowController` on create/update/delete |
+| `roles:dropdown` | 10 min | Not explicitly invalidated (role changes are infrequent) |
+| `sites:dropdown:{companyId}` | 10 min | Not explicitly invalidated (site changes are infrequent) |
+
+All EF Core read-only queries use `AsNoTracking()`. All async controller actions accept and propagate `CancellationToken`.
+
+Response caching (HTTP layer) is applied to chart data and dropdown endpoints:
+- Dashboard donut and bar chart endpoints — 30-second `Cache-Control`
+- Reports permit-holder dropdown — 60-second `Cache-Control`
 
 ### Audit & Security
 - All CRUD operations logged with timestamp and user (`AuditLog` entity)

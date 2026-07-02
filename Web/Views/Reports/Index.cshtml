@@ -317,7 +317,7 @@
 				.Width(150);
 
 			c.Bound(p => p.PermitNo)
-				.ClientTemplate($"<a href=\"/{Model.CompanyId}/permits/edit/#= Id #\" class=\"text-info\">#= PermitNo #</a>")
+				.ClientTemplate($"<a href=\"/{Model.CompanyId}/permits/edit/#= Id #\">#= PermitNo #</a>")
 				.Width(150);
 			
 			c.Bound(p => p.PermitStatus)
@@ -435,7 +435,7 @@
 			const slice = _overduePermits.slice((page - 1) * OVERDUE_PAGE_SIZE, page * OVERDUE_PAGE_SIZE);
 			const rows = slice.map(p => `
 				<tr>
-					<td><a href="/${companyId}/permits/edit/${p.id}" class="text-info fw-semibold">${p.permitNo}</a></td>
+					<td><a href="/${companyId}/permits/edit/${p.id}">${p.permitNo}</a></td>
 					<td>${p.holderName}</td>
 					<td>${p.location}</td>
 					<td class="text-danger">${p.endDate}</td>

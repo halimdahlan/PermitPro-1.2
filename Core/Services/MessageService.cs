@@ -30,7 +30,7 @@ public class MessageService : IMessageService
 	public async Task SendEmailAsync(EmailInfo emailInfo)
 	{
 		var currentUser = _currentUserService.GetCurrentUser();
-		var companyId = currentUser?.UserCompany?.Id ?? Guid.Empty;
+		var companyId = _currentUserService.GetCurrentCompanyId();
 
 		var server = await _appSettings.GetValueAsync(companyId, "email", "smtp_server");
 		var port = await _appSettings.GetIntAsync(companyId, "email", "smtp_port");

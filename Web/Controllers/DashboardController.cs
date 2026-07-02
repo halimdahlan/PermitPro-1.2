@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 using PermitPro.App.Controllers.Base;
 using PermitPro.App.Models.Charts;
@@ -15,8 +15,6 @@ using PermitPro.Core.Entities;
 using PermitPro.Core.Enums;
 using PermitPro.Core.Helpers;
 using PermitPro.Core.Interfaces;
-
-using System.Text.Json;
 
 namespace PermitPro.App.Controllers;
 
@@ -288,8 +286,11 @@ public class DashboardController : AppControllerBase
 		if (string.IsNullOrEmpty(json))
 			return string.Empty;
 
-		JObject jsonObj = JObject.Parse(json);
-		string value = jsonObj["general"]["description"]?.ToString() ?? string.Empty;
+		using var doc = JsonDocument.Parse(json);
+		string value = doc.RootElement
+			.GetProperty("general")
+			.GetProperty("description")
+			.GetString() ?? string.Empty;
 
 		return value;
 	}

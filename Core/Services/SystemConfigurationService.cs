@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-using Newtonsoft.Json;
+using System.Text.Json;
 
 using PermitPro.Core.Data;
 using PermitPro.Core.Entities;
@@ -56,7 +56,7 @@ public class SystemConfigurationService : ISystemConfigurationService
 			}
 			else
 			{
-				_authorizedMenus = JsonConvert.DeserializeObject<List<SystemMenu>>(sessionMenu);
+				_authorizedMenus = JsonSerializer.Deserialize<List<SystemMenu>>(sessionMenu);
 			}
 
 			return _authorizedMenus.AsEnumerable();
@@ -119,7 +119,7 @@ public class SystemConfigurationService : ISystemConfigurationService
 				roles.Add(role.Role.Name);
 			}
 
-			_httpContextAccessor.HttpContext.Session.SetString("UserRoles", JsonConvert.SerializeObject(roles));
+			_httpContextAccessor.HttpContext.Session.SetString("UserRoles", JsonSerializer.Serialize(roles));
 
 			var menu = _context.SystemMenus
 				.Include(e => e.Roles)
@@ -152,7 +152,7 @@ public class SystemConfigurationService : ISystemConfigurationService
 
 			_authorizedMenus = menu;
 
-			_httpContextAccessor.HttpContext.Session.SetString("AuthorizedMenu", JsonConvert.SerializeObject(menu));
+			_httpContextAccessor.HttpContext.Session.SetString("AuthorizedMenu", JsonSerializer.Serialize(menu));
 		}
 	}
 
@@ -166,7 +166,7 @@ public class SystemConfigurationService : ISystemConfigurationService
 			return false;
 		}
 
-		var userRoles = JsonConvert.DeserializeObject<List<string>>(sessionRoles);
+		var userRoles = JsonSerializer.Deserialize<List<string>>(sessionRoles);
 
 		var menu = _context.SystemMenus
 			.Include(e => e.Roles)

@@ -183,3 +183,24 @@
 .report-table .progress {
 	background-color: #edf2f9;
 }
+
+a:link, a:visited {
+	text-decoration: none !important;
+}
+
+a:hover {
+	color: var(--bs-btn-disabled-bg);
+}
+
+.k-grid a {
+	text-decoration: none !important;
+	color: rgba(var(--bs-link-color-rgb), var(--bs-link-opacity,1));
+}
+
+.k-grid a:hover {
+	color: var(--bs-btn-disabled-bg);
+}
+
+.k-calendar, .k-title, .k-button {
+	font-family: 'Poppins', sans-serif !important;
+}

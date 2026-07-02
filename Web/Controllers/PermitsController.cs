@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 using PermitPro.App.Controllers.Base;
 using PermitPro.App.ViewModels;
@@ -17,7 +17,6 @@ using PermitPro.Core.Helpers;
 using PermitPro.Core.Interfaces;
 
 using System.Collections;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace PermitPro.App.Controllers;
@@ -30,6 +29,7 @@ public class PermitsController : AppControllerBase
 	private readonly ICurrentUserService _currentUserService;
 	private readonly IWebHostEnvironment _webHostEnvironment;
 	private readonly IPermitService _permitService;
+	private readonly IPermitPdfService _permitPdfService;
 	private readonly ILogService _logService;
 	private readonly ISystemConfigurationService _systemConfigurationService;
 
@@ -42,13 +42,15 @@ public class PermitsController : AppControllerBase
 		, ICurrentUserService currentUserService
 		, IWebHostEnvironment webHostEnvironment
 		, ILogService logService
-		, IPermitService permitService) : base(dbContext, httpContextAccessor, signInManager, systemConfigurationService)
+		, IPermitService permitService
+		, IPermitPdfService permitPdfService) : base(dbContext, httpContextAccessor, signInManager, systemConfigurationService)
 	{
 		_userManager = userManager;
 		_dbContext = dbContext;
 		_currentUserService = currentUserService;
 		_webHostEnvironment = webHostEnvironment;
 		_permitService = permitService;
+		_permitPdfService = permitPdfService;
 		_logService = logService;
 		_systemConfigurationService = systemConfigurationService;
 	}
@@ -285,56 +287,52 @@ public class PermitsController : AppControllerBase
 
 		foreach (var permit in permits)
 		{
-			JObject json = JObject.Parse(permit.PermitForm);
+			using var doc = JsonDocument.Parse(permit.PermitForm);
+			var general = doc.RootElement.GetProperty("general");
 
-			var loc = json["general"]["location"];
-			var description = json["general"]["description"];
-			var dtmStart = (JValue)json["general"]["startDateTime"];
-			var dtmEnd = (JValue)json["general"]["endDateTime"];
+			var description = general.TryGetProperty("description", out var descEl) ? descEl.GetString() ?? "" : "";
+			var dtmStart = general.TryGetProperty("startDateTime", out var s) && s.ValueKind != JsonValueKind.Null ? s.GetString() : null;
+			var dtmEnd   = general.TryGetProperty("endDateTime",   out var en) && en.ValueKind != JsonValueKind.Null ? en.GetString() : null;
 
-			//var tmpCertsX = json["general"]["certificates"].Children();
-
-			List<JToken> tmpCerts = json["general"]["certificates"].Children().ToList();
-			List<dynamic> certs = new();
-
-			foreach (var cert in tmpCerts)
+			List<string> certs = new();
+			if (general.TryGetProperty("certificates", out var certsEl) && certsEl.ValueKind == JsonValueKind.Array)
 			{
-				CertificateIcon selectedCert = cert["name"].ToString().ToLower() switch
+				foreach (var cert in certsEl.EnumerateArray())
 				{
-					"hotwork" => new() { Code = "A", Description = "Hot Work" },
-					"confinedspace" => new() { Code = "B", Description = "Confined Space" },
-					"radiation" => new() { Code = "C", Description = "Radiation" },
-					"excavation" => new() { Code = "D", Description = "Excavation" },
-					"isolation" => new() { Code = "E", Description = "Isolation" },
-					"methodStatement" => new() { Code = "F", Description = "Method Statement" },
-					"liftinghoisting" => new() { Code = "G", Description = "Lifting & Hoisting" },
-					"override" => new() { Code = "H", Description = "Override" },
-					_ => new() { Code = "X", Description = cert["name"].ToString() },
-				};
+					if (!cert.TryGetProperty("name", out var nameEl)) continue;
+					var certName = nameEl.GetString() ?? "";
 
-				//var certIcon = $"<div class=\"avatar avatar-sm\"><span class=\"avatar-title rounded-circle text-dark\" data-bs-toggle=\"tooltip\" data-bs-title=\"{selectedCert.Description}\">{selectedCert.Letter}</span></div>";
-				var certIcon = $"<img title=\"({selectedCert.Code}) {selectedCert.Description}\" src=\"/img/icons/certs/{cert["name"].ToString().ToLower()}.png\" style=\"width:32px;height:32px;margin-right:3px;\" />";
+					CertificateIcon selectedCert = certName.ToLower() switch
+					{
+						"hotwork"         => new() { Code = "A", Description = "Hot Work" },
+						"confinedspace"   => new() { Code = "B", Description = "Confined Space" },
+						"radiation"       => new() { Code = "C", Description = "Radiation" },
+						"excavation"      => new() { Code = "D", Description = "Excavation" },
+						"isolation"       => new() { Code = "E", Description = "Isolation" },
+						"methodstatement" => new() { Code = "F", Description = "Method Statement" },
+						"liftinghoisting" => new() { Code = "G", Description = "Lifting & Hoisting" },
+						"override"        => new() { Code = "H", Description = "Override" },
+						_                 => new() { Code = "X", Description = certName },
+					};
 
-				certs.Add(certIcon);
+					certs.Add($"<img title=\"({selectedCert.Code}) {selectedCert.Description}\" src=\"/img/icons/certs/{certName.ToLower()}.png\" style=\"width:32px;height:32px;margin-right:3px;\" />");
+				}
 			}
 
 			var newPermit = new PermitListViewModel
 			{
 				Id = permit.Id,
 				PermitNumber = string.Format("PTW{0:000000}", permit.RunningNumber),
-				Description = GetTruncatedWords(description.ToString(), 20), //description.ToString(),
+				Description = GetTruncatedWords(description, 20),
 				Location = permit.LocationName,
-				StartDate = dtmStart.Value != null ? DateTime.Parse(dtmStart.ToString()).ToLocalTime() : null,
-				EndDate = dtmEnd.Value != null ? DateTime.Parse(dtmEnd.ToString()).ToLocalTime() : null,
+				StartDate = !string.IsNullOrEmpty(dtmStart) ? DateTime.Parse(dtmStart).ToLocalTime() : null,
+				EndDate   = !string.IsNullOrEmpty(dtmEnd)   ? DateTime.Parse(dtmEnd).ToLocalTime()   : null,
 				Certificates = certs.Count > 0 ? "<div class=\"d-flex flex-row certificate-icons justify-content-center\">" + string.Join("", certs) + "</div>" : "",
 				Status = permit.PermitStatus,
 				StatusBadge = GeneralHelper.GetStatusBadge(permit.PermitStatus.ToUpper()),
 				DateSubmitted = GeneralHelper.GetDateInTimeZone(permit.CreatedWhen),
 				SubmittedBy = permit.SubmittedBy,
 			};
-
-			//if (dtmStart.Value != null) newPermit.StartDate = DateTime.Parse(dtmStart.ToString()).ToLocalTime();
-			//if (dtmEnd.Value != null) newPermit.EndDate = DateTime.Parse(dtmEnd.ToString()).ToLocalTime();
 
 			result.Add(newPermit);
 		}
@@ -491,12 +489,13 @@ public class PermitsController : AppControllerBase
 					return BadRequest("Suspend date is required");
 				}
 
-				var tmpDate = JObject.Parse(req["SuspendDate"]);
+				using var tmpDate = JsonDocument.Parse(req["SuspendDate"]);
+				var dateRoot = tmpDate.RootElement;
 
 				suspendDate = new DateTime(
-					Convert.ToInt32(tmpDate["year"]),
-					Convert.ToInt32(tmpDate["month"]),
-					Convert.ToInt32(tmpDate["day"]),
+					dateRoot.GetProperty("year").GetInt32(),
+					dateRoot.GetProperty("month").GetInt32(),
+					dateRoot.GetProperty("day").GetInt32(),
 					0, 0, 0);
 
 				suspendAutoResume = Convert.ToBoolean(req["SuspendAutoResume"]);
@@ -689,7 +688,7 @@ public class PermitsController : AppControllerBase
 	[HttpPost("{company}/permits/permit/export/pdf")]
 	public async Task<IActionResult> ExportPdf(Guid company)
 	{
-		var pdf = await _permitService.GetPdfBytesAsync(Request.Form);
+		var pdf = await _permitPdfService.GetPdfBytesAsync(Request.Form);
 		return File(pdf, "application/pdf", $"{Guid.NewGuid()}.pdf");
 	}
 
