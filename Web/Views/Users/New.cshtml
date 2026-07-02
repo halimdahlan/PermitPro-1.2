@@ -7,7 +7,7 @@
 
 @model NewUserViewModel
 
-@if (Model.HasExceededLimit)
+@if (Model.NoRolesAvailable)
 {
 	<div class="d-flex flex-column align-items-center">
 		<div class="alert alert-warning" role="alert">
@@ -31,6 +31,15 @@ else
 {
 	<div class="row g-3">
 		<div class="d-flex flex-column col-12 col-lg-6">
+			@if (Model.HasExceededLimit)
+			{
+				<div class="alert alert-info d-flex mb-3" role="alert">
+					<i class="fa-solid fa-circle-info me-3 fa-xl mt-3"></i>
+					<div>
+						You have reached the user creation limit of <strong>@Model.MaxNumOfUsers</strong> users. Only roles marked <strong>Unlimited users</strong> are available for new users.
+					</div>
+				</div>
+			}
 			<form method="post">
 				@Html.AntiForgeryToken()
 				<div class="card shadow-sm">

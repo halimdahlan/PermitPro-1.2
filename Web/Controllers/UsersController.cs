@@ -91,7 +91,10 @@ public class UsersController : AppControllerBase
 		locations.Insert(0, new { Id = string.Empty, Name = "All" });
 		ViewBag.Locations = locations;
 
-		var totalUsers = _dbContext.Users.Include(e => e.UserCompany).Count(e => e.UserCompany.Id == company);
+		var totalUsers = _dbContext.Users
+			.Include(e => e.UserCompany)
+			.Include(e => e.UserRoles).ThenInclude(e => e.Role)
+			.Count(e => e.UserCompany.Id == company && !e.UserRoles.Any(ur => ur.Role.IsUnlimitedUsers));
 
 		var model = new UsersViewModel
 		{
@@ -117,20 +120,12 @@ public class UsersController : AppControllerBase
 			CompanyID = company
 		};
 
-		var userRoles = _dbContext.Roles
-			.Where(e => e.NormalizedName != "SUPERUSER")
-			.Select(e => new RoleDropDown
-			{
-				Id = e.Id,
-				Name = e.Name,
-			})
-			.ToList();
+		var roles = GetSelectableUserRoles(company, out var hasExceededLimit, out var noRolesAvailable);
 
-		var totalUsers = _dbContext.Users.Include(e => e.UserCompany).Count(e => e.UserCompany.Id == company);
-
-		model.Roles = userRoles;
+		model.Roles = roles;
 		model.MaxNumOfUsers = _systemConfiguration.UserCreateLimit;
-		model.HasExceededLimit = totalUsers > _systemConfiguration.UserCreateLimit || totalUsers == _systemConfiguration.UserCreateLimit;
+		model.HasExceededLimit = hasExceededLimit;
+		model.NoRolesAvailable = noRolesAvailable;
 		model.OriginFromContractors = !string.IsNullOrEmpty(org) && org == "c";
 
 		return View(model);
@@ -143,6 +138,21 @@ public class UsersController : AppControllerBase
 	{
 		if (!ModelState.IsValid)
 			return View(model);
+
+		var selectedRole = await _dbContext.Roles.FirstOrDefaultAsync(e => e.Id == model.UserRole);
+		var roles = GetSelectableUserRoles(company, out var hasExceededLimit, out var noRolesAvailable);
+
+		// Defense-in-depth: the dropdown already only offers unlimited-users roles once the
+		// limit is reached, but re-check server-side in case of a raw/tampered submission.
+		if (hasExceededLimit && (selectedRole == null || !selectedRole.IsUnlimitedUsers))
+		{
+			ModelState.AddModelError(nameof(model.UserRole), "You have reached the user creation limit. Only roles marked \"Unlimited users\" can be selected.");
+			model.Roles = roles;
+			model.MaxNumOfUsers = _systemConfiguration.UserCreateLimit;
+			model.HasExceededLimit = hasExceededLimit;
+			model.NoRolesAvailable = noRolesAvailable;
+			return View(model);
+		}
 
 		var userCompany = await _dbContext.Companies.FirstOrDefaultAsync(e => e.Id == company);
 
@@ -167,8 +177,7 @@ public class UsersController : AppControllerBase
 		await _dbContext.SaveChangesAsync();
 
 		// Add user to the selected role
-		var role = _roleManager.Roles.FirstOrDefault(e => e.Id == model.UserRole);
-		await _userManager.AddToRoleAsync(userInfo, role.NormalizedName);
+		await _userManager.AddToRoleAsync(userInfo, selectedRole.NormalizedName);
 
 		// Add user to selected site(s)
 		if (!string.IsNullOrEmpty(model.Locations))
@@ -196,6 +205,36 @@ public class UsersController : AppControllerBase
 			return Redirect($"/{company}/contractors");
 
 		return RedirectToAction("Index", new { company });
+	}
+
+
+	/// <summary>
+	/// Builds the role dropdown for user creation. Once the company has reached its user
+	/// create limit, only roles marked "unlimited users" remain selectable, since those are
+	/// the only roles that don't count against the limit.
+	/// </summary>
+	private List<RoleDropDown> GetSelectableUserRoles(Guid company, out bool hasExceededLimit, out bool noRolesAvailable)
+	{
+		var totalUsers = _dbContext.Users
+			.Include(e => e.UserCompany)
+			.Include(e => e.UserRoles).ThenInclude(e => e.Role)
+			.Count(e => e.UserCompany.Id == company && !e.UserRoles.Any(ur => ur.Role.IsUnlimitedUsers));
+
+		hasExceededLimit = totalUsers >= _systemConfiguration.UserCreateLimit;
+
+		var allRoles = _dbContext.Roles
+			.Where(e => e.NormalizedName != "SUPERUSER")
+			.Select(e => new RoleDropDown
+			{
+				Id = e.Id,
+				Name = e.Name,
+				IsUnlimitedUsers = e.IsUnlimitedUsers,
+			})
+			.ToList();
+
+		noRolesAvailable = hasExceededLimit && !allRoles.Any(r => r.IsUnlimitedUsers);
+
+		return hasExceededLimit ? allRoles.Where(r => r.IsUnlimitedUsers).ToList() : allRoles;
 	}
 
 
@@ -350,6 +389,7 @@ public class UsersController : AppControllerBase
 		var roles = _dbContext.Roles
 			.Include(e => e.UserRoles)
 			.ThenInclude(e => e.User)
+			.ThenInclude(u => u.UserCompany)
 			.OrderByDescending(e => e.CreatedWhen)
 			.ThenBy(e => e.Name)
 			.ToList()
@@ -358,9 +398,13 @@ public class UsersController : AppControllerBase
 				Id = e.Id,
 				Name = e.Name,
 				Description = e.Description,
-				NumOfUsers = e.UserRoles?.Count ?? 0,
+				// Roles are shared across companies, so the displayed count is scoped to this company.
+				NumOfUsers = e.UserRoles?.Count(ur => ur.User?.UserCompany?.Id == company) ?? 0,
 				IsSystemRole = e.IsSystemRole,
+				IsUnlimitedUsers = e.IsUnlimitedUsers,
 				CreatedWhen = GeneralHelper.GetDateInTimeZone(e.CreatedWhen),
+				// The delete guard must reflect the real (global) constraint enforced in DeleteRole,
+				// otherwise the icon could offer a direct delete that the server then rejects.
 				ActionIcons = RolesGridActionIcons(company, e.Id, e.IsSystemRole, e.UserRoles?.Count ?? 0),
 			})
 			.ToList();
@@ -563,7 +607,7 @@ public class UsersController : AppControllerBase
 	[HttpGet("{company}/users/roles/new")]
 	public IActionResult NewRole()
 	{
-		return View("ManageRole", new ManageRoleViewModel { Name = string.Empty, IsEdit = false });
+		return View("ManageRole", new ManageRoleViewModel { Name = string.Empty, NormalizedName = string.Empty, IsEdit = false });
 	}
 
 
@@ -576,12 +620,12 @@ public class UsersController : AppControllerBase
 		if (!ModelState.IsValid)
 			return View("ManageRole", model);
 
-		var normalizedName = model.Name.Trim().ToUpper();
+		var normalizedName = model.NormalizedName.Trim().ToUpper();
 		var existingRole = await _dbContext.Roles.FirstOrDefaultAsync(e => e.NormalizedName == normalizedName);
 
 		if (existingRole != null)
 		{
-			ModelState.AddModelError(nameof(model.Name), "A role with this name already exists.");
+			ModelState.AddModelError(nameof(model.NormalizedName), "A role with this normalized name already exists.");
 			return View("ManageRole", model);
 		}
 
@@ -593,11 +637,17 @@ public class UsersController : AppControllerBase
 			Description = model.Description,
 			ConcurrencyStamp = Guid.NewGuid().ToString(),
 			IsSystemRole = false,
+			IsUnlimitedUsers = model.IsUnlimitedUsers,
 			CreatedBy = currentUserId,
 			CreatedWhen = DateTime.UtcNow,
 		};
 
 		await _roleManager.CreateAsync(role);
+
+		// RoleManager overwrites NormalizedName from Name using the default normalizer;
+		// re-apply the user-supplied slug so it sticks.
+		role.NormalizedName = normalizedName;
+		await _dbContext.SaveChangesAsync();
 
 		TempData["SuccessMessage"] = $"Role '{role.Name}' has been successfully created.";
 
@@ -606,17 +656,21 @@ public class UsersController : AppControllerBase
 
 
 	[HttpGet("{company}/users/roles/{id}/edit")]
-	public async Task<IActionResult> EditRole(string id)
+	public async Task<IActionResult> EditRole(Guid company, string id)
 	{
 		var role = await _dbContext.Roles
 			.Include(e => e.UserRoles)
 			.ThenInclude(e => e.User)
+			.ThenInclude(u => u.UserCompany)
 			.FirstOrDefaultAsync(e => e.Id == id);
 
 		if (role == null)
 			return NotFound();
 
+		// Roles are shared across companies, so only show users belonging to the
+		// company currently being managed, not every tenant's users on this role.
 		var usersInRole = role.UserRoles?
+			.Where(ur => ur.User?.UserCompany?.Id == company)
 			.Select(ur => $"{ur.User?.FirstName} {ur.User?.LastName}".Trim())
 			.Where(name => !string.IsNullOrEmpty(name))
 			.OrderBy(name => name)
@@ -626,8 +680,10 @@ public class UsersController : AppControllerBase
 		{
 			Id = role.Id,
 			Name = role.Name,
+			NormalizedName = role.NormalizedName ?? string.Empty,
 			Description = role.Description,
 			IsSystemRole = role.IsSystemRole,
+			IsUnlimitedUsers = role.IsUnlimitedUsers,
 			IsEdit = true,
 			UsersInRole = usersInRole,
 		});
@@ -649,14 +705,24 @@ public class UsersController : AppControllerBase
 			return NotFound();
 
 		var currentUserId = Guid.Parse(_httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier));
+		var originalNormalizedName = role.NormalizedName;
 
 		role.Name = model.Name.Trim();
 		role.Description = model.Description;
 		role.IsSystemRole = model.IsSystemRole;
+		role.IsUnlimitedUsers = model.IsUnlimitedUsers;
 		role.UpdatedBy = currentUserId;
 		role.UpdatedWhen = DateTime.UtcNow;
 
 		await _roleManager.UpdateAsync(role);
+
+		// RoleManager re-derives NormalizedName from Name on every update; restore the
+		// original immutable slug regardless of whether the display Name changed.
+		if (role.NormalizedName != originalNormalizedName)
+		{
+			role.NormalizedName = originalNormalizedName;
+			await _dbContext.SaveChangesAsync();
+		}
 
 		TempData["SuccessMessage"] = $"Role '{role.Name}' has been successfully updated.";
 

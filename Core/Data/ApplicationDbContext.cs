@@ -24,6 +24,7 @@ public class Role : IdentityRole, ISoftDeletable
 
 	public string? Description { get; set; }
 	public bool IsSystemRole { get; set; }
+	public bool IsUnlimitedUsers { get; set; }
 	public DateTime CreatedWhen { get; set; }
 	public DateTime? UpdatedWhen { get; set; }
 	public Guid? CreatedBy { get; set; }

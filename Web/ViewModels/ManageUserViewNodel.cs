@@ -47,6 +47,8 @@ public class ManageUserViewNodel
 
 	public bool HasExceededLimit { get; set; }
 
+	public bool NoRolesAvailable { get; set; }
+
 	public bool OriginFromContractors { get; set; }
 
 }
@@ -71,6 +73,7 @@ public class RoleDropDown
 {
 	public string Id { get; set; } = string.Empty;
 	public string Name { get; set; } = string.Empty;
+	public bool IsUnlimitedUsers { get; set; }
 }
 
 

@@ -25,8 +25,24 @@
 					<div class="row g-3 mb-3">
 						<div class="col">
 							<label class="form-label">Role Name <span class="text-danger">*</span></label>
-							<input asp-for="Name" class="form-control" placeholder="i.e. SUPERVISOR" />
+							<input asp-for="Name" class="form-control" placeholder="i.e. Supervisor" />
 							<span asp-validation-for="Name" class="text-danger small"></span>
+						</div>
+					</div>
+
+					<div class="row g-3 mb-3">
+						<div class="col">
+							<label class="form-label">Normalized Name <span class="text-danger">*</span></label>
+							@if (Model.IsEdit)
+							{
+								<input asp-for="NormalizedName" class="form-control bg-light" readonly />
+							}
+							else
+							{
+								<input asp-for="NormalizedName" class="form-control" placeholder="i.e. SUPERVISOR" maxlength="256" />
+							}
+							<span asp-validation-for="NormalizedName" class="text-danger small"></span>
+							<div class="form-text text-muted">Uppercase letters only, no spaces, numbers, or special characters. Cannot be changed after the role is created.</div>
 						</div>
 					</div>
 
@@ -41,7 +57,15 @@
 					<div class="row g-3">
 						<div class="col">
 							<input asp-for="IsSystemRole" class="form-check-input" type="checkbox" />
-							<label class="form-check-label ms-2" for="IsActive">Is system role?</label>
+							<label class="form-check-label ms-2" for="IsSystemRole">Is system role?</label>
+						</div>
+					</div>
+
+					<div class="row g-3 mt-1">
+						<div class="col">
+							<input asp-for="IsUnlimitedUsers" class="form-check-input" type="checkbox" />
+							<label class="form-check-label ms-2" for="IsUnlimitedUsers">Unlimited users</label>
+							<div class="form-text text-muted">Users assigned this role are excluded from the company user limit count.</div>
 						</div>
 					</div>
 					<div class="mt-4 d-flex align-items-center justify-content-between">
@@ -65,7 +89,7 @@
 					List of users in this role
 				</div>
 				<div class="card-body d-flex flex-column justify-content-between">
-					<div style="overflow-y: auto; height: 100%;max-height: 266px;">
+					<div style="overflow-y: auto; height: 100%;max-height: 430px;">
 						<table class="table table-bordered table-striped">
 							<thead>
 								<th>NAME</th>
@@ -106,5 +130,27 @@
 	@section Scripts {
 		@{
 			await Html.RenderPartialAsync("_ValidationScriptsPartial");
+		}
+
+		@if (!Model.IsEdit)
+		{
+			<script>
+				(function () {
+					var nameInput = document.querySelector('[name="Name"]');
+					var normInput = document.querySelector('[name="NormalizedName"]');
+					if (!nameInput || !normInput) return;
+
+					var userEditedNormalizedName = false;
+
+					normInput.addEventListener('input', function () {
+						userEditedNormalizedName = true;
+					});
+
+					nameInput.addEventListener('input', function () {
+						if (userEditedNormalizedName) return;
+						normInput.value = nameInput.value.toUpperCase().replace(/[^A-Z]/g, '');
+					});
+				})();
+			</script>
 		}
 	}

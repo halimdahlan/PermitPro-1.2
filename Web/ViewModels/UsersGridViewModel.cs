@@ -20,6 +20,9 @@ public class RolesGridViewModel
 	[Display(Name = "SYSTEM ROLE?")]
 	public bool IsSystemRole { get; set; }
 
+	[Display(Name = "UNLIMITED USERS?")]
+	public bool IsUnlimitedUsers { get; set; }
+
 	[Display(Name = "DATE CREATED")]
 	public DateTime CreatedWhen { get; set; }
 
