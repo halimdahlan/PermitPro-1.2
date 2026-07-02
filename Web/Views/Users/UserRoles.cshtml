@@ -34,7 +34,11 @@
 		.Sortable()
 		.Columns(c =>
 		{
-			c.Bound(f => f.Name).Width(250);
+			c.Bound(f => f.Name)
+				.ClientTemplate(
+					$"<a href='/{companyId}/users/roles/#= Id #/edit'>#= Name #</a>"
+				)
+				.Width(350);
 
 			c.Bound(f => f.Description);
 
@@ -83,7 +87,7 @@
 	)
 </div>
 
-<div class="d-flex flex-row align-items-center justify-content-between mt-5">
+<div class="d-flex flex-row align-items-center justify-content-between mt-4">
 	<div>
 		<a asp-controller="users" asp-action="index">
 			<span class="mx-3"><i class="fa-solid fa-arrow-left me-3"></i> Back to Users</span>
