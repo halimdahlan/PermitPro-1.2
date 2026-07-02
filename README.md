@@ -196,6 +196,25 @@ Response caching (HTTP layer) is applied to chart data and dropdown endpoints:
 
 Roles support soft-delete via `ISoftDeletable` and carry audit fields (`CreatedWhen`, `UpdatedWhen`, `CreatedBy`, `UpdatedBy`). The `IsSystemRole` flag marks roles that should not be deleted or renamed by tenant admins. Deleted roles are recoverable from the **Recycle Bin → Roles** tab.
 
+`Role` is a shared entity (no `CompanyId`) — the same role catalog is used across all tenants. Because of this, the Roles grid and the "users in this role" panel on the Edit Role page both scope their user counts to the company currently being managed, not the global count across every tenant. The role-deletion guard, however, still checks the true global count, since deleting a shared role affects every company using it.
+
+**Normalized Name (slug)**
+- Set once at role creation via a dedicated **Normalized Name** field, separate from the display `Name`
+- Auto-suggested in real time via JavaScript as the user types the Role Name (uppercased, non-letters stripped: `nameInput.value.toUpperCase().replace(/[^A-Z]/g, '')`), but remains manually editable until the user overrides it
+- Validated server-side (`^[A-Z]+$` — uppercase letters only, no spaces/digits/symbols) and checked for uniqueness against `Role.NormalizedName`
+- Immutable after creation: the Edit Role form renders it `readonly`, and `EditRole` (POST) explicitly restores the original value after `RoleManager.UpdateAsync` — ASP.NET Identity's `RoleManager` always re-derives `NormalizedName` from `Name` on every create/update, so the original slug is re-applied post-save to keep role lookups (e.g. `role.NormalizedName == "SUPERUSER"`) stable even if the display name changes later
+
+**Unlimited Users flag**
+- `Role.IsUnlimitedUsers` — set via a checkbox on the role create/edit form
+- Users assigned a role marked unlimited are excluded from the company's `UserCreateLimit` count (see **User Creation Limits** below)
+
+### User Creation Limits
+- `UserCreateLimit` (from the `user_create_limit` app setting) caps the number of users per company
+- The count excludes users whose role has `IsUnlimitedUsers = true`
+- Once a company reaches its limit, the **New User** role dropdown is restricted server-side to only unlimited-users roles (`UsersController.GetSelectableUserRoles`) — an info banner explains why
+- If no unlimited-users role exists, the New User page falls back to a full block message instead of an empty dropdown
+- The restriction is re-validated on `POST` (not just the dropdown) to reject a tampered submission that selects a non-unlimited role after the limit is reached
+
 ---
 
 ## Getting Started
@@ -343,6 +362,7 @@ All core entities support soft-delete via `ISoftDeletable`. Hard deletes are not
 | `AddRoleDescription` | `Description` and `IsSystemRole` on `Role` |
 | `AddAppSettings` | `AppSettingCategory` and `AppSetting` tables |
 | `AddCompanyLogo` | `LogoFileName` on `Company` |
+| `AddRoleIsUnlimitedUsers` | `IsUnlimitedUsers` flag on `Role` |
 
 Run migrations:
 ```bash
